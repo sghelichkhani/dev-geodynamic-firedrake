@@ -1,0 +1,3 @@
+[submodule "stokes-fire"]
+	path = stokes-fire
+	url = git@github.com:stephankramer/stokes-fire.git
