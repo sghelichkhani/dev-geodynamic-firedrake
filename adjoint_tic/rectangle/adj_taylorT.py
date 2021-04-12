@@ -23,14 +23,12 @@ x_max = 1.0
 #   how many intervals along x/y directions 
 disc_n = 100
 
-# Top and bottom ids, for extruded mesh
-top_id, bottom_id = 2, 1 
+top_id, bottom_id = 4, 3 
+left_id, right_id = 1, 2
 
 # The mesh
-mesh = utility_meshes.PeriodicRectangleMesh(nx=disc_n, ny=disc_n,\
-                                            Lx=x_max, Ly=y_max, direction='x',\
-                                            quadrilateral=True, reorder=None,\
-                                            distribution_parameters=None, diagonal=None)
+mesh = RectangleMesh(nx=disc_n, ny=disc_n, Lx=y_max, Ly=x_max)
+
 # spatial coordinates
 X  = x, y = SpatialCoordinate(mesh)
 h	  = sqrt(CellVolume(mesh))
@@ -124,7 +122,9 @@ final_state_file.close()
 
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
-T_ic.assign(0.5)
+geotherm_checkpoint = DumbCheckpoint("steady_state", single_file=True, mode=FILE_READ)
+geotherm_checkpoint.load(T_ic, 'Temperature')
+geotherm_checkpoint.close()
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
@@ -155,7 +155,11 @@ F_stokes += - (dot(N,yhat)*Ra*T_theta) * dx
 F_stokes += - div(u)* M * dx
 
 # Setting free-slip BC for top and bottom
-bcu_topbase= DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id) )
+u_top = Function(V, name='PlateVelocity')
+bcu_top         = DirichletBC(Z.sub(0), u_top, (top_id))
+bcu_base        = DirichletBC(Z.sub(0).sub(1), 0.0, (bottom_id))
+bcu_rightleft   = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
+
 
 # Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
@@ -169,9 +173,6 @@ u, p    = z.split() # Do this first to extract individual velocity, pressure and
 u.rename('Velocity') 
 p.rename('Pressure')
 
-# Printing out the degrees of freedom 
-log('global number of nodes P1 coeffs/nodes:', W.dim())
-
 # A simulation time to track how far we are
 simu_time = 0.0
 
@@ -180,11 +181,19 @@ simu_time = 0.0
 #eval_cb_pre = ForwardCallbackPost()
 control = Control(T_ic)
 
+# Setting up the file containing all the info
+boundary_velocity_fi = DumbCheckpoint("velocity", mode=FILE_READ)
+
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
+
+    # updating boundary condition
+    boundary_velocity_fi.set_timestep(t=simu_time, idx=timestep)
+    boundary_velocity_fi.load(u_top, 'Velocity')
+
     # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
     # and the RHS == 0. 
-    solve(F_stokes==0, z, bcs=[bcu_topbase], solver_parameters=stokes_solver_parameters)
+    solve(F_stokes==0, z, bcs=[bcu_top, bcu_base, bcu_rightleft], solver_parameters=stokes_solver_parameters)
 
     # updating time-step based on velocities
     delta_t.assign(compute_timestep(u)) # Compute adaptive time-step
@@ -201,6 +210,7 @@ for timestep in range(0, max_num_timesteps):
     # Updating Temperature
     log("Timestep Number: ", timestep, " Timestep: ", str('%10.4e' %simu_time))
 
+boundary_velocity_fi.close()
 
 # setting up the functional
 functional = assemble(0.5*(T_new - final_state)**2 * dx)

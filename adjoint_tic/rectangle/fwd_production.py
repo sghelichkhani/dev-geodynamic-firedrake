@@ -23,13 +23,12 @@ disc_n = 100
 
 # Top and bottom ids, for extruded mesh
 #top_id, bottom_id = 'top', 'bottom'
-top_id, bottom_id = 2, 1 
+top_id, bottom_id = 4, 3 
+left_id, right_id = 1, 2 
 
-# The mesh
-mesh = utility_meshes.PeriodicRectangleMesh(nx=disc_n, ny=disc_n,\
-                                            Lx=x_max, Ly=y_max, direction='x',\
-                                            quadrilateral=True, reorder=None,\
-                                            distribution_parameters=None, diagonal=None)
+# Rectangle Mesh
+mesh = RectangleMesh(nx=disc_n, ny=disc_n, Lx=y_max, Ly=x_max)
+
 # setting up spatial coordinates
 X  =  x, y = SpatialCoordinate(mesh)
 
@@ -55,6 +54,7 @@ kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
 theta_ts               = 0.5
+
 
 #### Print function to ensure log output is only written on processor zero (if running in parallel) ####
 def log(*args):
@@ -117,12 +117,19 @@ def compute_timestep(u):
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
 
+# Radial profile 
+T_rad = Function(Q, name="Geotherm")
+# Reading in the geothermal data 
+geotherm_checkpoint = DumbCheckpoint("steady_state", single_file=True, mode=FILE_READ)
+geotherm_checkpoint.load(T_rad, 'Temperature')
+geotherm_checkpoint.close()
+
 # Having a single hot blob on 1.5, 0.0
-blb_ctr_h = as_vector((0.5, 0.1)) 
+blb_ctr_h = as_vector((0.5, 0.8)) 
 blb_gaus = Constant(0.05)
 
 # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
-T_old.interpolate(y_max - y + 0.4*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
+T_old.interpolate(T_rad - 0.4*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
 
 # Defining temperature field and initialise it with old temperature
 T_new   = Function(Q, name="Temperature")
@@ -145,8 +152,11 @@ F_stokes  = inner(grad(N), tau(u)) * dx - div(N)*p * dx
 F_stokes += - (dot(N,yhat)*Ra*T_theta) * dx 
 F_stokes += - div(u)* M * dx
 
+
+
 # Setting free-slip BC for top and bottom
-bcu_topbase= DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
+bcu_topbase     = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
+bcu_rightleft   = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
 
 ### Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
@@ -156,9 +166,9 @@ bct_base = DirichletBC(Q, 1.0, bottom_id)
 bct_top  = DirichletBC(Q, 0.0, top_id)
 
 # Write output files in VTK format:
-u_file = File('Paraview/velocity.pvd')
-p_file = File('Paraview/pressure.pvd')
-t_file = File('Paraview/temperature.pvd')
+u_file = File('FWDmodel/velocity.pvd')
+p_file = File('FWDmodel/pressure.pvd')
+t_file = File('FWDmodel/temperature.pvd')
 
 # For some reason this only works here!!!
 u, p    = z.split() 
@@ -171,11 +181,19 @@ log('global number of nodes P1 coeffs/nodes:', W.dim())
 # A simulation time to track how far we are
 simu_time = 0.0
 
+checkpoint_u = DumbCheckpoint("velocity", single_file=True, mode=FILE_CREATE, comm=mesh.comm)
+
+
+
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
     # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
     # and the RHS == 0. 
-    solve(F_stokes==0, z, bcs=[bcu_topbase], solver_parameters=stokes_solver_parameters)
+    solve(F_stokes==0, z, bcs=[bcu_topbase, bcu_rightleft], solver_parameters=stokes_solver_parameters)
+
+    # output velocity that will be used for the adjoint as boundary condition
+    checkpoint_u.set_timestep(simu_time, idx=timestep)
+    checkpoint_u.store(u)
 
     # updating time-step based on velocities
     delta_t.assign(compute_timestep(u)) # Compute adaptive time-step
@@ -197,6 +215,10 @@ for timestep in range(0, max_num_timesteps):
 
     # Updating Temperature
     log("Timestep Number: ", timestep, " Timestep: ", float(delta_t))
+
+
+# Closing the hdf file that stores the velocities
+checkpoint_u.close()
 
 # Generating the reference temperature field for the adjoint
 checkpoint_data = DumbCheckpoint("final_state", single_file=True, mode=FILE_CREATE, comm=mesh.comm)
