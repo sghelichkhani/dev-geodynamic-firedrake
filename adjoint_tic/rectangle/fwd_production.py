@@ -1,5 +1,6 @@
 """
     Generation of forward problem - for an adjoint simulation
+    The test problem is no heat-flow at boundaries, with free-slip on all surfaces
 """
 
 from firedrake import *
@@ -41,12 +42,12 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 30
+max_num_timesteps      = 40
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e5)   # Rayleigh Number
+Ra                     = Constant(1e8)   # Rayleigh Number
 
 # Temperature related constants:
 delta_t                = Constant(1e-6) # Initial time-step
@@ -108,7 +109,7 @@ def compute_timestep(u):
     ts_min = ts_func.dat.data.min()
     ts_min = mesh.comm.allreduce(ts_min, MPI.MIN)
     #return min(ts_min*target_cfl_no,max_timestep)
-    return 1e-4 # I am changing it to constant time-step for now 
+    return 1e-7 # I am changing it to constant time-step for now 
                         
 #########################################################################################################
 ############################ T advection diffusion equation Prerequisites: ##############################
@@ -117,19 +118,12 @@ def compute_timestep(u):
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
 
-# Radial profile 
-T_rad = Function(Q, name="Geotherm")
-# Reading in the geothermal data 
-geotherm_checkpoint = DumbCheckpoint("steady_state", single_file=True, mode=FILE_READ)
-geotherm_checkpoint.load(T_rad, 'Temperature')
-geotherm_checkpoint.close()
-
 # Having a single hot blob on 1.5, 0.0
-blb_ctr_h = as_vector((0.5, 0.8)) 
-blb_gaus = Constant(0.05)
+blb_ctr_h = as_vector((0.5, 0.85)) 
+blb_gaus = Constant(0.07)
 
 # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
-T_old.interpolate(T_rad - 0.4*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
+T_old.interpolate(0.5 - 0.5*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
 
 # Defining temperature field and initialise it with old temperature
 T_new   = Function(Q, name="Temperature")
@@ -152,8 +146,6 @@ F_stokes  = inner(grad(N), tau(u)) * dx - div(N)*p * dx
 F_stokes += - (dot(N,yhat)*Ra*T_theta) * dx 
 F_stokes += - div(u)* M * dx
 
-
-
 # Setting free-slip BC for top and bottom
 bcu_topbase     = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
 bcu_rightleft   = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
@@ -161,14 +153,14 @@ bcu_rightleft   = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
 ### Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
 
-# Prescribed temperature for top and bottom
-bct_base = DirichletBC(Q, 1.0, bottom_id)
-bct_top  = DirichletBC(Q, 0.0, top_id)
+## Prescribed temperature for top and bottom
+#bct_base = DirichletBC(Q, 1.0, bottom_id)
+#bct_top  = DirichletBC(Q, 0.0, top_id)
 
 # Write output files in VTK format:
-u_file = File('FWDmodel/velocity.pvd')
-p_file = File('FWDmodel/pressure.pvd')
-t_file = File('FWDmodel/temperature.pvd')
+u_file = File('FWDREFmodel/velocity.pvd')
+p_file = File('FWDREFmodel/pressure.pvd')
+t_file = File('FWDREFmodel/temperature.pvd')
 
 # For some reason this only works here!!!
 u, p    = z.split() 
@@ -199,7 +191,7 @@ for timestep in range(0, max_num_timesteps):
     delta_t.assign(compute_timestep(u)) # Compute adaptive time-step
 
     # Temperature system:
-    solve(F_energy==0, T_new, bcs=[bct_base, bct_top], solver_parameters=stokes_solver_parameters)
+    solve(F_energy==0, T_new, solver_parameters=stokes_solver_parameters)
 
     # updating time
     simu_time += float(delta_t)
