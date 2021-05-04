@@ -10,9 +10,15 @@ from firedrake.petsc import PETSc
 x_max = 2.0; y_max = 1.0;
 x_dis = 160; y_dis = 80;
 
+
+mesh2d = IntervalMesh(ncells=x_dis, length_or_left=0., right=x_max)
+mesh = ExtrudedMesh(mesh2d, layers=y_dis, layer_height=y_max/y_dis)
+
+
 # Mesh and associated physical boundary IDs:
-mesh    = PeriodicRectangleMesh(x_dis, y_dis, x_max, y_max, direction='x')
-bottom_id, top_id = 1, 2  # with PeriodicRectangleMesh: 1,2 for bottom and top
+#mesh    = PeriodicRectangleMesh(x_dis, y_dis, x_max, y_max, direction='x')
+bottom_id, top_id = 'bottom', 'top'  # with PeriodicRectangleMesh: 1,2 for bottom and top
+left_id, right_id = 1, 2  # with PeriodicRectangleMesh: 1,2 for bottom and top
 
 # Global Constants:
 steady_state_tolerance = 1e-8
@@ -129,7 +135,8 @@ F_stokes   += dot(grad(M),u) * dx # Continuity equation
 #bcv_top      = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
 #bcv_val_base = Function(V).interpolate(as_vector((0.0, 0.0)))
 #bcv_base     = DirichletBC(Z.sub(0), bcv_val_base, bottom_id)
-bcv_fs      = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
+bcv_fs_tb      = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
+bcv_fs_lr      = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
 
 ### Next deal with Temperature advection-diffusion equation: ###
 delta_x      = sqrt(CellVolume(mesh))
@@ -163,14 +170,14 @@ for timestep in range(0,max_timesteps):
         t_file.write(T_new)
         mu_field.interpolate(mu)
         mu_file.write(mu_field)
-        if(timestep % 100 == 0):
-            # storing the evolution
-            checkpoint_evolution.set_timestep(t=model_time, idx=timestep)
-            checkpoint_evolution.store(T_new)        
+
+        # storing the evolution
+        checkpoint_evolution.set_timestep(t=model_time, idx=timestep)
+        checkpoint_evolution.store(T_new)        
 
     # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
     # and the RHS == 0.
-    solve(F_stokes==0, z, bcs=[bcv_fs], solver_parameters=stokes_solver_parameters)
+    solve(F_stokes==0, z, bcs=[bcv_fs_tb, bcv_fs_lr], solver_parameters=stokes_solver_parameters)
     
     delta_t.assign(compute_timestep(u))
 
