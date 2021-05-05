@@ -217,6 +217,22 @@ F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y * dot(u,grad(T_theta)) * dx 
 bct_base = DirichletBC(Q, 1.0, bottom_id)
 bct_top  = DirichletBC(Q, 0.0, top_id)
 
+
+# Setting up the stokes solver
+# Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
+# and the RHS == 0.
+stokes_prob = vs.NonlinearVariationalProblem(F_stokes, z)
+stokes_solver = vs.NonlinearVariationalSolver(stokes_prob,
+                                              solver_parameters=mumps_solver_parameters,
+                                              nullspace=Z_nullspace,
+                                              transpose_nullspace=Z_nullspace,
+                                              appctx={"mu": mu})
+
+# Setting up the energy solver 
+energy_prob = vs.NonlinearVariationalProblem(F_energy, T_new,
+                                             bcs=[bct_base,bct_top])
+energy_solver = vs.NonlinearVariationalSolver(energy_prob, solver_parameters=mumps_solver_parameters)
+
 # Write output files in VTK format:
 u, p = z.split() # Do this first to extract individual velocity and pressure fields.
 # Next rename for output:
@@ -230,6 +246,7 @@ checkpoint_period = dump_period * 4
 # Open file for logging diagnostic output:
 f = open("params.log", "w")
 
+
 # Now perform the time loop:
 for timestep in range(0, max_timesteps):
 
@@ -238,12 +255,11 @@ for timestep in range(0, max_timesteps):
         delta_t.assign(compute_timestep(u, current_delta_t)) # Compute adaptive time-step
     time += float(delta_t)
 
-    # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
-    # and the RHS == 0.
-    solve(F_stokes==0, z, solver_parameters=stokes_solver_parameters, nullspace=Z_nullspace, transpose_nullspace=Z_nullspace, near_nullspace=Z_near_nullspace)
+    # solve stokes
+    stokes_solver.solve()
 
-    # Temperature system:
-    solve(F_energy==0, T_new, bcs=[bct_base,bct_top], solver_parameters=temperature_solver_parameters)
+    # solve temperature 
+    energy_solver.solve()
 
     # Write output:
     if timestep == 0 or timestep % dump_period == 0:
