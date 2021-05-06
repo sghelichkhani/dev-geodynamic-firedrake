@@ -17,7 +17,7 @@ bottom_id, top_id = 1, 2  # with PeriodicRectangleMesh: 1,2 for bottom and top
 
 # Global Constants:
 steady_state_tolerance = 1e-8
-max_timesteps          = 50000 
+max_timesteps          = 120   
 model_time             = 0.0
 max_timestep           = 1.0
 
@@ -28,7 +28,7 @@ X = x,y                = SpatialCoordinate(mesh)
 h                      = sqrt(CellVolume(mesh))
 
 # Temperature related constants:
-delta_t                = Constant(1.0e-9) # Initial time-step
+delta_t                = Constant(5.0e-6) # Initial time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 target_cfl_no          = 2.5
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
@@ -97,8 +97,12 @@ blb_gaus = Constant(0.1)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old   = Function(Q, name="OldTemperature")
-T_old.project((y_max - y) - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2))
-
+T_checkpoint = DumbCheckpoint(basename='ThermalCheckpoints', mode=FILE_READ)
+T_ic_idx = 480
+steps, indices = T_checkpoint.get_timesteps()
+T_checkpoint.set_timestep(t=steps[abs(indices - T_ic_idx).argmin()], idx=indices[abs(indices - T_ic_idx).argmin()])
+T_checkpoint.load(T_old, name='Temperature')
+T_checkpoint.close()
 
 T_new   = Function(Q, name="Temperature")
 T_new.assign(T_old)
@@ -173,28 +177,29 @@ energy_solver = vs.NonlinearVariationalSolver(energy_prob, solver_parameters=tem
 
 
 # Starting O file for storing Temperatures
-checkpoint_evolution = DumbCheckpoint("./ThermalCheckpoints",mode=FILE_CREATE)
+checkpoint_boundary = DumbCheckpoint("./VelocityCheckpoint",mode=FILE_CREATE)
 
 # Now perform the time loop:
 for timestep in range(0,max_timesteps):
     log(f"Timestep Number: {timestep}, Time: {model_time}, delta_t: {float(delta_t)}")
 
-    if(timestep % 10 == 0):
-        # Write output:
-        u_file.write(u)
-        p_file.write(p)
-        t_file.write(T_new)
-        mu_field.interpolate(mu)
-        mu_file.write(mu_field)
-
-        # storing the evolution
-        checkpoint_evolution.set_timestep(t=model_time, idx=timestep)
-        checkpoint_evolution.store(T_new)        
 
     # solve stokes
     stokes_solver.solve()
 
-    delta_t.assign(compute_timestep(u))
+    # Write output:
+    u_file.write(u)
+    p_file.write(p)
+    t_file.write(T_new)
+    mu_field.interpolate(mu)
+    mu_file.write(mu_field)
+
+
+    # storing the evolution
+    checkpoint_boundary.set_timestep(t=model_time, idx=timestep)
+    checkpoint_boundary.store(u)
+    # Let's keep delta_t the same
+    #delta_t.assign(compute_timestep(u))
 
     # solve temperature 
     energy_solver.solve()
@@ -205,5 +210,11 @@ for timestep in range(0,max_timesteps):
     # Update model_time
     model_time += float(delta_t)
 
-checkpoint_evolution.close()
+checkpoint_boundary.close()
+
+# Store the final result
+checkpoint_final = DumbCheckpoint("./FinalState",mode=FILE_CREATE)
+checkpoint_final.store(T_new)
+checkpoint_final.close()
+
 

@@ -1,8 +1,17 @@
+"""
+    A finite difference (Taylor's) test for the adjoint
+"""
+
 from firedrake import *
 from mpi4py import MPI
 import math, numpy
 from firedrake.petsc import PETSc
 import firedrake.variational_solver as vs
+from firedrake_adjoint import * 
+from pyadjoint import MinimizationProblem, ROLSolver
+from pyadjoint.tape import no_annotations, Tape, set_working_tape
+import ROL
+
 
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
@@ -17,7 +26,7 @@ bottom_id, top_id = 1, 2  # with PeriodicRectangleMesh: 1,2 for bottom and top
 
 # Global Constants:
 steady_state_tolerance = 1e-8
-max_timesteps          = 50000 
+max_timesteps          = 120
 model_time             = 0.0
 max_timestep           = 1.0
 
@@ -28,7 +37,7 @@ X = x,y                = SpatialCoordinate(mesh)
 h                      = sqrt(CellVolume(mesh))
 
 # Temperature related constants:
-delta_t                = Constant(1.0e-9) # Initial time-step
+delta_t                = Constant(5.0e-6) # Initial time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 target_cfl_no          = 2.5
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
@@ -85,20 +94,24 @@ def compute_timestep(u):
     ts_min = mesh.comm.allreduce(ts_min, MPI.MIN)
     return min(ts_min*target_cfl_no,max_timestep)
 
-
 #########################################################################################################
 ############################ T advection diffusion equation Prerequisites: ##############################
 #########################################################################################################
+final_state = Function(Q, name="ReferenceTemperature")
+final_state_file = DumbCheckpoint("./FinalState", mode=FILE_READ)
+final_state_file.load(final_state, name='Temperature')
+final_state_file.close()
 
-# The gaussian structure
-blb_ctr_h = as_vector((1.5, 0.95))
-blb_gaus = Constant(0.1)
-# 
+T_ic = Function(Q, name="InitialCondition")
+T_checkpoint = DumbCheckpoint(basename='FinalState', mode=FILE_READ)
+T_checkpoint.load(T_ic, name='Temperature')
+T_checkpoint.close()
+
+control = Control(T_ic)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old   = Function(Q, name="OldTemperature")
-T_old.project((y_max - y) - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2))
-
+T_old.assign(T_ic)
 
 T_new   = Function(Q, name="Temperature")
 T_new.assign(T_old)
@@ -125,8 +138,9 @@ F_stokes   += dot(grad(M),u) * dx # Continuity equation
 # function space Z. This is done using Z.sub(0). We subsequently need to extract the x and y components
 # of velocity. This is done using an additional .sub(0) and .sub(1), respectively. Note that the final arguments
 # here are the physical boundary ID's.
-bcv_fs_tb      = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
-
+u_top = Function(V, name="Velocity_top") # This is the velocity for the top boundary, that will be updated each time-step
+bcv_fs_t      = DirichletBC(Z.sub(0), u_top, (top_id))
+bcv_fs_b      = DirichletBC(Z.sub(0).sub(1), 0.0, (bottom_id))
 
 # Generating nullspaces 
 c0V = Function(V)
@@ -136,7 +150,6 @@ V_nullspace = VectorSpaceBasis([c0V])
 V_nullspace.orthonormalize()
 Z_nullspace = MixedVectorSpaceBasis(Z, [V_nullspace, Z.sub(1)])
 
-
 ### Next deal with Temperature advection-diffusion equation: ###
 delta_x      = sqrt(CellVolume(mesh))
 Y_SUPG       = Y + dot(u,grad(Y)) * (delta_x / (2*sqrt(dot(u,u))))
@@ -144,25 +157,17 @@ F_energy     = Y_SUPG * ((T_new - T_old) / delta_t) * dx + Y_SUPG*dot(u,grad(T_t
 bct_base     = DirichletBC(Q, 1.0, bottom_id)
 bct_top      = DirichletBC(Q, 0.0, top_id)
 
-
 # Write output files in VTK format:
 u, p = z.split() # Do this first to extract individual velocity and pressure fields:
 u._name = 'Velocity' # This doesn't seem to work!
 p._name = 'Pressure'
-u_file     = File('velocity.pvd')
-p_file     = File('pressure.pvd')
-t_file     = File('temperature.pvd')
-mu_file    = File('viscosity.pvd')
-
 
 # Setting up the stokes solver
 # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
 # and the RHS == 0.
-stokes_prob = vs.NonlinearVariationalProblem(F_stokes, z, bcs=[bcv_fs_tb])
+stokes_prob = vs.NonlinearVariationalProblem(F_stokes, z, bcs=[bcv_fs_b, bcv_fs_t])
 stokes_solver = vs.NonlinearVariationalSolver(stokes_prob,
                                               solver_parameters=stokes_solver_parameters,
-                                              nullspace=Z_nullspace,
-                                              transpose_nullspace=Z_nullspace,
                                               appctx={"mu": mu})
 
 # Setting up the energy solver 
@@ -173,28 +178,21 @@ energy_solver = vs.NonlinearVariationalSolver(energy_prob, solver_parameters=tem
 
 
 # Starting O file for storing Temperatures
-checkpoint_evolution = DumbCheckpoint("./ThermalCheckpoints",mode=FILE_CREATE)
+checkpoint_boundary = DumbCheckpoint("./VelocityCheckpoint",mode=FILE_READ)
 
 # Now perform the time loop:
 for timestep in range(0,max_timesteps):
     log(f"Timestep Number: {timestep}, Time: {model_time}, delta_t: {float(delta_t)}")
 
-    if(timestep % 10 == 0):
-        # Write output:
-        u_file.write(u)
-        p_file.write(p)
-        t_file.write(T_new)
-        mu_field.interpolate(mu)
-        mu_file.write(mu_field)
-
-        # storing the evolution
-        checkpoint_evolution.set_timestep(t=model_time, idx=timestep)
-        checkpoint_evolution.store(T_new)        
+    # Loading top boundary condition 
+    checkpoint_boundary.set_timestep(t=model_time, idx=timestep)
+    checkpoint_boundary.load(u_top, name='function_5[0]')
 
     # solve stokes
     stokes_solver.solve()
 
-    delta_t.assign(compute_timestep(u))
+    # Let's keep delta_t constant 
+    #delta_t.assign(compute_timestep(u))
 
     # solve temperature 
     energy_solver.solve()
@@ -205,5 +203,150 @@ for timestep in range(0,max_timesteps):
     # Update model_time
     model_time += float(delta_t)
 
-checkpoint_evolution.close()
+checkpoint_boundary.close()
+
+
+
+# define the objective functional
+functional = assemble(0.5 * (T_new - final_state)**2 * dx)
+
+
+# Below are callbacks allowing us to access various field information (accessed through reducedfunctional).
+class OptimisationOutputCallbackPost:
+    def __init__(self):
+        self.iter_idx = 0
+        self.opt_file             = File('visual/opt_file.pvd') 
+        self.grad_copy            = Function(Q, name="Gradient")
+        self.T_ic_copy            = Function(Q, name="InitTemperature")
+        self.T_tc_copy            = Function(Q, name="FinTemperature")
+        self.z_copy               = Function(Z, name="Stokes")
+        self.u_copy               = Function(V, name="Velocity")
+        self.p_copy               = Function(W, name="Pressure")
+
+    def __call__(self, cb_functional, dj, controls):
+        # output current gradient:
+        self.grad_copy.assign(dj)
+        # output current control (temperature initial condition)
+        self.T_ic_copy.assign(controls)
+        # output current final state temperature
+        self.T_tc_copy.assign(T_new.block_variable.checkpoint)
+        #
+        # output current final state velocity and pressure
+        self.z_copy.assign(z.block_variable.checkpoint)
+        self.u_copy.assign(self.z_copy.split()[0])
+        self.p_copy.assign(self.z_copy.split()[1])
+        
+        #  Write out the fields
+        self.opt_file.write(self.T_ic_copy, self.T_tc_copy, self.u_copy, self.p_copy, self.grad_copy)
+        func_val = assemble((self.T_tc_copy-final_state)**2 * dx) 
+        #reg_val  = assemble(inner(grad(self.T_ic_copy-T_mean), grad(self.T_ic_copy - T_mean)) * dx) 
+        grad_val = assemble((self.grad_copy)**2 * dx)
+
+        log(f"# Der {self.iter_idx}, ||Misfit|| {func_val}, ||Grad|| {grad_val}")
+        log('Derivative calculation', self.iter_idx)
+        self.iter_idx += 1
+
+class ForwardCallbackPost:
+   def __init__(self):
+      self.fwd_idx = 0 
+   def __call__(self, func_value, controls):
+      self.fwd_idx +=1 
+      log('# fwd {}, ||Misfit|| {}'.format(self.fwd_idx, func_value))
+
+# Initiate classes for the callbacks
+local_cb_post = OptimisationOutputCallbackPost()
+eval_cb_post = ForwardCallbackPost()
+
+# Defining the object for pyadjoint
+reduced_functional = ReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post)
+
+# Set up bounds, which will later be used to enforce boundary conditions in inversion:
+T_lb     = Function(Q, name="LB_Temperature")
+T_ub     = Function(Q, name="UB_Temperature")
+T_lb.assign(0.0)
+T_ub.assign(1.0)
+
+### Optimise using ROL - note when doing Taylor test this can be turned off:
+minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
+
+class InitHessian(ROL.InitBFGS):
+    def __init__(self, M, direct=True):
+        ROL.InitBFGS.__init__(self, M)
+
+        self.solver_params = {
+            "ksp_type": "gmres",
+            "pc_type": "lu",
+            "pc_factor_mat_solver_type": "mumps",
+            "mat_type": "aij",
+        }
+        # K matrix
+        self.M = dot(grad(Y), grad(TrialFunction(Q))) * dx
+
+        # regular linear solver
+        self.solver = LinearSolver(assemble(self.M), solver_parameters=self.solver_params)
+        
+
+    @no_annotations
+    def applyH0(self, Hv, v):
+        self.solver.solve(Hv.dat[0], v.dat[0])
+        l = Hv.norm() / v.norm()
+        Hv.scale(1 / l)
+        self.scaleH0(Hv)
+
+    @no_annotations
+    def applyB0(self, Bv, v):
+        Bv.dat[0] = assemble(dot(grad(Y), grad(v.dat[0])) * dx)
+        l = Bv.norm() / v.norm()
+        Bv.scale(1 / l)
+        self.scaleB0(Bv)
+
+
+
+# This is the classic way
+params = {
+        'General': {
+                'Print Verbosity':1,
+                'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': 5}, 
+                    },
+        'Step': {
+           'Type': 'Line Search',
+           'Line Search': {
+                'Descent Method': {'Type': 'Quasi-Newton Method'},
+                'Line-Search Method': {'Type': 'Cubic Interpolation'}, 
+                #'Function Evaluation Limit': 5,
+                #'Sufficient Decrease Tolerance': 1e-2,
+                #'Use Previous Step Length as Initial Guess': True,
+                            }
+                },
+        'Status Test': {
+            'Gradient Tolerance': 1e-12,
+            'Iteration Limit': 100,
+                        }
+        }
+
+rol_solver = ROLSolver(minp, params)
+params = ROL.ParameterList(params, "Parameters")
+rol_secant = InitHessian(5) # maximum storage
+#rol_step = ROL.TrustRegionStep(rol_secant, params)
+rol_step = ROL.LineSearchStep(params, rol_secant)
+rol_status = ROL.StatusTest(params)
+rol_algorithm = ROL.Algorithm(rol_step, rol_status)
+
+with stop_annotating():
+    rol_algorithm.run(
+        rol_solver.rolvector,
+        rol_solver.rolobjective,
+        rol_solver.bounds # only if we have a bounded problem
+            )
+    optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
+    # Save the optimal temperature_ic field 
+    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+            single_file=True, mode=FILE_CREATE,\
+                               comm=mesh.comm)
+    ckpt_T_ic.store(optimal_ic)
+    ckpt_T_ic.close()
+
+
+
+
 
