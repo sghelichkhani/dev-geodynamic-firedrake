@@ -1,0 +1,307 @@
+"""
+    Generation of forward problem - for an adjoint simulation
+    The test problem is no heat-flow at boundaries, with free-slip on all surfaces
+"""
+
+from firedrake import *
+from mpi4py import MPI
+import math, numpy
+from firedrake.petsc import PETSc
+import firedrake.variational_solver as vs
+#########################################################################################################
+################################## Some important constants etc...: #####################################
+#########################################################################################################
+
+#logging.set_log_level(1)
+#logging.set_level(1)
+
+# Geometric Constants:
+y_max = 1.0
+x_max = 1.0
+
+#  how many intervals along x/y directions 
+disc_n = 100
+
+# Top and bottom ids, for extruded mesh
+#top_id, bottom_id = 'top', 'bottom'
+top_id, bottom_id = 4, 3 
+left_id, right_id = 1, 2 
+
+# Rectangle Mesh
+mesh = RectangleMesh(nx=disc_n, ny=disc_n, Lx=y_max, Ly=x_max)
+
+# setting up spatial coordinates
+X  =  x, y = SpatialCoordinate(mesh)
+
+# a measure of cell size
+h	  = sqrt(CellVolume(mesh))
+
+# setting up vertical direction
+y_abs     = sqrt(y**2)
+yhat  = as_vector((0,y)) / y_abs
+
+# Global Constants:
+steady_state_tolerance = 1e-7
+max_num_timesteps      = 50
+max_time               = 6.701513984279349e-06 
+target_cfl_no          = 2.5
+max_timestep           = 1.00
+
+# Stokes related constants:
+Ra                     = Constant(1e8)   # Rayleigh Number
+
+# Temperature related constants:
+delta_t                = Constant(1e-6) # Initial time-step
+kappa                  = Constant(1.0)  # Thermal diffusivity
+
+# Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
+theta_ts               = 0.5
+
+
+#### Print function to ensure log output is only written on processor zero (if running in parallel) ####
+def log(*args):
+    if mesh.comm.rank == 0:
+        PETSc.Sys.Print(*args) 
+
+# Stokes Equation Solver Parameters:
+stokes_solver_parameters = {
+    'snes_type': 'ksponly',
+    'ksp_type': 'preonly',
+    'pc_type': 'lu',
+    'pc_factor_mat_solver_type': 'mumps',
+    'mat_type': 'aij'
+}
+
+# Temperature Equation Solver Parameters:
+temperature_solver_parameters = {
+        'snes_type': 'ksponly',
+        'ksp_converged_reason': None,
+        'ksp_monitor': None,
+        'ksp_rtol': 1e-2,
+        'ksp_type': 'gmres',
+        'pc_type': 'sor',
+        'mat_type': 'aij'
+}
+
+#########################################################################################################
+################################## Geometry and Spatial Discretization: #################################
+#########################################################################################################
+
+# Set up function spaces - currently using the P2P1 element pair :
+V    = VectorFunctionSpace(mesh, "CG", 2) # Velocity function space (vector)
+W    = FunctionSpace(mesh, "CG", 1) # Pressure function space (scalar)
+Q    = FunctionSpace(mesh, "CG", 2) # Temperature function space (scalar)
+
+# Set up mixed function space and associated test functions:
+Z       = MixedFunctionSpace([V, W])
+N, M    = TestFunctions(Z)
+Y       = TestFunction(Q)
+
+# Set up fields on these function spaces - split into each component so that they are easily accessible:
+z    = Function(Z)  # a field over the mixed function space Z.
+u, p = split(z)     # can we nicely name mixed function space fields?
+
+# Timestepping - CFL related stuff:
+ts_func = Function(Q) # Note that time stepping should be dictated by Temperature related mesh.
+
+def compute_timestep(u):
+    # A function to compute the timestep, based upon the CFL criterion
+    ts_func.interpolate( h / sqrt(dot(u,u)))
+    ts_min = ts_func.dat.data.min()
+    ts_min = mesh.comm.allreduce(ts_min, MPI.MIN)
+    return min(ts_min*target_cfl_no,max_timestep)
+                        
+#########################################################################################################
+############################ T advection diffusion equation Prerequisites: ##############################
+#########################################################################################################
+reference_state = Function(Q, name="RefTemperature")
+reference_file= DumbCheckpoint("./final_state", single_file=True, mode=FILE_READ, comm=mesh.comm)
+reference_file.load(reference_state, 'Temperature')
+reference_file.close()
+
+# Set up temperature field and initialise based upon coordinates:
+T_old    = Function(Q, name="OldTemperature")
+
+# Defining temperature field and initialise it with old temperature
+T_new   = Function(Q, name="Temperature")
+
+# Temporal discretisation - Using a theta scheme:
+T_theta = theta_ts * T_new + (1-theta_ts) * T_old
+
+#********************** Set-up Equations ******************** 
+
+### Initially deal with Stokes equations ###
+# Equation in weak (ufl) form 
+mu        = Constant(1.0) # Constant viscosity
+
+# deviatoric stresses
+def tau(u): return  mu * (grad(u)+transpose(grad(u)))
+
+# Stokes in weak form 
+F_stokes  = inner(grad(N), tau(u)) * dx - div(N)*p * dx 
+F_stokes += - (dot(N,yhat)*Ra*T_theta) * dx 
+F_stokes += - div(u)* M * dx
+
+# Setting free-slip BC for top and bottom
+bcu_topbase     = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
+bcu_rightleft   = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
+
+### Temperature, advection-diffusion equation
+F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
+
+
+## Prescribed temperature for top and bottom
+#bct_base = DirichletBC(Q, 1.0, bottom_id)
+#bct_top  = DirichletBC(Q, 0.0, top_id)
+
+# Write output files in VTK format:
+u_file = File('./visual/test_velocity.pvd')
+p_file = File('./visual/test_pressure.pvd')
+t_file = File('./visual/test_temperature.pvd')
+
+# For some reason this only works here!!!
+u, p    = z.split() 
+u.rename('Velocity') 
+p.rename('Pressure')
+
+# Printing out the degrees of freedom 
+#log('global number of nodes P1 coeffs/nodes:', W.dim())
+
+# A simulation time to track how far we are
+simu_time = 0.0
+
+# Setting up the forward solver/problems
+# Stokes
+stokes_prob     = vs.NonlinearVariationalProblem(F_stokes, z, bcs=[bcu_topbase, bcu_rightleft])
+stokes_solver   = vs.NonlinearVariationalSolver(stokes_prob,
+                                              solver_parameters=stokes_solver_parameters)
+
+# Energy 
+energy_prob     = vs.NonlinearVariationalProblem(F_energy, T_new)
+energy_solver   = vs.NonlinearVariationalSolver(energy_prob, solver_parameters=stokes_solver_parameters)
+
+def forward_calculcation(newTic):
+    
+    simu_time = 0.0
+
+    checkpoint_u = DumbCheckpoint("FWD_runvelocity", single_file=True, mode=FILE_CREATE, comm=mesh.comm)
+    
+    T_old.assign(newTic)
+    T_new.assign(newTic)
+
+    time_steps = []
+
+    timestep_idx = 0
+
+    # Now perform the time loop:
+    while simu_time < max_time:
+        # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
+        # and the RHS == 0. 
+        stokes_solver.solve() 
+        # Write output:
+        log("               Output:", simu_time, timestep_idx)
+        u_file.write(u)
+        p_file.write(p)
+    
+        # output velocity that will be used for the adjoint as boundary condition
+        checkpoint_u.set_timestep(simu_time, idx=timestep_idx)
+        checkpoint_u.store(u)
+    
+        # updating time-step based on velocities
+        delta_t.assign(compute_timestep(u)) # Compute adaptive time-step
+        time_steps.append(float(delta_t))
+
+        # Temperature system:
+        energy_solver.solve() 
+    
+        # updating time
+        simu_time += float(delta_t)
+    
+        t_file.write(T_new)
+    
+        # Set T_old = T_new - assign the values of T_new to T_old
+        T_old.assign(T_new)
+    
+        # Updating Temperature
+        #log(f"Timestep Number: {timestep_idx}, Timestep: {float(delta_t)}, {simu_time}")
+        timestep_idx+=1
+    
+    
+    # Closing the hdf file that stores the velocities
+    checkpoint_u.close()
+    
+    # Generating the reference temperature field for the adjoint
+    checkpoint_data = DumbCheckpoint("model_T", single_file=True, mode=FILE_CREATE, comm=mesh.comm)
+    checkpoint_data.store(T_new)
+    checkpoint_data.close()
+    return T_new, time_steps
+
+
+W       = TestFunction(Q)
+
+
+### adjoint advection-diffusion equation 
+# Set up temperature field and initialise based upon coordinates:
+adj_T_old    = Function(Q, name="OldTemperature")
+
+# Defining temperature field and initialise it with old temperature
+adj_T_new   = Function(Q, name="Temperature")
+
+# Temporal discretisation - Using a theta scheme:
+adj_T_theta = theta_ts * adj_T_new + (1-theta_ts) * adj_T_old
+
+adj_F_energy = W * ((adj_T_new - adj_T_old) / delta_t) * dx + W*dot(u,grad(adj_T_theta)) * dx - dot(grad(W),kappa*grad(adj_T_theta)) * dx
+
+# Energy 
+adj_energy_prob     = vs.NonlinearVariationalProblem(adj_F_energy, adj_T_new)
+adj_energy_solver   = vs.NonlinearVariationalSolver(adj_energy_prob, solver_parameters=stokes_solver_parameters)
+
+def adjoint_calculation(model_T, time_steps):
+    checkpoint_u = DumbCheckpoint("FWD_runvelocity", single_file=True, mode=FILE_READ, comm=mesh.comm)
+    simu_times, _ = checkpoint_u.get_timesteps()
+    adj_T_old.assign(model_T - reference_state)
+    adj_T_new.assign(model_T - reference_state)
+    # Write output files in VTK format:
+    adj_file = File('./visual/adjoint_T.pvd')
+
+    for idx, simu_time in reversed(list(enumerate(simu_times))):
+        #log(simu_time)
+        delta_t.assign(time_steps[idx])
+        checkpoint_u.set_timestep(simu_time)
+        checkpoint_u.load(u)        
+        adj_energy_solver.solve() 
+        adj_file.write(adj_T_new)
+
+    checkpoint_u.close()
+    return adj_T_new 
+
+T_ic   = Function(Q, name="InitTemperature")
+T_lb  = Function(Q, name="InitTemperature")
+T_hb   = Function(Q, name="InitTemperature")
+
+T_ic.assign(reference_state)
+T_lb.assign(0.)
+T_hb.assign(1.)
+misfit = []
+beta = 0.5
+n=0
+fi_adjoint = File('adjoint_grad.pvd')
+for i in range(4):
+    T_final, time_steps = forward_calculcation(T_ic)
+    diff = float(assemble(.5 * (T_final - reference_state)**2 * dx))
+    print(diff)
+    #if misfit:
+    #if misfit[-1]> diff:
+    misfit.append(diff)
+    gradient = adjoint_calculation(T_final, time_steps)
+    #print("reduced", beta**n)
+    #else:
+    #    n+=1
+    #    print("did not reduce", beta**n)
+    #else:
+    #    misfit.append(diff)
+    #    gradient = adjoint_calculation(T_final, time_steps)
+    T_ic.interpolate(T_ic - beta**n*gradient)
+    T_ic.dat.data[T_ic.dat.data<0.0] = 0.0
+    T_ic.dat.data[T_ic.dat.data>1.0] = 1.0
+    fi_adjoint.write(T_ic, gradient)
