@@ -1,0 +1,2629 @@
+Timestep Number:  0  Timestep:  5.0000e-05
+Timestep Number:  1  Timestep:  1.0000e-04
+Timestep Number:  2  Timestep:  1.5000e-04
+Timestep Number:  3  Timestep:  2.0000e-04
+Timestep Number:  4  Timestep:  2.5000e-04
+Timestep Number:  5  Timestep:  3.0000e-04
+Timestep Number:  6  Timestep:  3.5000e-04
+Timestep Number:  7  Timestep:  4.0000e-04
+Timestep Number:  8  Timestep:  4.5000e-04
+Timestep Number:  9  Timestep:  5.0000e-04
+Timestep Number:  10  Timestep:  5.5000e-04
+Timestep Number:  11  Timestep:  6.0000e-04
+Timestep Number:  12  Timestep:  6.5000e-04
+Timestep Number:  13  Timestep:  7.0000e-04
+Timestep Number:  14  Timestep:  7.5000e-04
+Timestep Number:  15  Timestep:  8.0000e-04
+Timestep Number:  16  Timestep:  8.5000e-04
+Timestep Number:  17  Timestep:  9.0000e-04
+Timestep Number:  18  Timestep:  9.5000e-04
+Timestep Number:  19  Timestep:  1.0000e-03
+Timestep Number:  20  Timestep:  1.0500e-03
+Timestep Number:  21  Timestep:  1.1000e-03
+Timestep Number:  22  Timestep:  1.1500e-03
+Timestep Number:  23  Timestep:  1.2000e-03
+Timestep Number:  24  Timestep:  1.2500e-03
+Timestep Number:  25  Timestep:  1.3000e-03
+Timestep Number:  26  Timestep:  1.3500e-03
+Timestep Number:  27  Timestep:  1.4000e-03
+Timestep Number:  28  Timestep:  1.4500e-03
+Timestep Number:  29  Timestep:  1.5000e-03
+Timestep Number:  30  Timestep:  1.5500e-03
+Timestep Number:  31  Timestep:  1.6000e-03
+Timestep Number:  32  Timestep:  1.6500e-03
+Timestep Number:  33  Timestep:  1.7000e-03
+Timestep Number:  34  Timestep:  1.7500e-03
+Timestep Number:  35  Timestep:  1.8000e-03
+Timestep Number:  36  Timestep:  1.8500e-03
+Timestep Number:  37  Timestep:  1.9000e-03
+Timestep Number:  38  Timestep:  1.9500e-03
+Timestep Number:  39  Timestep:  2.0000e-03
+Timestep Number:  40  Timestep:  2.0500e-03
+Timestep Number:  41  Timestep:  2.1000e-03
+Timestep Number:  42  Timestep:  2.1500e-03
+Timestep Number:  43  Timestep:  2.2000e-03
+Timestep Number:  44  Timestep:  2.2500e-03
+Timestep Number:  45  Timestep:  2.3000e-03
+Timestep Number:  46  Timestep:  2.3500e-03
+Timestep Number:  47  Timestep:  2.4000e-03
+Timestep Number:  48  Timestep:  2.4500e-03
+Timestep Number:  49  Timestep:  2.5000e-03
+Timestep Number:  50  Timestep:  2.5500e-03
+Timestep Number:  51  Timestep:  2.6000e-03
+Timestep Number:  52  Timestep:  2.6500e-03
+Timestep Number:  53  Timestep:  2.7000e-03
+Timestep Number:  54  Timestep:  2.7500e-03
+Timestep Number:  55  Timestep:  2.8000e-03
+Timestep Number:  56  Timestep:  2.8500e-03
+Timestep Number:  57  Timestep:  2.9000e-03
+Timestep Number:  58  Timestep:  2.9500e-03
+Timestep Number:  59  Timestep:  3.0000e-03
+Timestep Number:  60  Timestep:  3.0500e-03
+Timestep Number:  61  Timestep:  3.1000e-03
+Timestep Number:  62  Timestep:  3.1500e-03
+Timestep Number:  63  Timestep:  3.2000e-03
+Timestep Number:  64  Timestep:  3.2500e-03
+# fwd 1, ||Misfit|| 2.9164239381173636e-05
+# Der 0, ||Misfit|| 5.832847876234743e-05, ||Misfit IC|| 0.0005056082523706819, ||Grad|| 2.50503999034992e-13
+Derivative calculation 0
+
+Quasi-Newton Method with Limited-Memory BFGS
+Line Search: Cubic Interpolation satisfying Strong Wolfe Conditions
+-------------------------------------------------------------------------------------------------------------
+Quasi-Newton Method status output definitions
+
+  iter     - Number of iterates (steps taken) 
+  value    - Objective function value 
+  gnorm    - Norm of the gradient
+  snorm    - Norm of the step (update to optimization vector)
+  #fval    - Cumulative number of times the objective function was evaluated
+  #grad    - Number of times the gradient was computed
+-------------------------------------------------------------------------------------------------------------
+  iter  value          gnorm          snorm          #fval     #grad     ls_#fval  ls_#grad  
+  0     2.916424e-05   5.034731e-03   
+# fwd 2, ||Misfit|| 1.6243946823572033e-05
+# fwd 3, ||Misfit|| 1.6243946823572033e-05
+# Der 1, ||Misfit|| 3.248789364714423e-05, ||Misfit IC|| 0.0004728514489611063, ||Grad|| 6.399294481400094e-14
+Derivative calculation 1
+  1     1.624395e-05   2.542597e-03   5.034731e-03   2         2         1         0         
+# fwd 4, ||Misfit|| 1.3321035893704928e-05
+# fwd 5, ||Misfit|| 1.3321035893704928e-05
+# Der 2, ||Misfit|| 2.6642071787409777e-05, ||Misfit IC|| 0.00048124626370943255, ||Grad|| 2.3974728480065906e-14
+Derivative calculation 2
+  2     1.332104e-05   1.555572e-03   1.511512e-03   3         3         1         0         
+# fwd 6, ||Misfit|| 1.4768598183299018e-05
+# fwd 7, ||Misfit|| 1.176560695057674e-05
+# fwd 8, ||Misfit|| 1.176560695057674e-05
+# Der 3, ||Misfit|| 2.3531213901153492e-05, ||Misfit IC|| 0.0004933483706385884, ||Grad|| 4.074601967700626e-14
+Derivative calculation 3
+  3     1.176561e-05   2.025882e-03   1.797101e-03   5         4         2         0         
+# fwd 9, ||Misfit|| 1.037802587364532e-05
+# fwd 10, ||Misfit|| 1.037802587364532e-05
+# Der 4, ||Misfit|| 2.0756051747290632e-05, ||Misfit IC|| 0.0004985144312380458, ||Grad|| 3.1535240250587033e-14
+Derivative calculation 4
+  4     1.037803e-05   1.785343e-03   1.269162e-03   6         5         1         0         
+# fwd 11, ||Misfit|| 6.067278544353769e-06
+# fwd 12, ||Misfit|| 6.067278544353769e-06
+# Der 5, ||Misfit|| 1.2134557088707424e-05, ||Misfit IC|| 0.0005462517105104435, ||Grad|| 3.0330933892787635e-14
+Derivative calculation 5
+  5     6.067279e-06   1.749685e-03   6.332461e-03   7         6         1         0         
+# fwd 13, ||Misfit|| 8.685922597053317e-06
+# fwd 14, ||Misfit|| 5.804767468889879e-06
+# fwd 15, ||Misfit|| 5.804767468889879e-06
+# Der 6, ||Misfit|| 1.1609534937779772e-05, ||Misfit IC|| 0.0005575162643867155, ||Grad|| 4.782546970506569e-15
+Derivative calculation 6
+  6     5.804767e-06   6.973102e-04   7.425520e-04   9         7         2         0         
+# fwd 16, ||Misfit|| 5.695459674397133e-06
+# fwd 17, ||Misfit|| 5.695459674397133e-06
+# Der 7, ||Misfit|| 1.1390919348794339e-05, ||Misfit IC|| 0.0005719794571783173, ||Grad|| 3.250036902275494e-15
+Derivative calculation 7
+  7     5.695460e-06   5.787697e-04   1.026935e-03   10        8         1         0         
+# fwd 18, ||Misfit|| 5.3551361228854435e-06
+# fwd 19, ||Misfit|| 5.3551361228854435e-06
+# Der 8, ||Misfit|| 1.0710272245770953e-05, ||Misfit IC|| 0.0005743370975719326, ||Grad|| 2.2929553934098924e-15
+Derivative calculation 8
+  8     5.355136e-06   4.855955e-04   9.221387e-04   11        9         1         0         
+# fwd 20, ||Misfit|| 4.672973156583066e-06
+# fwd 21, ||Misfit|| 4.672973156583066e-06
+# Der 9, ||Misfit|| 9.34594631316608e-06, ||Misfit IC|| 0.0005841067667724094, ||Grad|| 2.0467732467654126e-14
+Derivative calculation 9
+  9     4.672973e-06   1.436593e-03   3.000917e-03   12        10        1         0         
+# fwd 22, ||Misfit|| 4.382414861761589e-06
+# fwd 23, ||Misfit|| 4.382414861761589e-06
+# Der 10, ||Misfit|| 8.76482972352318e-06, ||Misfit IC|| 0.0005832101667067625, ||Grad|| 2.9272111944034633e-15
+Derivative calculation 10
+  10    4.382415e-06   5.475962e-04   1.474233e-03   13        11        1         0         
+# fwd 24, ||Misfit|| 4.210808680632695e-06
+# fwd 25, ||Misfit|| 4.210808680632695e-06
+# Der 11, ||Misfit|| 8.421617361265426e-06, ||Misfit IC|| 0.0005934931774721473, ||Grad|| 2.0128800517256735e-15
+Derivative calculation 11
+  11    4.210809e-06   4.587164e-04   1.351885e-03   14        12        1         0         
+# fwd 26, ||Misfit|| 3.914428091934676e-06
+# fwd 27, ||Misfit|| 3.914428091934676e-06
+# Der 12, ||Misfit|| 7.828856183869362e-06, ||Misfit IC|| 0.0006097681400476766, ||Grad|| 2.1314926024737027e-15
+Derivative calculation 12
+  12    3.914428e-06   4.704885e-04   1.653444e-03   15        13        1         0         
+# fwd 28, ||Misfit|| 5.375176384745424e-06
+# fwd 29, ||Misfit|| 3.7564901731083658e-06
+# fwd 30, ||Misfit|| 3.7564901731083658e-06
+# Der 13, ||Misfit|| 7.51298034621668e-06, ||Misfit IC|| 0.0006306251031426098, ||Grad|| 2.317089092626115e-14
+Derivative calculation 13
+  13    3.756490e-06   1.528866e-03   1.226902e-03   17        14        2         0         
+# fwd 31, ||Misfit|| 3.577382152787729e-06
+# fwd 32, ||Misfit|| 3.577382152787729e-06
+# Der 14, ||Misfit|| 7.154764305575432e-06, ||Misfit IC|| 0.0006897370558708718, ||Grad|| 1.3133643588059473e-14
+Derivative calculation 14
+  14    3.577382e-06   1.153378e-03   3.196608e-03   18        15        1         0         
+# fwd 33, ||Misfit|| 3.464639981680052e-06
+# fwd 34, ||Misfit|| 3.464639981680052e-06
+# Der 15, ||Misfit|| 6.929279963360104e-06, ||Misfit IC|| 0.0006613209632849781, ||Grad|| 9.927875186756593e-16
+Derivative calculation 15
+  15    3.464640e-06   3.218259e-04   1.382484e-03   19        16        1         0         
+# fwd 35, ||Misfit|| 3.4342670676952963e-06
+# fwd 36, ||Misfit|| 3.4342670676952963e-06
+# Der 16, ||Misfit|| 6.868534135390588e-06, ||Misfit IC|| 0.0006609839808969128, ||Grad|| 1.0353106349749264e-15
+Derivative calculation 16
+  16    3.434267e-06   3.283178e-04   2.339823e-04   20        17        1         0         
+# fwd 37, ||Misfit|| 3.2219124518389954e-06
+# fwd 38, ||Misfit|| 3.2219124518389954e-06
+# Der 17, ||Misfit|| 6.443824903677952e-06, ||Misfit IC|| 0.0006634041146478247, ||Grad|| 1.7779562623965627e-15
+Derivative calculation 17
+  17    3.221912e-06   4.266718e-04   1.557801e-03   21        18        1         0         
+# fwd 39, ||Misfit|| 3.01839951182296e-06
+# fwd 40, ||Misfit|| 3.01839951182296e-06
+# Der 18, ||Misfit|| 6.036799023645901e-06, ||Misfit IC|| 0.0006727402514933225, ||Grad|| 4.082294980119902e-15
+Derivative calculation 18
+  18    3.018400e-06   6.444326e-04   2.050926e-03   22        19        1         0         
+# fwd 41, ||Misfit|| 2.9535661405003385e-06
+# fwd 42, ||Misfit|| 2.9535661405003385e-06
+# Der 19, ||Misfit|| 5.907132281000685e-06, ||Misfit IC|| 0.0007121401828118027, ||Grad|| 2.22948210108757e-15
+Derivative calculation 19
+  19    2.953566e-06   4.777060e-04   2.014939e-03   23        20        1         0         
+# fwd 43, ||Misfit|| 2.885147860127916e-06
+# fwd 44, ||Misfit|| 2.885147860127916e-06
+# Der 20, ||Misfit|| 5.770295720255823e-06, ||Misfit IC|| 0.000699174960186721, ||Grad|| 1.2668713278981832e-15
+Derivative calculation 20
+  20    2.885148e-06   3.617915e-04   4.984307e-04   24        21        1         0         
+# fwd 45, ||Misfit|| 2.818204777908057e-06
+# fwd 46, ||Misfit|| 2.818204777908057e-06
+# Der 21, ||Misfit|| 5.636409555816096e-06, ||Misfit IC|| 0.0007066537437472271, ||Grad|| 2.7897004291932508e-14
+Derivative calculation 21
+  21    2.818205e-06   1.677413e-03   1.394025e-03   25        22        1         0         
+# fwd 47, ||Misfit|| 2.7278178063608546e-06
+# fwd 48, ||Misfit|| 2.7278178063608546e-06
+# Der 22, ||Misfit|| 5.455635612721717e-06, ||Misfit IC|| 0.0006790717835100279, ||Grad|| 2.6220884401227088e-15
+Derivative calculation 22
+  22    2.727818e-06   5.164719e-04   1.036353e-03   26        23        1         0         
+# fwd 49, ||Misfit|| 2.6823291145408734e-06
+# fwd 50, ||Misfit|| 2.6823291145408734e-06
+# Der 23, ||Misfit|| 5.3646582290817764e-06, ||Misfit IC|| 0.0006835258537823113, ||Grad|| 9.050343641701687e-16
+Derivative calculation 23
+  23    2.682329e-06   3.059919e-04   5.310805e-04   27        24        1         0         
+# fwd 51, ||Misfit|| 2.578110100789483e-06
+# fwd 52, ||Misfit|| 2.578110100789483e-06
+# Der 24, ||Misfit|| 5.156220201578974e-06, ||Misfit IC|| 0.0006971277530280531, ||Grad|| 9.61003182057588e-16
+Derivative calculation 24
+  24    2.578110e-06   3.163306e-04   1.806871e-03   28        25        1         0         
+# fwd 53, ||Misfit|| 2.4763391243320386e-06
+# fwd 54, ||Misfit|| 2.4763391243320386e-06
+# Der 25, ||Misfit|| 4.95267824866406e-06, ||Misfit IC|| 0.000688423882857067, ||Grad|| 1.742490712055579e-15
+Derivative calculation 25
+  25    2.476339e-06   4.224690e-04   2.172024e-03   29        26        1         0         
+# fwd 55, ||Misfit|| 4.8301504519463356e-06
+# fwd 56, ||Misfit|| 2.3510449095478992e-06
+# fwd 57, ||Misfit|| 2.3510449095478992e-06
+# Der 26, ||Misfit|| 4.7020898190958145e-06, ||Misfit IC|| 0.0007183095571830646, ||Grad|| 5.667741681899593e-15
+Derivative calculation 26
+  26    2.351045e-06   7.573960e-04   1.850183e-03   31        27        2         0         
+# fwd 58, ||Misfit|| 2.260708919369636e-06
+# fwd 59, ||Misfit|| 2.260708919369636e-06
+# Der 27, ||Misfit|| 4.5214178387393015e-06, ||Misfit IC|| 0.0007243815607536159, ||Grad|| 1.90505143543645e-15
+Derivative calculation 27
+  27    2.260709e-06   4.395402e-04   8.908337e-04   32        28        1         0         
+# fwd 60, ||Misfit|| 2.234751309511886e-06
+# fwd 61, ||Misfit|| 2.234751309511886e-06
+# Der 28, ||Misfit|| 4.469502619023752e-06, ||Misfit IC|| 0.0007285621264628337, ||Grad|| 6.099405398606985e-16
+Derivative calculation 28
+  28    2.234751e-06   2.509354e-04   3.880930e-04   33        29        1         0         
+# fwd 62, ||Misfit|| 2.181107099793856e-06
+# fwd 63, ||Misfit|| 2.181107099793856e-06
+# Der 29, ||Misfit|| 4.362214199587696e-06, ||Misfit IC|| 0.0007268267162868558, ||Grad|| 2.6549330471819756e-15
+Derivative calculation 29
+  29    2.181107e-06   5.185656e-04   7.705279e-04   34        30        1         0         
+# fwd 64, ||Misfit|| 2.1424427340717647e-06
+# fwd 65, ||Misfit|| 2.1424427340717647e-06
+# Der 30, ||Misfit|| 4.284885468143535e-06, ||Misfit IC|| 0.0007194913416052853, ||Grad|| 1.5159100247719376e-15
+Derivative calculation 30
+  30    2.142443e-06   3.923987e-04   6.878156e-04   35        31        1         0         
+# fwd 66, ||Misfit|| 2.0861216821618823e-06
+# fwd 67, ||Misfit|| 2.0861216821618823e-06
+# Der 31, ||Misfit|| 4.172243364323768e-06, ||Misfit IC|| 0.0007208551792871264, ||Grad|| 1.1022339116351103e-15
+Derivative calculation 31
+  31    2.086122e-06   3.348606e-04   8.018202e-04   36        32        1         0         
+# fwd 68, ||Misfit|| 1.938877070939377e-06
+# fwd 69, ||Misfit|| 1.938877070939377e-06
+# Der 32, ||Misfit|| 3.877754141878745e-06, ||Misfit IC|| 0.0007516053278315706, ||Grad|| 2.615792682895234e-15
+Derivative calculation 32
+  32    1.938877e-06   5.149837e-04   2.873964e-03   37        33        1         0         
+# fwd 70, ||Misfit|| 1.8546687599844893e-06
+# fwd 71, ||Misfit|| 1.8546687599844893e-06
+# Der 33, ||Misfit|| 3.7093375199689803e-06, ||Misfit IC|| 0.0007479198940875552, ||Grad|| 6.945258855327227e-16
+Derivative calculation 33
+  33    1.854669e-06   2.696822e-04   1.106385e-03   38        34        1         0         
+# fwd 72, ||Misfit|| 1.8178199000824235e-06
+# fwd 73, ||Misfit|| 1.8178199000824235e-06
+# Der 34, ||Misfit|| 3.63563980016485e-06, ||Misfit IC|| 0.0007577931467628512, ||Grad|| 5.47031721075816e-16
+Derivative calculation 34
+  34    1.817820e-06   2.403648e-04   6.520441e-04   39        35        1         0         
+# fwd 74, ||Misfit|| 1.9566084279394453e-06
+# fwd 75, ||Misfit|| 1.797873598997271e-06
+# fwd 76, ||Misfit|| 1.797873598997271e-06
+# Der 35, ||Misfit|| 3.5957471979945528e-06, ||Misfit IC|| 0.0007678563075854963, ||Grad|| 4.138466296575333e-15
+Derivative calculation 35
+  35    1.797874e-06   6.477531e-04   5.010067e-04   41        36        2         0         
+# fwd 77, ||Misfit|| 1.7655084450454072e-06
+# fwd 78, ||Misfit|| 1.7655084450454072e-06
+# Der 36, ||Misfit|| 3.5310168900908365e-06, ||Misfit IC|| 0.0007822472599402246, ||Grad|| 4.659620707087927e-16
+Derivative calculation 36
+  36    1.765508e-06   2.213292e-04   7.961918e-04   42        37        1         0         
+# fwd 79, ||Misfit|| 1.748407304189168e-06
+# fwd 80, ||Misfit|| 1.748407304189168e-06
+# Der 37, ||Misfit|| 3.496814608378319e-06, ||Misfit IC|| 0.0007755708122132753, ||Grad|| 4.614493150817167e-16
+Derivative calculation 37
+  37    1.748407e-06   2.190644e-04   4.211722e-04   43        38        1         0         
+# fwd 81, ||Misfit|| 1.6942596027251703e-06
+# fwd 82, ||Misfit|| 1.6942596027251703e-06
+# Der 38, ||Misfit|| 3.388519205450346e-06, ||Misfit IC|| 0.00076649150072845, ||Grad|| 3.233878123299036e-15
+Derivative calculation 38
+  38    1.694260e-06   5.714425e-04   1.033853e-03   44        39        1         0         
+# fwd 83, ||Misfit|| 1.6805178457852826e-06
+# fwd 84, ||Misfit|| 1.6805178457852826e-06
+# Der 39, ||Misfit|| 3.3610356915705593e-06, ||Misfit IC|| 0.0007593714107028994, ||Grad|| 3.1916512861221336e-15
+Derivative calculation 39
+  39    1.680518e-06   5.684899e-04   7.578236e-04   45        40        1         0         
+# fwd 85, ||Misfit|| 1.6571047425597152e-06
+# fwd 86, ||Misfit|| 1.6571047425597152e-06
+# Der 40, ||Misfit|| 3.314209485119419e-06, ||Misfit IC|| 0.000763680170023433, ||Grad|| 3.6136718079588976e-16
+Derivative calculation 40
+  40    1.657105e-06   1.936580e-04   3.681002e-04   46        41        1         0         
+# fwd 87, ||Misfit|| 1.6489704468679326e-06
+# fwd 88, ||Misfit|| 1.6489704468679326e-06
+# Der 41, ||Misfit|| 3.297940893735869e-06, ||Misfit IC|| 0.0007675503449649629, ||Grad|| 3.068669142621082e-16
+Derivative calculation 41
+  41    1.648970e-06   1.788180e-04   2.626400e-04   47        42        1         0         
+# fwd 89, ||Misfit|| 1.629475469422157e-06
+# fwd 90, ||Misfit|| 1.629475469422157e-06
+# Der 42, ||Misfit|| 3.258950938844312e-06, ||Misfit IC|| 0.0007848514330666374, ||Grad|| 1.8048418261147465e-15
+Derivative calculation 42
+  42    1.629475e-06   4.275743e-04   1.127658e-03   48        43        1         0         
+# fwd 91, ||Misfit|| 1.6166065215130412e-06
+# fwd 92, ||Misfit|| 1.6166065215130412e-06
+# Der 43, ||Misfit|| 3.233213043026091e-06, ||Misfit IC|| 0.0007961507282737751, ||Grad|| 2.4423786663834655e-15
+Derivative calculation 43
+  43    1.616607e-06   4.968451e-04   1.010221e-03   49        44        1         0         
+# fwd 93, ||Misfit|| 1.6049792318970253e-06
+# fwd 94, ||Misfit|| 1.6049792318970253e-06
+# Der 44, ||Misfit|| 3.2099584637940777e-06, ||Misfit IC|| 0.0007931504486454517, ||Grad|| 5.204062386530086e-16
+Derivative calculation 44
+  44    1.604979e-06   2.307694e-04   1.411476e-04   50        45        1         0         
+# fwd 95, ||Misfit|| 1.5888962481699926e-06
+# fwd 96, ||Misfit|| 1.5888962481699926e-06
+# Der 45, ||Misfit|| 3.177792496339973e-06, ||Misfit IC|| 0.0007860974996804077, ||Grad|| 7.758592606314053e-16
+Derivative calculation 45
+  45    1.588896e-06   2.810511e-04   2.896584e-04   51        46        1         0         
+# fwd 97, ||Misfit|| 1.5709388172048464e-06
+# fwd 98, ||Misfit|| 1.5709388172048464e-06
+# Der 46, ||Misfit|| 3.141877634409679e-06, ||Misfit IC|| 0.0007827350347897602, ||Grad|| 2.3753257449408396e-15
+Derivative calculation 46
+  46    1.570939e-06   4.900487e-04   3.476897e-04   52        47        1         0         
+# fwd 99, ||Misfit|| 1.5440465771979093e-06
+# fwd 100, ||Misfit|| 1.5440465771979093e-06
+# Der 47, ||Misfit|| 3.0880931543958008e-06, ||Misfit IC|| 0.0007745734940094477, ||Grad|| 3.2207728953268933e-15
+Derivative calculation 47
+  47    1.544047e-06   5.703778e-04   5.526287e-04   53        48        1         0         
+# fwd 101, ||Misfit|| 1.5262788071176188e-06
+# fwd 102, ||Misfit|| 1.5262788071176188e-06
+# Der 48, ||Misfit|| 3.0525576142352236e-06, ||Misfit IC|| 0.0007670159757928825, ||Grad|| 3.2687806347682923e-15
+Derivative calculation 48
+  48    1.526279e-06   5.747648e-04   7.614316e-04   54        49        1         0         
+# fwd 103, ||Misfit|| 1.4993111765839704e-06
+# fwd 104, ||Misfit|| 1.4993111765839704e-06
+# Der 49, ||Misfit|| 2.9986223531679455e-06, ||Misfit IC|| 0.0007672298476793521, ||Grad|| 5.059772270691878e-16
+Derivative calculation 49
+  49    1.499311e-06   2.278967e-04   2.135976e-04   55        50        1         0         
+# fwd 105, ||Misfit|| 1.4680861986616019e-06
+# fwd 106, ||Misfit|| 1.4680861986616019e-06
+# Der 50, ||Misfit|| 2.936172397323203e-06, ||Misfit IC|| 0.0007728380669229487, ||Grad|| 7.405624363484429e-16
+Derivative calculation 50
+  50    1.468086e-06   2.747718e-04   6.281754e-04   56        51        1         0         
+# fwd 107, ||Misfit|| 1.43149616081489e-06
+# fwd 108, ||Misfit|| 1.43149616081489e-06
+# Der 51, ||Misfit|| 2.862992321629754e-06, ||Misfit IC|| 0.0007820232477660422, ||Grad|| 1.7123719598978253e-15
+Derivative calculation 51
+  51    1.431496e-06   4.168371e-04   1.069006e-03   57        52        1         0         
+# fwd 109, ||Misfit|| 1.4104208460094075e-06
+# fwd 110, ||Misfit|| 1.4104208460094075e-06
+# Der 52, ||Misfit|| 2.820841692018836e-06, ||Misfit IC|| 0.0008011826872247502, ||Grad|| 6.907370859489166e-15
+Derivative calculation 52
+  52    1.410421e-06   8.351437e-04   1.502916e-03   58        53        1         0         
+# fwd 111, ||Misfit|| 1.3837313737396162e-06
+# fwd 112, ||Misfit|| 1.3837313737396162e-06
+# Der 53, ||Misfit|| 2.767462747479274e-06, ||Misfit IC|| 0.0008047832430113867, ||Grad|| 9.512104290021072e-16
+Derivative calculation 53
+  53    1.383731e-06   3.130066e-04   6.329178e-04   59        54        1         0         
+# fwd 113, ||Misfit|| 1.3618982425069666e-06
+# fwd 114, ||Misfit|| 1.3618982425069666e-06
+# Der 54, ||Misfit|| 2.7237964850139328e-06, ||Misfit IC|| 0.000796843882108627, ||Grad|| 6.966226466749888e-16
+Derivative calculation 54
+  54    1.361898e-06   2.678105e-04   3.566815e-04   60        55        1         0         
+# fwd 115, ||Misfit|| 1.3173567903605701e-06
+# fwd 116, ||Misfit|| 1.3173567903605701e-06
+# Der 55, ||Misfit|| 2.6347135807211262e-06, ||Misfit IC|| 0.0007941187244087076, ||Grad|| 1.5670518007714736e-15
+Derivative calculation 55
+  55    1.317357e-06   3.983409e-04   3.532485e-04   61        56        1         0         
+# fwd 117, ||Misfit|| 1.2595202448220717e-06
+# fwd 118, ||Misfit|| 1.2595202448220717e-06
+# Der 56, ||Misfit|| 2.519040489644142e-06, ||Misfit IC|| 0.0007923323913947423, ||Grad|| 2.070950000713693e-15
+Derivative calculation 56
+  56    1.259520e-06   4.576634e-04   9.344410e-04   62        57        1         0         
+# fwd 119, ||Misfit|| 1.2373752491902835e-06
+# fwd 120, ||Misfit|| 1.2373752491902835e-06
+# Der 57, ||Misfit|| 2.474750498380583e-06, ||Misfit IC|| 0.0008093306044014766, ||Grad|| 3.1327246987158328e-15
+Derivative calculation 57
+  57    1.237375e-06   5.629375e-04   1.273297e-03   63        58        1         0         
+# fwd 121, ||Misfit|| 1.2068737181631784e-06
+# fwd 122, ||Misfit|| 1.2068737181631784e-06
+# Der 58, ||Misfit|| 2.413747436326342e-06, ||Misfit IC|| 0.0008120507627438209, ||Grad|| 9.417159691064269e-16
+Derivative calculation 58
+  58    1.206874e-06   3.097469e-04   3.850810e-04   64        59        1         0         
+# fwd 123, ||Misfit|| 1.1638132299854487e-06
+# fwd 124, ||Misfit|| 1.1638132299854487e-06
+# Der 59, ||Misfit|| 2.3276264599708746e-06, ||Misfit IC|| 0.0008203847099038431, ||Grad|| 1.167319568899549e-15
+Derivative calculation 59
+  59    1.163813e-06   3.443153e-04   9.935247e-04   65        60        1         0         
+# fwd 125, ||Misfit|| 1.1525406968131715e-06
+# fwd 126, ||Misfit|| 1.1525406968131715e-06
+# Der 60, ||Misfit|| 2.3050813936263545e-06, ||Misfit IC|| 0.000839893954283254, ||Grad|| 5.1246281776219734e-15
+Derivative calculation 60
+  60    1.152541e-06   7.193619e-04   1.389188e-03   66        61        1         0         
+# fwd 127, ||Misfit|| 1.130980485104473e-06
+# fwd 128, ||Misfit|| 1.130980485104473e-06
+# Der 61, ||Misfit|| 2.261960970208957e-06, ||Misfit IC|| 0.0008384844719070851, ||Grad|| 1.2345631832150542e-15
+Derivative calculation 61
+  61    1.130980e-06   3.545036e-04   1.066660e-04   67        62        1         0         
+# fwd 129, ||Misfit|| 1.118399353728028e-06
+# fwd 130, ||Misfit|| 1.118399353728028e-06
+# Der 62, ||Misfit|| 2.236798707456049e-06, ||Misfit IC|| 0.0008434717360551745, ||Grad|| 8.434474104403776e-16
+Derivative calculation 62
+  62    1.118399e-06   2.943958e-04   3.925642e-04   68        63        1         0         
+# fwd 131, ||Misfit|| 1.1061433508872353e-06
+# fwd 132, ||Misfit|| 1.1061433508872353e-06
+# Der 63, ||Misfit|| 2.212286701774483e-06, ||Misfit IC|| 0.0008488410642567783, ||Grad|| 7.254965649961089e-16
+Derivative calculation 63
+  63    1.106143e-06   2.738112e-04   3.981033e-04   69        64        1         0         
+# fwd 133, ||Misfit|| 1.0845712141274413e-06
+# fwd 134, ||Misfit|| 1.0845712141274413e-06
+# Der 64, ||Misfit|| 2.1691424282548975e-06, ||Misfit IC|| 0.0008556015187458728, ||Grad|| 1.3503371748049154e-15
+Derivative calculation 64
+  64    1.084571e-06   3.713101e-04   5.564042e-04   70        65        1         0         
+# fwd 135, ||Misfit|| 1.0474584360383743e-06
+# fwd 136, ||Misfit|| 1.0474584360383743e-06
+# Der 65, ||Misfit|| 2.0949168720767525e-06, ||Misfit IC|| 0.0008706350540396967, ||Grad|| 1.8438745211925834e-15
+Derivative calculation 65
+  65    1.047458e-06   4.328680e-04   1.121985e-03   71        66        1         0         
+# fwd 137, ||Misfit|| 1.015740129711916e-06
+# fwd 138, ||Misfit|| 1.015740129711916e-06
+# Der 66, ||Misfit|| 2.0314802594238176e-06, ||Misfit IC|| 0.0008763827787452323, ||Grad|| 9.550572645364611e-15
+Derivative calculation 66
+  66    1.015740e-06   9.812992e-04   8.905602e-04   72        67        1         0         
+# fwd 139, ||Misfit|| 9.699585809496886e-07
+# fwd 140, ||Misfit|| 9.699585809496886e-07
+# Der 67, ||Misfit|| 1.9399171618993823e-06, ||Misfit IC|| 0.000888423184149698, ||Grad|| 2.541830999966924e-15
+Derivative calculation 67
+  67    9.699586e-07   5.069330e-04   7.670946e-04   73        68        1         0         
+# fwd 141, ||Misfit|| 9.476493765996283e-07
+# fwd 142, ||Misfit|| 9.476493765996283e-07
+# Der 68, ||Misfit|| 1.8952987531992636e-06, ||Misfit IC|| 0.0008939075383244166, ||Grad|| 4.437604278558588e-16
+Derivative calculation 68
+  68    9.476494e-07   2.132914e-04   3.348014e-04   74        69        1         0         
+# fwd 143, ||Misfit|| 9.364336816924229e-07
+# fwd 144, ||Misfit|| 9.364336816924229e-07
+# Der 69, ||Misfit|| 1.8728673633848414e-06, ||Misfit IC|| 0.0008940294923445325, ||Grad|| 8.230373773165034e-16
+Derivative calculation 69
+  69    9.364337e-07   2.895432e-04   1.602529e-04   75        70        1         0         
+# fwd 145, ||Misfit|| 9.174443896260866e-07
+# fwd 146, ||Misfit|| 9.174443896260866e-07
+# Der 70, ||Misfit|| 1.834888779252176e-06, ||Misfit IC|| 0.0008999469021554462, ||Grad|| 1.1316674302688207e-15
+Derivative calculation 70
+  70    9.174444e-07   3.387975e-04   4.307351e-04   76        71        1         0         
+# fwd 147, ||Misfit|| 8.810046037117443e-07
+# fwd 148, ||Misfit|| 8.810046037117443e-07
+# Der 71, ||Misfit|| 1.7620092074234844e-06, ||Misfit IC|| 0.0009219565355479331, ||Grad|| 7.382254093533307e-16
+Derivative calculation 71
+  71    8.810046e-07   2.741836e-04   1.387836e-03   77        72        1         0         
+# fwd 149, ||Misfit|| 8.628499108385316e-07
+# fwd 150, ||Misfit|| 8.628499108385316e-07
+# Der 72, ||Misfit|| 1.725699821677065e-06, ||Misfit IC|| 0.0009401101426392828, ||Grad|| 6.41111403208284e-15
+Derivative calculation 72
+  72    8.628499e-07   8.042909e-04   1.154065e-03   78        73        1         0         
+# fwd 151, ||Misfit|| 8.383334489060517e-07
+# fwd 152, ||Misfit|| 8.383334489060517e-07
+# Der 73, ||Misfit|| 1.6766668978121088e-06, ||Misfit IC|| 0.000942084279675324, ||Grad|| 5.013369440949683e-16
+Derivative calculation 73
+  73    8.383334e-07   2.253056e-04   2.444765e-04   79        74        1         0         
+# fwd 153, ||Misfit|| 8.322070950695886e-07
+# fwd 154, ||Misfit|| 8.322070950695886e-07
+# Der 74, ||Misfit|| 1.6644141901391935e-06, ||Misfit IC|| 0.0009428855638866798, ||Grad|| 1.6232046583732249e-16
+Derivative calculation 74
+  74    8.322071e-07   1.295343e-04   1.978628e-04   80        75        1         0         
+# fwd 155, ||Misfit|| 8.292765809930274e-07
+# fwd 156, ||Misfit|| 8.292765809930274e-07
+# Der 75, ||Misfit|| 1.6585531619860526e-06, ||Misfit IC|| 0.0009426948911588258, ||Grad|| 1.8307816342267942e-16
+Derivative calculation 75
+  75    8.292766e-07   1.375884e-04   6.779619e-05   81        76        1         0         
+# fwd 157, ||Misfit|| 8.138194840202118e-07
+# fwd 158, ||Misfit|| 8.138194840202118e-07
+# Der 76, ||Misfit|| 1.6276389680404198e-06, ||Misfit IC|| 0.0009436929397264856, ||Grad|| 6.327224184614217e-16
+Derivative calculation 76
+  76    8.138195e-07   2.542093e-04   5.485925e-04   82        77        1         0         
+# fwd 159, ||Misfit|| 8.096360242201103e-07
+# fwd 160, ||Misfit|| 8.096360242201103e-07
+# Der 77, ||Misfit|| 1.6192720484402125e-06, ||Misfit IC|| 0.000939680098781445, ||Grad|| 2.804129405038121e-15
+Derivative calculation 77
+  77    8.096360e-07   5.313974e-04   4.969437e-04   83        78        1         0         
+# fwd 161, ||Misfit|| 7.932377709565565e-07
+# fwd 162, ||Misfit|| 7.932377709565565e-07
+# Der 78, ||Misfit|| 1.5864755419131099e-06, ||Misfit IC|| 0.000940612364899123, ||Grad|| 5.15914068490873e-16
+Derivative calculation 78
+  78    7.932378e-07   2.289934e-04   6.562189e-05   84        79        1         0         
+# fwd 163, ||Misfit|| 7.835540919215163e-07
+# fwd 164, ||Misfit|| 7.835540919215163e-07
+# Der 79, ||Misfit|| 1.56710818384304e-06, ||Misfit IC|| 0.0009402911104454586, ||Grad|| 2.223916846742369e-16
+Derivative calculation 79
+  79    7.835541e-07   1.513598e-04   1.270519e-04   85        80        1         0         
+# fwd 165, ||Misfit|| 7.740241451814843e-07
+# fwd 166, ||Misfit|| 7.740241451814843e-07
+# Der 80, ||Misfit|| 1.5480482903629556e-06, ||Misfit IC|| 0.0009383532476848013, ||Grad|| 5.985803162015049e-16
+Derivative calculation 80
+  80    7.740241e-07   2.469291e-04   2.789593e-04   86        81        1         0         
+# fwd 167, ||Misfit|| 7.81359211235322e-07
+# fwd 168, ||Misfit|| 7.695444717248662e-07
+# fwd 169, ||Misfit|| 7.695444717248662e-07
+# Der 81, ||Misfit|| 1.5390889434497421e-06, ||Misfit IC|| 0.0009379406978191732, ||Grad|| 7.568404729834849e-16
+Derivative calculation 81
+  81    7.695445e-07   2.770323e-04   2.521546e-04   88        82        2         0         
+# fwd 170, ||Misfit|| 7.645166920116989e-07
+# fwd 171, ||Misfit|| 7.645166920116989e-07
+# Der 82, ||Misfit|| 1.5290333840233886e-06, ||Misfit IC|| 0.0009369330667444959, ||Grad|| 3.4366951835650934e-16
+Derivative calculation 82
+  82    7.645167e-07   1.875099e-04   1.808604e-04   89        83        1         0         
+# fwd 172, ||Misfit|| 7.567277247006344e-07
+# fwd 173, ||Misfit|| 7.567277247006344e-07
+# Der 83, ||Misfit|| 1.5134554494012794e-06, ||Misfit IC|| 0.0009358135481267916, ||Grad|| 1.49817817647981e-16
+Derivative calculation 83
+  83    7.567277e-07   1.250453e-04   3.116209e-04   90        84        1         0         
+# fwd 174, ||Misfit|| 7.492603113461722e-07
+# fwd 175, ||Misfit|| 7.492603113461722e-07
+# Der 84, ||Misfit|| 1.4985206226923503e-06, ||Misfit IC|| 0.0009350297776043907, ||Grad|| 2.2167898990643202e-16
+Derivative calculation 84
+  84    7.492603e-07   1.514049e-04   3.649143e-04   91        85        1         0         
+# fwd 176, ||Misfit|| 7.364766046212355e-07
+# fwd 177, ||Misfit|| 7.364766046212355e-07
+# Der 85, ||Misfit|| 1.4729532092424745e-06, ||Misfit IC|| 0.0009337067140943292, ||Grad|| 3.524884427628368e-16
+Derivative calculation 85
+  85    7.364766e-07   1.900124e-04   5.219508e-04   92        86        1         0         
+# fwd 178, ||Misfit|| 7.290036849726098e-07
+# fwd 179, ||Misfit|| 7.290036849726098e-07
+# Der 86, ||Misfit|| 1.4580073699452267e-06, ||Misfit IC|| 0.000931328766284281, ||Grad|| 2.0152774631098872e-15
+Derivative calculation 86
+  86    7.290037e-07   4.511416e-04   1.579257e-03   93        87        1         0         
+# fwd 180, ||Misfit|| 7.058486994716806e-07
+# fwd 181, ||Misfit|| 7.058486994716806e-07
+# Der 87, ||Misfit|| 1.4116973989433563e-06, ||Misfit IC|| 0.0009313252882943117, ||Grad|| 2.885666459733354e-16
+Derivative calculation 87
+  87    7.058487e-07   1.721377e-04   2.031435e-04   94        88        1         0         
+# fwd 182, ||Misfit|| 6.978629392689587e-07
+# fwd 183, ||Misfit|| 6.978629392689587e-07
+# Der 88, ||Misfit|| 1.3957258785379082e-06, ||Misfit IC|| 0.000930096120718217, ||Grad|| 8.571642375272599e-16
+Derivative calculation 88
+  88    6.978629e-07   2.946408e-04   4.113496e-04   95        89        1         0         
+# fwd 184, ||Misfit|| 6.884077993628242e-07
+# fwd 185, ||Misfit|| 6.884077993628242e-07
+# Der 89, ||Misfit|| 1.3768155987256368e-06, ||Misfit IC|| 0.000929424621038597, ||Grad|| 2.0293563396621627e-16
+Derivative calculation 89
+  89    6.884078e-07   1.442392e-04   2.477341e-04   96        90        1         0         
+# fwd 186, ||Misfit|| 6.816518049430323e-07
+# fwd 187, ||Misfit|| 6.816518049430323e-07
+# Der 90, ||Misfit|| 1.3633036098860708e-06, ||Misfit IC|| 0.0009285950107470816, ||Grad|| 4.2291389650177747e-16
+Derivative calculation 90
+  90    6.816518e-07   2.075870e-04   3.627329e-04   97        91        1         0         
+# fwd 188, ||Misfit|| 6.728562304429536e-07
+# fwd 189, ||Misfit|| 6.728562304429536e-07
+# Der 91, ||Misfit|| 1.3457124608859026e-06, ||Misfit IC|| 0.0009279660271808162, ||Grad|| 3.4311312636261946e-16
+Derivative calculation 91
+  91    6.728562e-07   1.871963e-04   5.314773e-04   98        92        1         0         
+# fwd 190, ||Misfit|| 6.54591068288708e-07
+# fwd 191, ||Misfit|| 6.54591068288708e-07
+# Der 92, ||Misfit|| 1.3091821365774244e-06, ||Misfit IC|| 0.0009242646189039712, ||Grad|| 4.237149143081375e-16
+Derivative calculation 92
+  92    6.545911e-07   2.076694e-04   4.854047e-04   99        93        1         0         
+# fwd 192, ||Misfit|| 6.577090160703365e-07
+# fwd 193, ||Misfit|| 6.3942441357788e-07
+# fwd 194, ||Misfit|| 6.3942441357788e-07
+# Der 93, ||Misfit|| 1.278848827155765e-06, ||Misfit IC|| 0.0009238416402661887, ||Grad|| 1.0866786202534764e-15
+Derivative calculation 93
+  93    6.394244e-07   3.308011e-04   1.077219e-03   101       94        2         0         
+# fwd 195, ||Misfit|| 6.21303043418307e-07
+# fwd 196, ||Misfit|| 6.21303043418307e-07
+# Der 94, ||Misfit|| 1.242606086836614e-06, ||Misfit IC|| 0.0009227780184469101, ||Grad|| 3.389534231201587e-16
+Derivative calculation 94
+  94    6.213030e-07   1.862253e-04   5.374158e-04   102       95        1         0         
+# fwd 197, ||Misfit|| 6.068932781502499e-07
+# fwd 198, ||Misfit|| 6.068932781502499e-07
+# Der 95, ||Misfit|| 1.2137865563004992e-06, ||Misfit IC|| 0.0009200700348363814, ||Grad|| 7.94661799992941e-16
+Derivative calculation 95
+  95    6.068933e-07   2.838519e-04   3.735882e-04   103       96        1         0         
+# fwd 199, ||Misfit|| 6.046162790000102e-07
+# fwd 200, ||Misfit|| 6.046162790000102e-07
+# Der 96, ||Misfit|| 1.2092325580000258e-06, ||Misfit IC|| 0.0009208446918141979, ||Grad|| 3.67818429477229e-15
+Derivative calculation 96
+  96    6.046163e-07   6.100371e-04   1.270324e-03   104       97        1         0         
+# fwd 201, ||Misfit|| 5.889222179808359e-07
+# fwd 202, ||Misfit|| 5.889222179808359e-07
+# Der 97, ||Misfit|| 1.1778444359616692e-06, ||Misfit IC|| 0.0009189470793047263, ||Grad|| 3.949004693353307e-16
+Derivative calculation 97
+  97    5.889222e-07   2.013558e-04   6.262158e-04   105       98        1         0         
+# fwd 203, ||Misfit|| 5.832368941825786e-07
+# fwd 204, ||Misfit|| 5.832368941825786e-07
+# Der 98, ||Misfit|| 1.1664737883651463e-06, ||Misfit IC|| 0.000918633256933255, ||Grad|| 2.203462529056729e-16
+Derivative calculation 98
+  98    5.832369e-07   1.511870e-04   6.549054e-05   106       99        1         0         
+# fwd 205, ||Misfit|| 5.675997058859941e-07
+# fwd 206, ||Misfit|| 5.675997058859941e-07
+# Der 99, ||Misfit|| 1.1351994117719814e-06, ||Misfit IC|| 0.0009186250463808023, ||Grad|| 7.029357663079015e-16
+Derivative calculation 99
+  99    5.675997e-07   2.672258e-04   5.816944e-04   107       100       1         0         
+# fwd 207, ||Misfit|| 5.51244499361683e-07
+# fwd 208, ||Misfit|| 5.51244499361683e-07
+# Der 100, ||Misfit|| 1.1024889987233748e-06, ||Misfit IC|| 0.0009198947159990462, ||Grad|| 5.701303586684751e-16
+Derivative calculation 100
+  100   5.512445e-07   2.409114e-04   8.496759e-04   108       101       1         0         
+# fwd 209, ||Misfit|| 5.853730341017149e-07
+# fwd 210, ||Misfit|| 5.417678520335335e-07
+# fwd 211, ||Misfit|| 5.417678520335335e-07
+# Der 101, ||Misfit|| 1.0835357040670668e-06, ||Misfit IC|| 0.0009240676485327231, ||Grad|| 4.1241985335882392e-16
+Derivative calculation 101
+  101   5.417679e-07   2.055053e-04   1.129002e-03   110       102       2         0         
+# fwd 212, ||Misfit|| 5.256543975427633e-07
+# fwd 213, ||Misfit|| 5.256543975427633e-07
+# Der 102, ||Misfit|| 1.0513087950855135e-06, ||Misfit IC|| 0.0009284205389676749, ||Grad|| 6.9195053903271585e-16
+Derivative calculation 102
+  102   5.256544e-07   2.647926e-04   1.237726e-03   111       103       1         0         
+# fwd 214, ||Misfit|| 5.14605982294005e-07
+# fwd 215, ||Misfit|| 5.14605982294005e-07
+# Der 103, ||Misfit|| 1.0292119645880016e-06, ||Misfit IC|| 0.000926210582261774, ||Grad|| 4.688229010776184e-16
+Derivative calculation 103
+  103   5.146060e-07   2.179444e-04   1.343699e-04   112       104       1         0         
+# fwd 216, ||Misfit|| 4.882309654654533e-07
+# fwd 217, ||Misfit|| 4.882309654654533e-07
+# Der 104, ||Misfit|| 9.764619309309039e-07, ||Misfit IC|| 0.0009241573656909271, ||Grad|| 7.341218616943646e-16
+Derivative calculation 104
+  104   4.882310e-07   2.729796e-04   1.017192e-03   113       105       1         0         
+# fwd 218, ||Misfit|| 4.878510570749799e-07
+# fwd 219, ||Misfit|| 4.878510570749799e-07
+# Der 105, ||Misfit|| 9.757021141499645e-07, ||Misfit IC|| 0.0009473169598293221, ||Grad|| 1.2588162203454387e-15
+Derivative calculation 105
+  105   4.878511e-07   3.584650e-04   2.499982e-03   114       106       1         0         
+# fwd 220, ||Misfit|| 4.741274795982513e-07
+# fwd 221, ||Misfit|| 4.741274795982513e-07
+# Der 106, ||Misfit|| 9.48254959196503e-07, ||Misfit IC|| 0.0009343988024278142, ||Grad|| 8.431945949800212e-16
+Derivative calculation 106
+  106   4.741275e-07   2.934931e-04   1.085240e-03   115       107       1         0         
+# fwd 222, ||Misfit|| 4.611563401511595e-07
+# fwd 223, ||Misfit|| 4.611563401511595e-07
+# Der 107, ||Misfit|| 9.223126803023188e-07, ||Misfit IC|| 0.0009392630285594225, ||Grad|| 5.730752121935528e-15
+Derivative calculation 107
+  107   4.611563e-07   7.602350e-04   8.064304e-04   116       108       1         0         
+# fwd 224, ||Misfit|| 4.450240422991549e-07
+# fwd 225, ||Misfit|| 4.450240422991549e-07
+# Der 108, ||Misfit|| 8.900480845983106e-07, ||Misfit IC|| 0.0009321142199500655, ||Grad|| 6.876763102040306e-16
+Derivative calculation 108
+  108   4.450240e-07   2.637353e-04   6.281699e-04   117       109       1         0         
+# fwd 226, ||Misfit|| 4.3651334966929627e-07
+# fwd 227, ||Misfit|| 4.3651334966929627e-07
+# Der 109, ||Misfit|| 8.730266993385947e-07, ||Misfit IC|| 0.0009362863333171593, ||Grad|| 6.38724417315389e-17
+Derivative calculation 109
+  109   4.365133e-07   8.262891e-05   6.261863e-04   118       110       1         0         
+# fwd 228, ||Misfit|| 4.2865306791437596e-07
+# fwd 229, ||Misfit|| 4.2865306791437596e-07
+# Der 110, ||Misfit|| 8.573061358287522e-07, ||Misfit IC|| 0.0009415466165219673, ||Grad|| 1.0443794799527597e-16
+Derivative calculation 110
+  110   4.286531e-07   1.048951e-04   7.994147e-04   119       111       1         0         
+# fwd 230, ||Misfit|| 4.1344576036796875e-07
+# fwd 231, ||Misfit|| 4.1344576036796875e-07
+# Der 111, ||Misfit|| 8.26891520735938e-07, ||Misfit IC|| 0.0009525847812777317, ||Grad|| 9.540302999644204e-16
+Derivative calculation 111
+  111   4.134458e-07   3.106431e-04   1.688372e-03   120       112       1         0         
+# fwd 232, ||Misfit|| 4.0408964520254093e-07
+# fwd 233, ||Misfit|| 4.0408964520254093e-07
+# Der 112, ||Misfit|| 8.081792904050755e-07, ||Misfit IC|| 0.0009542894909211761, ||Grad|| 7.641744666002482e-16
+Derivative calculation 112
+  112   4.040896e-07   2.788664e-04   6.756651e-04   121       113       1         0         
+# fwd 234, ||Misfit|| 3.974949049675233e-07
+# fwd 235, ||Misfit|| 3.974949049675233e-07
+# Der 113, ||Misfit|| 7.949898099350521e-07, ||Misfit IC|| 0.0009461577045319119, ||Grad|| 3.701754205533334e-16
+Derivative calculation 113
+  113   3.974949e-07   1.946495e-04   6.464860e-04   122       114       1         0         
+# fwd 236, ||Misfit|| 3.9274640091675454e-07
+# fwd 237, ||Misfit|| 3.9274640091675454e-07
+# Der 114, ||Misfit|| 7.854928018335092e-07, ||Misfit IC|| 0.0009436693670938011, ||Grad|| 1.0902232031664932e-16
+Derivative calculation 114
+  114   3.927464e-07   1.066150e-04   1.214585e-04   123       115       1         0         
+# fwd 238, ||Misfit|| 3.859943989441384e-07
+# fwd 239, ||Misfit|| 3.859943989441384e-07
+# Der 115, ||Misfit|| 7.719887978882758e-07, ||Misfit IC|| 0.0009382797515051784, ||Grad|| 1.9500425328539836e-16
+Derivative calculation 115
+  115   3.859944e-07   1.412893e-04   2.373993e-04   124       116       1         0         
+# fwd 240, ||Misfit|| 3.7274492947351844e-07
+# fwd 241, ||Misfit|| 3.7274492947351844e-07
+# Der 116, ||Misfit|| 7.454898589470349e-07, ||Misfit IC|| 0.0009319267818261302, ||Grad|| 2.0389983188974036e-16
+Derivative calculation 116
+  116   3.727449e-07   1.442722e-04   4.680900e-04   125       117       1         0         
+# fwd 242, ||Misfit|| 3.689933901394069e-07
+# fwd 243, ||Misfit|| 3.689933901394069e-07
+# Der 117, ||Misfit|| 7.379867802788159e-07, ||Misfit IC|| 0.0009231578248182668, ||Grad|| 3.9775381587329765e-15
+Derivative calculation 117
+  117   3.689934e-07   6.341424e-04   1.121002e-03   126       118       1         0         
+# fwd 244, ||Misfit|| 3.4598676359783914e-07
+# fwd 245, ||Misfit|| 3.4598676359783914e-07
+# Der 118, ||Misfit|| 6.919735271956817e-07, ||Misfit IC|| 0.0009298930161323011, ||Grad|| 2.4808185131495194e-16
+Derivative calculation 118
+  118   3.459868e-07   1.596708e-04   7.081216e-04   127       119       1         0         
+# fwd 246, ||Misfit|| 3.422501462547225e-07
+# fwd 247, ||Misfit|| 3.422501462547225e-07
+# Der 119, ||Misfit|| 6.845002925094441e-07, ||Misfit IC|| 0.0009337864232767761, ||Grad|| 1.4181274952298264e-16
+Derivative calculation 119
+  119   3.422501e-07   1.207222e-04   1.837057e-04   128       120       1         0         
+# fwd 248, ||Misfit|| 3.3562791946248943e-07
+# fwd 249, ||Misfit|| 3.3562791946248943e-07
+# Der 120, ||Misfit|| 6.712558389249748e-07, ||Misfit IC|| 0.0009392843224912213, ||Grad|| 5.158059910802876e-16
+Derivative calculation 120
+  120   3.356279e-07   2.286660e-04   6.261583e-04   129       121       1         0         
+# fwd 250, ||Misfit|| 3.2615202307519924e-07
+# fwd 251, ||Misfit|| 3.2615202307519924e-07
+# Der 121, ||Misfit|| 6.523040461503988e-07, ||Misfit IC|| 0.0009394493232225842, ||Grad|| 1.879321715624461e-16
+Derivative calculation 121
+  121   3.261520e-07   1.384707e-04   4.890598e-04   130       122       1         0         
+# fwd 252, ||Misfit|| 3.187927630668441e-07
+# fwd 253, ||Misfit|| 3.187927630668441e-07
+# Der 122, ||Misfit|| 6.375855261336881e-07, ||Misfit IC|| 0.0009362478184244288, ||Grad|| 2.9732486302667715e-16
+Derivative calculation 122
+  122   3.187928e-07   1.739199e-04   5.166744e-04   131       123       1         0         
+# fwd 254, ||Misfit|| 3.022476149617164e-07
+# fwd 255, ||Misfit|| 3.022476149617164e-07
+# Der 123, ||Misfit|| 6.044952299234344e-07, ||Misfit IC|| 0.0009269985476097587, ||Grad|| 3.8291120459463463e-16
+Derivative calculation 123
+  123   3.022476e-07   1.972724e-04   8.268814e-04   132       124       1         0         
+# fwd 256, ||Misfit|| 3.1374460902157863e-07
+# fwd 257, ||Misfit|| 2.9722700185475894e-07
+# fwd 258, ||Misfit|| 2.9722700185475894e-07
+# Der 124, ||Misfit|| 5.944540037095159e-07, ||Misfit IC|| 0.000924171372754942, ||Grad|| 4.8398178603037935e-16
+Derivative calculation 124
+  124   2.972270e-07   2.217896e-04   1.730443e-04   134       125       2         0         
+# fwd 259, ||Misfit|| 2.934119268648043e-07
+# fwd 260, ||Misfit|| 2.934119268648043e-07
+# Der 125, ||Misfit|| 5.868238537296117e-07, ||Misfit IC|| 0.0009220548460489034, ||Grad|| 1.2606193945812397e-16
+Derivative calculation 125
+  125   2.934119e-07   1.139280e-04   1.077992e-04   135       126       1         0         
+# fwd 261, ||Misfit|| 2.9086394276079097e-07
+# fwd 262, ||Misfit|| 2.9086394276079097e-07
+# Der 126, ||Misfit|| 5.817278855215848e-07, ||Misfit IC|| 0.0009199245492786764, ||Grad|| 1.7716893667694897e-16
+Derivative calculation 126
+  126   2.908639e-07   1.344744e-04   1.268064e-04   136       127       1         0         
+# fwd 263, ||Misfit|| 2.859989997608754e-07
+# fwd 264, ||Misfit|| 2.859989997608754e-07
+# Der 127, ||Misfit|| 5.719979995217563e-07, ||Misfit IC|| 0.000914894874583194, ||Grad|| 1.2253234053176472e-16
+Derivative calculation 127
+  127   2.859990e-07   1.121307e-04   2.123697e-04   137       128       1         0         
+# fwd 265, ||Misfit|| 2.7967212156583403e-07
+# fwd 266, ||Misfit|| 2.7967212156583403e-07
+# Der 128, ||Misfit|| 5.593442431316694e-07, ||Misfit IC|| 0.0009080173341078175, ||Grad|| 3.9655902052013633e-16
+Derivative calculation 128
+  128   2.796721e-07   2.002931e-04   2.958074e-04   138       129       1         0         
+# fwd 267, ||Misfit|| 2.7077226031952637e-07
+# fwd 268, ||Misfit|| 2.7077226031952637e-07
+# Der 129, ||Misfit|| 5.415445206390553e-07, ||Misfit IC|| 0.0008996415345619124, ||Grad|| 8.607784695982018e-17
+Derivative calculation 129
+  129   2.707723e-07   9.379751e-05   3.930662e-04   139       130       1         0         
+# fwd 269, ||Misfit|| 2.634863985062635e-07
+# fwd 270, ||Misfit|| 2.634863985062635e-07
+# Der 130, ||Misfit|| 5.269727970125259e-07, ||Misfit IC|| 0.0008932684848646536, ||Grad|| 1.4641733632985938e-16
+Derivative calculation 130
+  130   2.634864e-07   1.218805e-04   4.538065e-04   140       131       1         0         
+# fwd 271, ||Misfit|| 2.620084933106876e-07
+# fwd 272, ||Misfit|| 2.620084933106876e-07
+# Der 131, ||Misfit|| 5.240169866213791e-07, ||Misfit IC|| 0.0008873795522681396, ||Grad|| 7.228346718792904e-16
+Derivative calculation 131
+  131   2.620085e-07   2.701153e-04   6.352469e-04   141       132       1         0         
+# fwd 273, ||Misfit|| 2.5849368982968266e-07
+# fwd 274, ||Misfit|| 2.5849368982968266e-07
+# Der 132, ||Misfit|| 5.169873796593678e-07, ||Misfit IC|| 0.0008895906956916687, ||Grad|| 5.714022907347554e-17
+Derivative calculation 132
+  132   2.584937e-07   7.652313e-05   1.044127e-04   142       133       1         0         
+# fwd 275, ||Misfit|| 2.575823216635533e-07
+# fwd 276, ||Misfit|| 2.575823216635533e-07
+# Der 133, ||Misfit|| 5.151646433271054e-07, ||Misfit IC|| 0.0008901568777479281, ||Grad|| 3.799492002851705e-17
+Derivative calculation 133
+  133   2.575823e-07   6.259288e-05   5.791078e-05   143       134       1         0         
+# fwd 277, ||Misfit|| 2.5452869375872993e-07
+# fwd 278, ||Misfit|| 2.5452869375872993e-07
+# Der 134, ||Misfit|| 5.090573875174603e-07, ||Misfit IC|| 0.000889959069337859, ||Grad|| 5.4711298147796336e-17
+Derivative calculation 134
+  134   2.545287e-07   7.489678e-05   3.219097e-04   144       135       1         0         
+# fwd 279, ||Misfit|| 2.513470026041434e-07
+# fwd 280, ||Misfit|| 2.513470026041434e-07
+# Der 135, ||Misfit|| 5.026940052082837e-07, ||Misfit IC|| 0.0008877090219555233, ||Grad|| 1.711132510700854e-16
+Derivative calculation 135
+  135   2.513470e-07   1.320546e-04   5.404071e-04   145       136       1         0         
+# fwd 281, ||Misfit|| 2.4846662640171717e-07
+# fwd 282, ||Misfit|| 2.4846662640171717e-07
+# Der 136, ||Misfit|| 4.969332528034325e-07, ||Misfit IC|| 0.0008850160722491866, ||Grad|| 2.365986193582484e-16
+Derivative calculation 136
+  136   2.484666e-07   1.552192e-04   7.278348e-04   146       137       1         0         
+# fwd 283, ||Misfit|| 2.4554292269685186e-07
+# fwd 284, ||Misfit|| 2.4554292269685186e-07
+# Der 137, ||Misfit|| 4.910858453937021e-07, ||Misfit IC|| 0.0008834441864051999, ||Grad|| 7.735431535350138e-17
+Derivative calculation 137
+  137   2.455429e-07   8.936509e-05   7.886481e-05   147       138       1         0         
+# fwd 285, ||Misfit|| 2.4154807205704035e-07
+# fwd 286, ||Misfit|| 2.4154807205704035e-07
+# Der 138, ||Misfit|| 4.83096144114085e-07, ||Misfit IC|| 0.0008795296522059816, ||Grad|| 1.0168312995483613e-16
+Derivative calculation 138
+  138   2.415481e-07   1.018862e-04   3.230085e-04   148       139       1         0         
+# fwd 287, ||Misfit|| 2.3767444427082847e-07
+# fwd 288, ||Misfit|| 2.3767444427082847e-07
+# Der 139, ||Misfit|| 4.753488885416547e-07, ||Misfit IC|| 0.0008761398156925562, ||Grad|| 9.361486495524428e-17
+Derivative calculation 139
+  139   2.376744e-07   9.779165e-05   4.537586e-04   149       140       1         0         
+# fwd 289, ||Misfit|| 2.3736171526056843e-07
+# fwd 290, ||Misfit|| 2.3736171526056843e-07
+# Der 140, ||Misfit|| 4.7472343052113486e-07, ||Misfit IC|| 0.0008689762082062678, ||Grad|| 1.379800188185158e-15
+Derivative calculation 140
+  140   2.373617e-07   3.732013e-04   1.221224e-03   150       141       1         0         
+# fwd 291, ||Misfit|| 2.301553356636104e-07
+# fwd 292, ||Misfit|| 2.301553356636104e-07
+# Der 141, ||Misfit|| 4.6031067132722357e-07, ||Misfit IC|| 0.0008704186282885078, ||Grad|| 6.866523267250333e-17
+Derivative calculation 141
+  141   2.301553e-07   8.386914e-05   9.053467e-05   151       142       1         0         
+# fwd 293, ||Misfit|| 2.2853051826178627e-07
+# fwd 294, ||Misfit|| 2.2853051826178627e-07
+# Der 142, ||Misfit|| 4.570610365235727e-07, ||Misfit IC|| 0.0008702743691809704, ||Grad|| 4.6137475473185754e-17
+Derivative calculation 142
+  142   2.285305e-07   6.898234e-05   1.797317e-04   152       143       1         0         
+# fwd 295, ||Misfit|| 2.2502990710712566e-07
+# fwd 296, ||Misfit|| 2.2502990710712566e-07
+# Der 143, ||Misfit|| 4.500598142142522e-07, ||Misfit IC|| 0.0008696020358293987, ||Grad|| 5.132049964921896e-17
+Derivative calculation 143
+  143   2.250299e-07   7.291244e-05   4.588865e-04   153       144       1         0         
+# fwd 297, ||Misfit|| 2.2914020066782167e-07
+# fwd 298, ||Misfit|| 2.2349439667265587e-07
+# fwd 299, ||Misfit|| 2.2349439667265587e-07
+# Der 144, ||Misfit|| 4.469887933453106e-07, ||Misfit IC|| 0.000868131955929425, ||Grad|| 2.8660219603285767e-16
+Derivative calculation 144
+  144   2.234944e-07   1.704691e-04   4.373689e-04   155       145       2         0         
+# fwd 300, ||Misfit|| 2.2072359288719744e-07
+# fwd 301, ||Misfit|| 2.2072359288719744e-07
+# Der 145, ||Misfit|| 4.414471857743974e-07, ||Misfit IC|| 0.0008675368376107037, ||Grad|| 9.830157893558304e-17
+Derivative calculation 145
+  145   2.207236e-07   1.005097e-04   4.265481e-04   156       146       1         0         
+# fwd 302, ||Misfit|| 2.1733339766193562e-07
+# fwd 303, ||Misfit|| 2.1733339766193562e-07
+# Der 146, ||Misfit|| 4.346667953238691e-07, ||Misfit IC|| 0.0008664214191191056, ||Grad|| 7.820370135035566e-17
+Derivative calculation 146
+  146   2.173334e-07   8.982978e-05   5.126776e-04   157       147       1         0         
+# fwd 304, ||Misfit|| 2.1335153468076914e-07
+# fwd 305, ||Misfit|| 2.1335153468076914e-07
+# Der 147, ||Misfit|| 4.267030693615376e-07, ||Misfit IC|| 0.0008646561508184397, ||Grad|| 1.3982018964641022e-16
+Derivative calculation 147
+  147   2.133515e-07   1.195384e-04   4.895630e-04   158       148       1         0         
+# fwd 306, ||Misfit|| 2.096886620705849e-07
+# fwd 307, ||Misfit|| 2.096886620705849e-07
+# Der 148, ||Misfit|| 4.1937732414117066e-07, ||Misfit IC|| 0.0008623950291086434, ||Grad|| 6.374027942912559e-16
+Derivative calculation 148
+  148   2.096887e-07   2.539585e-04   5.019845e-04   159       149       1         0         
+# fwd 308, ||Misfit|| 2.036770119478486e-07
+# fwd 309, ||Misfit|| 2.036770119478486e-07
+# Der 149, ||Misfit|| 4.073540238956971e-07, ||Misfit IC|| 0.0008600287140095902, ||Grad|| 2.567082711151281e-16
+Derivative calculation 149
+  149   2.036770e-07   1.618016e-04   2.041170e-04   160       150       1         0         
+# fwd 310, ||Misfit|| 1.949483883705087e-07
+# fwd 311, ||Misfit|| 1.949483883705087e-07
+# Der 150, ||Misfit|| 3.898967767410152e-07, ||Misfit IC|| 0.0008577883009914765, ||Grad|| 1.3246926589072577e-16
+Derivative calculation 150
+  150   1.949484e-07   1.171692e-04   7.811393e-04   161       151       1         0         
+# fwd 312, ||Misfit|| 1.8673832746409275e-07
+# fwd 313, ||Misfit|| 1.8673832746409275e-07
+# Der 151, ||Misfit|| 3.734766549281857e-07, ||Misfit IC|| 0.0008557825357737766, ||Grad|| 1.761164111914279e-16
+Derivative calculation 151
+  151   1.867383e-07   1.347189e-04   7.687687e-04   162       152       1         0         
+# fwd 314, ||Misfit|| 1.760631167734162e-07
+# fwd 315, ||Misfit|| 1.760631167734162e-07
+# Der 152, ||Misfit|| 3.5212623354683564e-07, ||Misfit IC|| 0.0008535378445395761, ||Grad|| 6.24670296212098e-16
+Derivative calculation 152
+  152   1.760631e-07   2.515538e-04   1.618374e-03   163       153       1         0         
+# fwd 316, ||Misfit|| 1.7001514592031819e-07
+# fwd 317, ||Misfit|| 1.7001514592031819e-07
+# Der 153, ||Misfit|| 3.4003029184063743e-07, ||Misfit IC|| 0.0008509178924621969, ||Grad|| 3.8399086107837675e-16
+Derivative calculation 153
+  153   1.700151e-07   1.975528e-04   5.288278e-04   164       154       1         0         
+# fwd 318, ||Misfit|| 1.6501919460527764e-07
+# fwd 319, ||Misfit|| 1.6501919460527764e-07
+# Der 154, ||Misfit|| 3.3003838921055576e-07, ||Misfit IC|| 0.0008489548379436881, ||Grad|| 3.256526538995804e-16
+Derivative calculation 154
+  154   1.650192e-07   1.820543e-04   7.633799e-04   165       155       1         0         
+# fwd 320, ||Misfit|| 1.6142496313416497e-07
+# fwd 321, ||Misfit|| 1.6142496313416497e-07
+# Der 155, ||Misfit|| 3.2284992626833004e-07, ||Misfit IC|| 0.0008481384235549828, ||Grad|| 7.566012958424973e-17
+Derivative calculation 155
+  155   1.614250e-07   8.861544e-05   2.562113e-04   166       156       1         0         
+# fwd 322, ||Misfit|| 1.573439871963151e-07
+# fwd 323, ||Misfit|| 1.573439871963151e-07
+# Der 156, ||Misfit|| 3.1468797439263125e-07, ||Misfit IC|| 0.0008456296475679932, ||Grad|| 7.073692745966176e-17
+Derivative calculation 156
+  156   1.573440e-07   8.556956e-05   2.662726e-04   167       157       1         0         
+# fwd 324, ||Misfit|| 1.5128830261366037e-07
+# fwd 325, ||Misfit|| 1.5128830261366037e-07
+# Der 157, ||Misfit|| 3.025766052273225e-07, ||Misfit IC|| 0.0008415727485805512, ||Grad|| 7.82195345849055e-17
+Derivative calculation 157
+  157   1.512883e-07   8.996405e-05   3.781750e-04   168       158       1         0         
+# fwd 326, ||Misfit|| 1.530808550461531e-07
+# fwd 327, ||Misfit|| 1.468345935260682e-07
+# fwd 328, ||Misfit|| 1.468345935260682e-07
+# Der 158, ||Misfit|| 2.9366918705213464e-07, ||Misfit IC|| 0.0008388004170069254, ||Grad|| 3.8351754059563575e-16
+Derivative calculation 158
+  158   1.468346e-07   1.967988e-04   5.188227e-04   170       159       2         0         
+# fwd 329, ||Misfit|| 1.4244592516571005e-07
+# fwd 330, ||Misfit|| 1.4244592516571005e-07
+# Der 159, ||Misfit|| 2.8489185033142074e-07, ||Misfit IC|| 0.0008359800324161361, ||Grad|| 1.122219246747875e-16
+Derivative calculation 159
+  159   1.424459e-07   1.071400e-04   4.698090e-04   171       160       1         0         
+# fwd 331, ||Misfit|| 1.4022720404118033e-07
+# fwd 332, ||Misfit|| 1.4022720404118033e-07
+# Der 160, ||Misfit|| 2.8045440808236046e-07, ||Misfit IC|| 0.0008350694618635513, ||Grad|| 5.041269768446039e-17
+Derivative calculation 160
+  160   1.402272e-07   7.260771e-05   2.072632e-04   172       161       1         0         
+# fwd 333, ||Misfit|| 1.3683249446385862e-07
+# fwd 334, ||Misfit|| 1.3683249446385862e-07
+# Der 161, ||Misfit|| 2.736649889277128e-07, ||Misfit IC|| 0.000833130637452273, ||Grad|| 8.299893068899492e-17
+Derivative calculation 161
+  161   1.368325e-07   9.273468e-05   2.281399e-04   173       162       1         0         
+# fwd 335, ||Misfit|| 1.3474000390972957e-07
+# fwd 336, ||Misfit|| 1.3474000390972957e-07
+# Der 162, ||Misfit|| 2.694800078194567e-07, ||Misfit IC|| 0.0008315501617047815, ||Grad|| 4.236866487202696e-17
+Derivative calculation 162
+  162   1.347400e-07   6.684778e-05   4.333099e-04   174       163       1         0         
+# fwd 337, ||Misfit|| 1.3267102034432782e-07
+# fwd 338, ||Misfit|| 1.3267102034432782e-07
+# Der 163, ||Misfit|| 2.6534204068865463e-07, ||Misfit IC|| 0.0008295155654888691, ||Grad|| 1.138143225119261e-16
+Derivative calculation 163
+  163   1.326710e-07   1.077687e-04   3.180132e-04   175       164       1         0         
+# fwd 339, ||Misfit|| 1.308588742270395e-07
+# fwd 340, ||Misfit|| 1.308588742270395e-07
+# Der 164, ||Misfit|| 2.6171774845407914e-07, ||Misfit IC|| 0.0008278298904606312, ||Grad|| 2.6345716232054878e-17
+Derivative calculation 164
+  164   1.308589e-07   5.221655e-05   2.095295e-04   176       165       1         0         
+# fwd 341, ||Misfit|| 1.2984429590066762e-07
+# fwd 342, ||Misfit|| 1.2984429590066762e-07
+# Der 165, ||Misfit|| 2.5968859180133434e-07, ||Misfit IC|| 0.0008266099314677908, ||Grad|| 2.0486568482838856e-17
+Derivative calculation 165
+  165   1.298443e-07   4.587654e-05   1.053160e-04   177       166       1         0         
+# fwd 343, ||Misfit|| 1.2910175037021069e-07
+# fwd 344, ||Misfit|| 1.2910175037021069e-07
+# Der 166, ||Misfit|| 2.5820350074041984e-07, ||Misfit IC|| 0.0008252183086111452, ||Grad|| 6.182291853823448e-17
+Derivative calculation 166
+  166   1.291018e-07   7.912041e-05   1.117026e-04   178       167       1         0         
+# fwd 345, ||Misfit|| 1.2823403474422753e-07
+# fwd 346, ||Misfit|| 1.2823403474422753e-07
+# Der 167, ||Misfit|| 2.5646806948845505e-07, ||Misfit IC|| 0.0008241945695896118, ||Grad|| 1.888994713364362e-17
+Derivative calculation 167
+  167   1.282340e-07   4.417335e-05   2.047611e-04   179       168       1         0         
+# fwd 347, ||Misfit|| 1.2733700859597595e-07
+# fwd 348, ||Misfit|| 1.2733700859597595e-07
+# Der 168, ||Misfit|| 2.5467401719195276e-07, ||Misfit IC|| 0.0008232881667714591, ||Grad|| 2.248525282373924e-17
+Derivative calculation 168
+  168   1.273370e-07   4.812332e-05   2.248285e-04   180       169       1         0         
+# fwd 349, ||Misfit|| 1.2477781941276123e-07
+# fwd 350, ||Misfit|| 1.2477781941276123e-07
+# Der 169, ||Misfit|| 2.495556388255228e-07, ||Misfit IC|| 0.0008207158481006476, ||Grad|| 2.3063978290222317e-17
+Derivative calculation 169
+  169   1.247778e-07   4.882229e-05   3.422236e-04   181       170       1         0         
+# fwd 351, ||Misfit|| 1.2659568391082199e-07
+# fwd 352, ||Misfit|| 1.2317598962660089e-07
+# fwd 353, ||Misfit|| 1.2317598962660089e-07
+# Der 170, ||Misfit|| 2.463519792532026e-07, ||Misfit IC|| 0.0008179716926180263, ||Grad|| 3.8623795259981266e-16
+Derivative calculation 170
+  170   1.231760e-07   1.974841e-04   2.411153e-04   183       171       2         0         
+# fwd 354, ||Misfit|| 1.1985332469800533e-07
+# fwd 355, ||Misfit|| 1.1985332469800533e-07
+# Der 171, ||Misfit|| 2.397066493960105e-07, ||Misfit IC|| 0.0008148009571244387, ||Grad|| 1.398083087282017e-16
+Derivative calculation 171
+  171   1.198533e-07   1.191467e-04   3.283477e-04   184       172       1         0         
+# fwd 356, ||Misfit|| 1.1680114742496226e-07
+# fwd 357, ||Misfit|| 1.1680114742496226e-07
+# Der 172, ||Misfit|| 2.3360229484992433e-07, ||Misfit IC|| 0.0008113727782744575, ||Grad|| 4.3509935666391374e-17
+Derivative calculation 172
+  172   1.168011e-07   6.713859e-05   2.786879e-04   185       173       1         0         
+# fwd 358, ||Misfit|| 1.1333394215994551e-07
+# fwd 359, ||Misfit|| 1.1333394215994551e-07
+# Der 173, ||Misfit|| 2.266678843198915e-07, ||Misfit IC|| 0.0008069044006965706, ||Grad|| 3.9873075441983964e-17
+Derivative calculation 173
+  173   1.133339e-07   6.423092e-05   3.044242e-04   186       174       1         0         
+# fwd 360, ||Misfit|| 1.1944899888367826e-07
+# fwd 361, ||Misfit|| 1.1241774319948783e-07
+# fwd 362, ||Misfit|| 1.1241774319948783e-07
+# Der 174, ||Misfit|| 2.2483548639897486e-07, ||Misfit IC|| 0.0008055822697413796, ||Grad|| 1.1945870659687053e-16
+Derivative calculation 174
+  174   1.124177e-07   1.102064e-04   8.911718e-05   188       175       2         0         
+# fwd 363, ||Misfit|| 1.1101491676706395e-07
+# fwd 364, ||Misfit|| 1.1101491676706395e-07
+# Der 175, ||Misfit|| 2.2202983353412843e-07, ||Misfit IC|| 0.0008043342867462973, ||Grad|| 5.346001556702429e-17
+Derivative calculation 175
+  175   1.110149e-07   7.391647e-05   1.160861e-04   189       176       1         0         
+# fwd 365, ||Misfit|| 1.0925616935334889e-07
+# fwd 366, ||Misfit|| 1.0925616935334889e-07
+# Der 176, ||Misfit|| 2.1851233870669698e-07, ||Misfit IC|| 0.000802079072422659, ||Grad|| 3.182941578030893e-17
+Derivative calculation 176
+  176   1.092562e-07   5.696749e-05   1.421760e-04   190       177       1         0         
+# fwd 367, ||Misfit|| 1.0763860424348652e-07
+# fwd 368, ||Misfit|| 1.0763860424348652e-07
+# Der 177, ||Misfit|| 2.1527720848697334e-07, ||Misfit IC|| 0.0008005509319735114, ||Grad|| 2.00436687653911e-17
+Derivative calculation 177
+  177   1.076386e-07   4.537093e-05   1.252195e-04   191       178       1         0         
+# fwd 369, ||Misfit|| 1.0699040900778678e-07
+# fwd 370, ||Misfit|| 1.0699040900778678e-07
+# Der 178, ||Misfit|| 2.139808180155754e-07, ||Misfit IC|| 0.0007986540761971169, ||Grad|| 2.667119774558749e-16
+Derivative calculation 178
+  178   1.069904e-07   1.640679e-04   1.299073e-04   192       179       1         0         
+# fwd 371, ||Misfit|| 1.0577353342551683e-07
+# fwd 372, ||Misfit|| 1.0577353342551683e-07
+# Der 179, ||Misfit|| 2.1154706685103296e-07, ||Misfit IC|| 0.0007987917012499759, ||Grad|| 5.600422761522094e-17
+Derivative calculation 179
+  179   1.057735e-07   7.541820e-05   2.338736e-05   193       180       1         0         
+# fwd 373, ||Misfit|| 1.0462666949868859e-07
+# fwd 374, ||Misfit|| 1.0462666949868859e-07
+# Der 180, ||Misfit|| 2.0925333899737776e-07, ||Misfit IC|| 0.0007981432845486307, ||Grad|| 2.2924862116088004e-17
+Derivative calculation 180
+  180   1.046267e-07   4.855331e-05   5.812486e-05   194       181       1         0         
+# fwd 375, ||Misfit|| 1.037519112834219e-07
+# fwd 376, ||Misfit|| 1.037519112834219e-07
+# Der 181, ||Misfit|| 2.0750382256684373e-07, ||Misfit IC|| 0.0007967500277342588, ||Grad|| 6.110558515004016e-17
+Derivative calculation 181
+  181   1.037519e-07   7.883284e-05   9.930163e-05   195       182       1         0         
+# fwd 377, ||Misfit|| 1.0223076281585423e-07
+# fwd 378, ||Misfit|| 1.0223076281585423e-07
+# Der 182, ||Misfit|| 2.0446152563170824e-07, ||Misfit IC|| 0.0007938168968225803, ||Grad|| 7.369742870406175e-17
+Derivative calculation 182
+  182   1.022308e-07   8.663415e-05   1.966224e-04   196       183       1         0         
+# fwd 379, ||Misfit|| 1.0184211001480126e-07
+# fwd 380, ||Misfit|| 1.0184211001480126e-07
+# Der 183, ||Misfit|| 2.0368422002960347e-07, ||Misfit IC|| 0.0007853151922489552, ||Grad|| 3.8017097117811125e-16
+Derivative calculation 183
+  183   1.018421e-07   1.962995e-04   5.819589e-04   197       184       1         0         
+# fwd 381, ||Misfit|| 9.859613654674471e-08
+# fwd 382, ||Misfit|| 9.859613654674471e-08
+# Der 184, ||Misfit|| 1.9719227309349062e-07, ||Misfit IC|| 0.0007854577796996296, ||Grad|| 5.0712238299467824e-17
+Derivative calculation 184
+  184   9.859614e-08   7.268957e-05   4.239718e-05   198       185       1         0         
+# fwd 383, ||Misfit|| 9.616740866826148e-08
+# fwd 384, ||Misfit|| 9.616740866826148e-08
+# Der 185, ||Misfit|| 1.9233481733652246e-07, ||Misfit IC|| 0.0007831658310925684, ||Grad|| 5.803252701539952e-17
+Derivative calculation 185
+  185   9.616741e-08   7.726377e-05   1.400269e-04   199       186       1         0         
+# fwd 385, ||Misfit|| 9.297173743952007e-08
+# fwd 386, ||Misfit|| 9.297173743952007e-08
+# Der 186, ||Misfit|| 1.8594347487904056e-07, ||Misfit IC|| 0.0007769738585873063, ||Grad|| 9.990823920944964e-17
+Derivative calculation 186
+  186   9.297174e-08   1.008603e-04   4.041290e-04   200       187       1         0         
+# fwd 387, ||Misfit|| 9.532365771838227e-08
+# fwd 388, ||Misfit|| 9.160109400900049e-08
+# fwd 389, ||Misfit|| 9.160109400900049e-08
+# Der 187, ||Misfit|| 1.8320218801800183e-07, ||Misfit IC|| 0.0007708936826153256, ||Grad|| 4.128199918314605e-16
+Derivative calculation 187
+  187   9.160109e-08   2.041825e-04   4.293653e-04   202       188       2         0         
+# fwd 390, ||Misfit|| 8.90531767494186e-08
+# fwd 391, ||Misfit|| 8.90531767494186e-08
+# Der 188, ||Misfit|| 1.781063534988371e-07, ||Misfit IC|| 0.0007652130868230644, ||Grad|| 1.1836259531183109e-16
+Derivative calculation 188
+  188   8.905318e-08   1.096765e-04   4.173956e-04   203       189       1         0         
+# fwd 392, ||Misfit|| 8.719180678941369e-08
+# fwd 393, ||Misfit|| 8.719180678941369e-08
+# Der 189, ||Misfit|| 1.7438361357882873e-07, ||Misfit IC|| 0.000760745052926622, ||Grad|| 2.6477055745460155e-17
+Derivative calculation 189
+  189   8.719181e-08   5.256554e-05   3.450241e-04   204       190       1         0         
+# fwd 394, ||Misfit|| 8.611429321247883e-08
+# fwd 395, ||Misfit|| 8.611429321247883e-08
+# Der 190, ||Misfit|| 1.7222858642495937e-07, ||Misfit IC|| 0.0007586330363634556, ||Grad|| 5.787096779634475e-17
+Derivative calculation 190
+  190   8.611429e-08   7.689091e-05   1.653767e-04   205       191       1         0         
+# fwd 396, ||Misfit|| 8.486399045984766e-08
+# fwd 397, ||Misfit|| 8.486399045984766e-08
+# Der 191, ||Misfit|| 1.6972798091969506e-07, ||Misfit IC|| 0.000756074776841015, ||Grad|| 5.948809596675611e-17
+Derivative calculation 191
+  191   8.486399e-08   7.785631e-05   1.917383e-04   206       192       1         0         
+# fwd 398, ||Misfit|| 8.311731545069876e-08
+# fwd 399, ||Misfit|| 8.311731545069876e-08
+# Der 192, ||Misfit|| 1.6623463090139847e-07, ||Misfit IC|| 0.0007540438740299539, ||Grad|| 1.1808749877093237e-16
+Derivative calculation 192
+  192   8.311732e-08   1.093901e-04   1.431652e-04   207       193       1         0         
+# fwd 400, ||Misfit|| 8.132753911297656e-08
+# fwd 401, ||Misfit|| 8.132753911297656e-08
+# Der 193, ||Misfit|| 1.6265507822595368e-07, ||Misfit IC|| 0.0007450322155096945, ||Grad|| 4.094997170024211e-17
+Derivative calculation 193
+  193   8.132754e-08   6.472223e-05   7.298127e-04   208       194       1         0         
+# fwd 402, ||Misfit|| 7.987566507347788e-08
+# fwd 403, ||Misfit|| 7.987566507347788e-08
+# Der 194, ||Misfit|| 1.5975133014695536e-07, ||Misfit IC|| 0.0007459293497024091, ||Grad|| 4.5290145867205317e-17
+Derivative calculation 194
+  194   7.987567e-08   6.793146e-05   1.584444e-04   209       195       1         0         
+# fwd 404, ||Misfit|| 7.878478553307135e-08
+# fwd 405, ||Misfit|| 7.878478553307135e-08
+# Der 195, ||Misfit|| 1.5756957106614312e-07, ||Misfit IC|| 0.000748262298081889, ||Grad|| 2.5664917604592753e-17
+Derivative calculation 195
+  195   7.878479e-08   5.101455e-05   2.655596e-04   210       196       1         0         
+# fwd 406, ||Misfit|| 7.79058613249046e-08
+# fwd 407, ||Misfit|| 7.79058613249046e-08
+# Der 196, ||Misfit|| 1.5581172264981e-07, ||Misfit IC|| 0.0007457209939903805, ||Grad|| 1.9013652562765532e-17
+Derivative calculation 196
+  196   7.790586e-08   4.406641e-05   1.753093e-04   211       197       1         0         
+# fwd 408, ||Misfit|| 7.717786790418589e-08
+# fwd 409, ||Misfit|| 7.717786790418589e-08
+# Der 197, ||Misfit|| 1.5435573580837293e-07, ||Misfit IC|| 0.0007436849548754954, ||Grad|| 1.1736090270196396e-17
+Derivative calculation 197
+  197   7.717787e-08   3.476312e-05   1.395818e-04   212       198       1         0         
+# fwd 410, ||Misfit|| 7.593941002056467e-08
+# fwd 411, ||Misfit|| 7.593941002056467e-08
+# Der 198, ||Misfit|| 1.518788200411287e-07, ||Misfit IC|| 0.0007404751745166832, ||Grad|| 1.0878681409747708e-17
+Derivative calculation 198
+  198   7.593941e-08   3.350053e-05   2.120186e-04   213       199       1         0         
+# fwd 412, ||Misfit|| 7.427626445303302e-08
+# fwd 413, ||Misfit|| 7.427626445303302e-08
+# Der 199, ||Misfit|| 1.485525289060661e-07, ||Misfit IC|| 0.0007354523053766974, ||Grad|| 4.4502166320165233e-17
+Derivative calculation 199
+  199   7.427626e-08   6.728406e-05   3.223205e-04   214       200       1         0         
+# fwd 414, ||Misfit|| 7.292437594843304e-08
+# fwd 415, ||Misfit|| 7.292437594843304e-08
+# Der 200, ||Misfit|| 1.4584875189686543e-07, ||Misfit IC|| 0.0007282559309154272, ||Grad|| 5.212395496997591e-17
+Derivative calculation 200
+  200   7.292438e-08   7.281140e-05   4.997145e-04   215       201       1         0         
+# fwd 416, ||Misfit|| 7.186136017578655e-08
+# fwd 417, ||Misfit|| 7.186136017578655e-08
+# Der 201, ||Misfit|| 1.4372272035157215e-07, ||Misfit IC|| 0.0007284904962177732, ||Grad|| 1.3813111038185972e-17
+Derivative calculation 201
+  201   7.186136e-08   3.801984e-05   5.345119e-05   216       202       1         0         
+# fwd 418, ||Misfit|| 7.091504279874152e-08
+# fwd 419, ||Misfit|| 7.091504279874152e-08
+# Der 202, ||Misfit|| 1.4183008559748318e-07, ||Misfit IC|| 0.0007283466414285363, ||Grad|| 1.885076968893281e-17
+Derivative calculation 202
+  202   7.091504e-08   4.410772e-05   7.648321e-05   217       203       1         0         
+# fwd 420, ||Misfit|| 7.211899792414439e-08
+# fwd 421, ||Misfit|| 7.05918414858691e-08
+# fwd 422, ||Misfit|| 7.05918414858691e-08
+# Der 203, ||Misfit|| 1.411836829717377e-07, ||Misfit IC|| 0.0007273025280146707, ||Grad|| 4.824183196001278e-17
+Derivative calculation 203
+  203   7.059184e-08   7.002285e-05   6.927367e-05   219       204       2         0         
+# fwd 423, ||Misfit|| 7.018192434162248e-08
+# fwd 424, ||Misfit|| 7.018192434162248e-08
+# Der 204, ||Misfit|| 1.4036384868324502e-07, ||Misfit IC|| 0.0007264929909858114, ||Grad|| 3.0622998899664134e-17
+Derivative calculation 204
+  204   7.018192e-08   5.585521e-05   5.158449e-05   220       205       1         0         
+# fwd 425, ||Misfit|| 6.890760077471874e-08
+# fwd 426, ||Misfit|| 6.890760077471874e-08
+# Der 205, ||Misfit|| 1.3781520154943735e-07, ||Misfit IC|| 0.0007228277182206188, ||Grad|| 1.0028571481490855e-17
+Derivative calculation 205
+  205   6.890760e-08   3.209251e-05   2.360389e-04   221       206       1         0         
+# fwd 427, ||Misfit|| 6.841310887213272e-08
+# fwd 428, ||Misfit|| 6.841310887213272e-08
+# Der 206, ||Misfit|| 1.3682621774426557e-07, ||Misfit IC|| 0.0007209151963126205, ||Grad|| 7.181979845492537e-18
+Derivative calculation 206
+  206   6.841311e-08   2.735617e-05   1.241983e-04   222       207       1         0         
+# fwd 429, ||Misfit|| 6.768507013405778e-08
+# fwd 430, ||Misfit|| 6.768507013405778e-08
+# Der 207, ||Misfit|| 1.353701402681158e-07, ||Misfit IC|| 0.0007173609372554978, ||Grad|| 2.1705003638300096e-17
+Derivative calculation 207
+  207   6.768507e-08   4.712968e-05   2.272669e-04   223       208       1         0         
+# fwd 431, ||Misfit|| 6.678674992080685e-08
+# fwd 432, ||Misfit|| 6.678674992080685e-08
+# Der 208, ||Misfit|| 1.3357349984161266e-07, ||Misfit IC|| 0.0007131916027666485, ||Grad|| 1.3249667484024403e-17
+Derivative calculation 208
+  208   6.678675e-08   3.706687e-05   2.649002e-04   224       209       1         0         
+# fwd 433, ||Misfit|| 6.615073786704243e-08
+# fwd 434, ||Misfit|| 6.615073786704243e-08
+# Der 209, ||Misfit|| 1.3230147573408485e-07, ||Misfit IC|| 0.0007115715671712559, ||Grad|| 1.8741266448511683e-17
+Derivative calculation 209
+  209   6.615074e-08   4.377010e-05   9.986631e-05   225       210       1         0         
+# fwd 435, ||Misfit|| 6.660891984654182e-08
+# fwd 436, ||Misfit|| 6.576418290712807e-08
+# fwd 437, ||Misfit|| 6.576418290712807e-08
+# Der 210, ||Misfit|| 1.315283658142575e-07, ||Misfit IC|| 0.0007098237789388067, ||Grad|| 3.085137465343951e-17
+Derivative calculation 210
+  210   6.576418e-08   5.598805e-05   1.077482e-04   227       211       2         0         
+# fwd 438, ||Misfit|| 6.53984356280115e-08
+# fwd 439, ||Misfit|| 6.53984356280115e-08
+# Der 211, ||Misfit|| 1.3079687125602213e-07, ||Misfit IC|| 0.0007096445181266207, ||Grad|| 1.350503202819049e-17
+Derivative calculation 211
+  211   6.539844e-08   3.727434e-05   2.795234e-05   228       212       1         0         
+# fwd 440, ||Misfit|| 6.477907138310462e-08
+# fwd 441, ||Misfit|| 6.477907138310462e-08
+# Der 212, ||Misfit|| 1.2955814276620942e-07, ||Misfit IC|| 0.0007083789218331172, ||Grad|| 1.3288341227073516e-17
+Derivative calculation 212
+  212   6.477907e-08   3.706507e-05   7.427199e-05   229       213       1         0         
+# fwd 442, ||Misfit|| 6.314439333413902e-08
+# fwd 443, ||Misfit|| 6.314439333413902e-08
+# Der 213, ||Misfit|| 1.2628878666827894e-07, ||Misfit IC|| 0.0007029982475513344, ||Grad|| 3.435441558156371e-17
+Derivative calculation 213
+  213   6.314439e-08   5.929392e-05   3.238578e-04   230       214       1         0         
+# fwd 444, ||Misfit|| 6.106146796218032e-08
+# fwd 445, ||Misfit|| 6.106146796218032e-08
+# Der 214, ||Misfit|| 1.2212293592436114e-07, ||Misfit IC|| 0.000694307893059928, ||Grad|| 3.113858804213244e-17
+Derivative calculation 214
+  214   6.106147e-08   5.659409e-05   5.554948e-04   231       215       1         0         
+# fwd 446, ||Misfit|| 6.25817470414053e-08
+# fwd 447, ||Misfit|| 6.004303176517438e-08
+# fwd 448, ||Misfit|| 6.004303176517438e-08
+# Der 215, ||Misfit|| 1.2008606353034837e-07, ||Misfit IC|| 0.0006882837211606393, ||Grad|| 5.1912159780797163e-17
+Derivative calculation 215
+  215   6.004303e-08   7.272766e-05   3.958726e-04   233       216       2         0         
+# fwd 449, ||Misfit|| 5.8375274629335514e-08
+# fwd 450, ||Misfit|| 5.8375274629335514e-08
+# Der 216, ||Misfit|| 1.1675054925867213e-07, ||Misfit IC|| 0.0006794690661087157, ||Grad|| 4.3108083428398504e-17
+Derivative calculation 216
+  216   5.837527e-08   6.616476e-05   6.477954e-04   234       217       1         0         
+# fwd 451, ||Misfit|| 5.973759602610579e-08
+# fwd 452, ||Misfit|| 5.792144350931251e-08
+# fwd 453, ||Misfit|| 5.792144350931251e-08
+# Der 217, ||Misfit|| 1.1584288701862566e-07, ||Misfit IC|| 0.0006773727522375282, ||Grad|| 2.948542043930522e-17
+Derivative calculation 217
+  217   5.792144e-08   5.482074e-05   1.567702e-04   236       218       2         0         
+# fwd 454, ||Misfit|| 5.726264611890093e-08
+# fwd 455, ||Misfit|| 5.726264611890093e-08
+# Der 218, ||Misfit|| 1.1452529223780167e-07, ||Misfit IC|| 0.0006780497382349351, ||Grad|| 1.4494777897074276e-17
+Derivative calculation 218
+  218   5.726265e-08   3.853756e-05   7.215149e-05   237       219       1         0         
+# fwd 456, ||Misfit|| 5.6303230407674025e-08
+# fwd 457, ||Misfit|| 5.6303230407674025e-08
+# Der 219, ||Misfit|| 1.1260646081534788e-07, ||Misfit IC|| 0.0006721221279238262, ||Grad|| 1.7946906014342583e-17
+Derivative calculation 219
+  219   5.630323e-08   4.296599e-05   4.260225e-04   238       220       1         0         
+# fwd 458, ||Misfit|| 5.538093427646875e-08
+# fwd 459, ||Misfit|| 5.538093427646875e-08
+# Der 220, ||Misfit|| 1.1076186855293783e-07, ||Misfit IC|| 0.0006707723737927237, ||Grad|| 1.3058270839624681e-17
+Derivative calculation 220
+  220   5.538093e-08   3.672854e-05   9.669261e-05   239       221       1         0         
+# fwd 460, ||Misfit|| 5.736432419002868e-08
+# fwd 461, ||Misfit|| 5.415255384840093e-08
+# fwd 462, ||Misfit|| 5.415255384840093e-08
+# Der 221, ||Misfit|| 1.0830510769680216e-07, ||Misfit IC|| 0.0006689737500502332, ||Grad|| 1.2589717767016812e-16
+Derivative calculation 221
+  221   5.415255e-08   1.127055e-04   1.448862e-04   241       222       2         0         
+# fwd 463, ||Misfit|| 5.2451182457238095e-08
+# fwd 464, ||Misfit|| 5.2451182457238095e-08
+# Der 222, ||Misfit|| 1.0490236491447609e-07, ||Misfit IC|| 0.0006636503874032824, ||Grad|| 1.7708242133226728e-17
+Derivative calculation 222
+  222   5.245118e-08   4.265148e-05   3.932084e-04   242       223       1         0         
+# fwd 465, ||Misfit|| 5.193181874377131e-08
+# fwd 466, ||Misfit|| 5.193181874377131e-08
+# Der 223, ||Misfit|| 1.0386363748754338e-07, ||Misfit IC|| 0.0006613766846264383, ||Grad|| 2.4005309341391208e-17
+Derivative calculation 223
+  223   5.193182e-08   4.966166e-05   1.738008e-04   243       224       1         0         
+# fwd 467, ||Misfit|| 5.135077203759846e-08
+# fwd 468, ||Misfit|| 5.135077203759846e-08
+# Der 224, ||Misfit|| 1.0270154407519766e-07, ||Misfit IC|| 0.000657217501593302, ||Grad|| 4.1788734932449117e-17
+Derivative calculation 224
+  224   5.135077e-08   6.526448e-05   3.340051e-04   244       225       1         0         
+# fwd 469, ||Misfit|| 5.079097100914881e-08
+# fwd 470, ||Misfit|| 5.079097100914881e-08
+# Der 225, ||Misfit|| 1.0158194201829684e-07, ||Misfit IC|| 0.0006561221755555037, ||Grad|| 1.654524929553668e-17
+Derivative calculation 225
+  225   5.079097e-08   4.140475e-05   9.131290e-05   245       226       1         0         
+# fwd 471, ||Misfit|| 4.996020059510248e-08
+# fwd 472, ||Misfit|| 4.996020059510248e-08
+# Der 226, ||Misfit|| 9.992040119020451e-08, ||Misfit IC|| 0.0006535879975334078, ||Grad|| 1.5208777356057025e-17
+Derivative calculation 226
+  226   4.996020e-08   3.963889e-05   2.078629e-04   246       227       1         0         
+# fwd 473, ||Misfit|| 4.93580333437316e-08
+# fwd 474, ||Misfit|| 4.93580333437316e-08
+# Der 227, ||Misfit|| 9.871606668746297e-08, ||Misfit IC|| 0.0006512633950592363, ||Grad|| 1.307103993850789e-17
+Derivative calculation 227
+  227   4.935803e-08   3.668954e-05   1.911309e-04   247       228       1         0         
+# fwd 475, ||Misfit|| 4.8278440202759635e-08
+# fwd 476, ||Misfit|| 4.8278440202759635e-08
+# Der 228, ||Misfit|| 9.655688040551926e-08, ||Misfit IC|| 0.0006447564805014582, ||Grad|| 2.5972447013869262e-17
+Derivative calculation 228
+  228   4.827844e-08   5.134411e-05   5.512280e-04   248       229       1         0         
+# fwd 477, ||Misfit|| 4.9405274851507875e-08
+# fwd 478, ||Misfit|| 4.775888025689251e-08
+# fwd 479, ||Misfit|| 4.775888025689251e-08
+# Der 229, ||Misfit|| 9.551776051378444e-08, ||Misfit IC|| 0.0006435563370463526, ||Grad|| 1.0666936777834336e-17
+Derivative calculation 229
+  229   4.775888e-08   3.308314e-05   9.125993e-05   250       230       2         0         
+# fwd 480, ||Misfit|| 4.729547695782538e-08
+# fwd 481, ||Misfit|| 4.729547695782538e-08
+# Der 230, ||Misfit|| 9.459095391565064e-08, ||Misfit IC|| 0.0006419197652326339, ||Grad|| 6.197036598217914e-18
+Derivative calculation 230
+  230   4.729548e-08   2.532982e-05   1.322492e-04   251       231       1         0         
+# fwd 482, ||Misfit|| 4.651236484979176e-08
+# fwd 483, ||Misfit|| 4.651236484979176e-08
+# Der 231, ||Misfit|| 9.302472969958374e-08, ||Misfit IC|| 0.0006398448528081752, ||Grad|| 1.2980784318476872e-17
+Derivative calculation 231
+  231   4.651236e-08   3.638004e-05   1.548449e-04   252       232       1         0         
+# fwd 484, ||Misfit|| 4.656836213022855e-08
+# fwd 485, ||Misfit|| 4.5712031426511866e-08
+# fwd 486, ||Misfit|| 4.5712031426511866e-08
+# Der 232, ||Misfit|| 9.14240628530241e-08, ||Misfit IC|| 0.0006371829145765075, ||Grad|| 6.145773202855168e-17
+Derivative calculation 232
+  232   4.571203e-08   7.884180e-05   1.938943e-04   254       233       2         0         
+# fwd 487, ||Misfit|| 4.45747032014844e-08
+# fwd 488, ||Misfit|| 4.45747032014844e-08
+# Der 233, ||Misfit|| 8.91494064029687e-08, ||Misfit IC|| 0.0006349954865599639, ||Grad|| 1.550278512757062e-17
+Derivative calculation 233
+  233   4.457470e-08   3.988921e-05   1.678848e-04   255       234       1         0         
+# fwd 489, ||Misfit|| 4.3866263607467636e-08
+# fwd 490, ||Misfit|| 4.3866263607467636e-08
+# Der 234, ||Misfit|| 8.77325272149343e-08, ||Misfit IC|| 0.0006344313629646338, ||Grad|| 1.6875860191528734e-17
+Derivative calculation 234
+  234   4.386626e-08   4.164456e-05   9.359441e-05   256       235       1         0         
+# fwd 491, ||Misfit|| 4.285048368129247e-08
+# fwd 492, ||Misfit|| 4.285048368129247e-08
+# Der 235, ||Misfit|| 8.570096736258498e-08, ||Misfit IC|| 0.0006330603703602595, ||Grad|| 1.3985569777496564e-17
+Derivative calculation 235
+  235   4.285048e-08   3.788594e-05   1.250830e-04   257       236       1         0         
+# fwd 493, ||Misfit|| 4.287152012844703e-08
+# fwd 494, ||Misfit|| 4.2316960382338094e-08
+# fwd 495, ||Misfit|| 4.2316960382338094e-08
+# Der 236, ||Misfit|| 8.463392076467571e-08, ||Misfit IC|| 0.0006319923832858505, ||Grad|| 2.2648479481181786e-17
+Derivative calculation 236
+  236   4.231696e-08   4.790802e-05   9.507111e-05   259       237       2         0         
+# fwd 496, ||Misfit|| 4.163915282944712e-08
+# fwd 497, ||Misfit|| 4.163915282944712e-08
+# Der 237, ||Misfit|| 8.327830565889466e-08, ||Misfit IC|| 0.0006302246928283554, ||Grad|| 6.002732627179181e-18
+Derivative calculation 237
+  237   4.163915e-08   2.486122e-05   1.324525e-04   260       238       1         0         
+# fwd 498, ||Misfit|| 4.126012763124261e-08
+# fwd 499, ||Misfit|| 4.126012763124261e-08
+# Der 238, ||Misfit|| 8.252025526248569e-08, ||Misfit IC|| 0.0006293321126280771, ||Grad|| 5.808596839882006e-18
+Derivative calculation 238
+  238   4.126013e-08   2.446389e-05   6.636679e-05   261       239       1         0         
+# fwd 500, ||Misfit|| 4.141736695434803e-08
+# fwd 501, ||Misfit|| 4.095969270255543e-08
+# fwd 502, ||Misfit|| 4.095969270255543e-08
+# Der 239, ||Misfit|| 8.191938540511057e-08, ||Misfit IC|| 0.0006282232105212395, ||Grad|| 4.7674812981728724e-17
+Derivative calculation 239
+  239   4.095969e-08   6.936677e-05   7.864949e-05   263       240       2         0         
+# fwd 503, ||Misfit|| 4.0441202708574145e-08
+# fwd 504, ||Misfit|| 4.0441202708574145e-08
+# Der 240, ||Misfit|| 8.088240541714735e-08, ||Misfit IC|| 0.0006269199686854812, ||Grad|| 9.953446462134671e-18
+Derivative calculation 240
+  240   4.044120e-08   3.199611e-05   9.675246e-05   264       241       1         0         
+# fwd 505, ||Misfit|| 4.0129889398785114e-08
+# fwd 506, ||Misfit|| 4.0129889398785114e-08
+# Der 241, ||Misfit|| 8.02597787975705e-08, ||Misfit IC|| 0.0006263225263712125, ||Grad|| 5.662980309769937e-18
+Derivative calculation 241
+  241   4.012989e-08   2.436599e-05   4.296697e-05   265       242       1         0         
+# fwd 507, ||Misfit|| 3.9556979899518104e-08
+# fwd 508, ||Misfit|| 3.9556979899518104e-08
+# Der 242, ||Misfit|| 7.911395979903605e-08, ||Misfit IC|| 0.0006249585759471277, ||Grad|| 7.948124826129602e-18
+Derivative calculation 242
+  242   3.955698e-08   2.872283e-05   9.330750e-05   266       243       1         0         
+# fwd 509, ||Misfit|| 3.9119833746855054e-08
+# fwd 510, ||Misfit|| 3.9119833746855054e-08
+# Der 243, ||Misfit|| 7.823966749371019e-08, ||Misfit IC|| 0.0006231612082708804, ||Grad|| 2.333576867544504e-17
+Derivative calculation 243
+  243   3.911983e-08   4.869484e-05   1.176834e-04   267       244       1         0         
+# fwd 511, ||Misfit|| 3.855698579622113e-08
+# fwd 512, ||Misfit|| 3.855698579622113e-08
+# Der 244, ||Misfit|| 7.711397159244298e-08, ||Misfit IC|| 0.0006214116639173842, ||Grad|| 9.896826921651398e-18
+Derivative calculation 244
+  244   3.855699e-08   3.195296e-05   1.151184e-04   268       245       1         0         
+# fwd 513, ||Misfit|| 3.781785979030766e-08
+# fwd 514, ||Misfit|| 3.781785979030766e-08
+# Der 245, ||Misfit|| 7.563571958061527e-08, ||Misfit IC|| 0.0006189008985176615, ||Grad|| 8.160299148022355e-18
+Derivative calculation 245
+  245   3.781786e-08   2.908269e-05   1.644196e-04   269       246       1         0         
+# fwd 515, ||Misfit|| 3.777610710699374e-08
+# fwd 516, ||Misfit|| 3.777610710699374e-08
+# Der 246, ||Misfit|| 7.555221421398745e-08, ||Misfit IC|| 0.0006146712577295081, ||Grad|| 1.9540212830907834e-16
+Derivative calculation 246
+  246   3.777611e-08   1.404255e-04   2.854457e-04   270       247       1         0         
+# fwd 517, ||Misfit|| 3.687238000654438e-08
+# fwd 518, ||Misfit|| 3.687238000654438e-08
+# Der 247, ||Misfit|| 7.374476001308849e-08, ||Misfit IC|| 0.000614978991168071, ||Grad|| 1.0601914350986847e-17
+Derivative calculation 247
+  247   3.687238e-08   3.321270e-05   2.785832e-05   271       248       1         0         
+# fwd 519, ||Misfit|| 3.672615635162679e-08
+# fwd 520, ||Misfit|| 3.672615635162679e-08
+# Der 248, ||Misfit|| 7.34523127032535e-08, ||Misfit IC|| 0.0006151837747955679, ||Grad|| 8.056589529974448e-18
+Derivative calculation 248
+  248   3.672616e-08   2.903830e-05   1.867958e-05   272       249       1         0         
+# fwd 521, ||Misfit|| 3.6455667363957215e-08
+# fwd 522, ||Misfit|| 3.6455667363957215e-08
+# Der 249, ||Misfit|| 7.291133472791415e-08, ||Misfit IC|| 0.0006149117508387525, ||Grad|| 9.23715164708388e-18
+Derivative calculation 249
+  249   3.645567e-08   3.094424e-05   2.436310e-05   273       250       1         0         
+# fwd 523, ||Misfit|| 3.590895113763527e-08
+# fwd 524, ||Misfit|| 3.590895113763527e-08
+# Der 250, ||Misfit|| 7.181790227527062e-08, ||Misfit IC|| 0.0006136184492113976, ||Grad|| 6.952302587333394e-18
+Derivative calculation 250
+  250   3.590895e-08   2.681958e-05   8.561809e-05   274       251       1         0         
+# fwd 525, ||Misfit|| 3.6553428260319874e-08
+# fwd 526, ||Misfit|| 3.54563862807008e-08
+# fwd 527, ||Misfit|| 3.54563862807008e-08
+# Der 251, ||Misfit|| 7.091277256140203e-08, ||Misfit IC|| 0.0006094149829854388, ||Grad|| 2.773695085287895e-17
+Derivative calculation 251
+  251   3.545639e-08   5.309370e-05   2.824378e-04   276       252       2         0         
+# fwd 528, ||Misfit|| 3.466235194235879e-08
+# fwd 529, ||Misfit|| 3.466235194235879e-08
+# Der 252, ||Misfit|| 6.932470388471857e-08, ||Misfit IC|| 0.0006057796820098715, ||Grad|| 7.228918267341655e-18
+Derivative calculation 252
+  252   3.466235e-08   2.745989e-05   2.502079e-04   277       253       1         0         
+# fwd 530, ||Misfit|| 3.411048165678921e-08
+# fwd 531, ||Misfit|| 3.411048165678921e-08
+# Der 253, ||Misfit|| 6.82209633135788e-08, ||Misfit IC|| 0.0006028536753849784, ||Grad|| 6.5041428658207895e-18
+Derivative calculation 253
+  253   3.411048e-08   2.594750e-05   2.072669e-04   278       254       1         0         
+# fwd 532, ||Misfit|| 3.457659623146215e-08
+# fwd 533, ||Misfit|| 3.391586278950537e-08
+# fwd 534, ||Misfit|| 3.391586278950537e-08
+# Der 254, ||Misfit|| 6.783172557901088e-08, ||Misfit IC|| 0.0006017951148677025, ||Grad|| 3.692432009144659e-17
+Derivative calculation 254
+  254   3.391586e-08   6.109540e-05   7.567724e-05   280       255       2         0         
+# fwd 535, ||Misfit|| 3.358108663374952e-08
+# fwd 536, ||Misfit|| 3.358108663374952e-08
+# Der 255, ||Misfit|| 6.716217326749935e-08, ||Misfit IC|| 0.0005998861912777661, ||Grad|| 9.071977419003907e-18
+Derivative calculation 255
+  255   3.358109e-08   3.040916e-05   1.382274e-04   281       256       1         0         
+# fwd 537, ||Misfit|| 3.3395340276033715e-08
+# fwd 538, ||Misfit|| 3.3395340276033715e-08
+# Der 256, ||Misfit|| 6.67906805520678e-08, ||Misfit IC|| 0.0005994503853185748, ||Grad|| 3.0291293825319037e-18
+Derivative calculation 256
+  256   3.339534e-08   1.771362e-05   3.086862e-05   282       257       1         0         
+# fwd 539, ||Misfit|| 3.314553498585897e-08
+# fwd 540, ||Misfit|| 3.314553498585897e-08
+# Der 257, ||Misfit|| 6.629106997171755e-08, ||Misfit IC|| 0.0005989428227526678, ||Grad|| 3.034429395383402e-18
+Derivative calculation 257
+  257   3.314553e-08   1.766465e-05   3.832389e-05   283       258       1         0         
+# fwd 541, ||Misfit|| 3.296547297338553e-08
+# fwd 542, ||Misfit|| 3.296547297338553e-08
+# Der 258, ||Misfit|| 6.593094594677107e-08, ||Misfit IC|| 0.0005985518637101698, ||Grad|| 3.135886119070477e-18
+Derivative calculation 258
+  258   3.296547e-08   1.797091e-05   3.030981e-05   284       259       1         0         
+# fwd 543, ||Misfit|| 3.278734676814728e-08
+# fwd 544, ||Misfit|| 3.278734676814728e-08
+# Der 259, ||Misfit|| 6.557469353629444e-08, ||Misfit IC|| 0.0005978202816840171, ||Grad|| 1.7869944455960282e-17
+Derivative calculation 259
+  259   3.278735e-08   4.250811e-05   6.468579e-05   285       260       1         0         
+# fwd 545, ||Misfit|| 3.245929371518278e-08
+# fwd 546, ||Misfit|| 3.245929371518278e-08
+# Der 260, ||Misfit|| 6.491858743036573e-08, ||Misfit IC|| 0.0005968023418433287, ||Grad|| 3.4647730976143297e-18
+Derivative calculation 260
+  260   3.245929e-08   1.891393e-05   6.173106e-05   286       261       1         0         
+# fwd 547, ||Misfit|| 3.2162003308986176e-08
+# fwd 548, ||Misfit|| 3.2162003308986176e-08
+# Der 261, ||Misfit|| 6.432400661797243e-08, ||Misfit IC|| 0.0005954857201288862, ||Grad|| 8.155940794462878e-18
+Derivative calculation 261
+  261   3.216200e-08   2.873506e-05   7.576775e-05   287       262       1         0         
+# fwd 549, ||Misfit|| 3.2021551703348055e-08
+# fwd 550, ||Misfit|| 3.2021551703348055e-08
+# Der 262, ||Misfit|| 6.404310340669563e-08, ||Misfit IC|| 0.0005937207811657855, ||Grad|| 4.007228172350527e-17
+Derivative calculation 262
+  262   3.202155e-08   6.364142e-05   1.024895e-04   288       263       1         0         
+# fwd 551, ||Misfit|| 3.1807571445665526e-08
+# fwd 552, ||Misfit|| 3.1807571445665526e-08
+# Der 263, ||Misfit|| 6.361514289133083e-08, ||Misfit IC|| 0.00059334400137281, ||Grad|| 1.0616529735987024e-17
+Derivative calculation 263
+  263   3.180757e-08   3.288954e-05   2.162134e-05   289       264       1         0         
+# fwd 553, ||Misfit|| 3.1587700757071624e-08
+# fwd 554, ||Misfit|| 3.1587700757071624e-08
+# Der 264, ||Misfit|| 6.317540151414367e-08, ||Misfit IC|| 0.0005924543684994696, ||Grad|| 5.158401131930711e-18
+Derivative calculation 264
+  264   3.158770e-08   2.305486e-05   4.914320e-05   290       265       1         0         
+# fwd 555, ||Misfit|| 3.134258872652122e-08
+# fwd 556, ||Misfit|| 3.134258872652122e-08
+# Der 265, ||Misfit|| 6.268517745304236e-08, ||Misfit IC|| 0.0005909123333998822, ||Grad|| 8.785128946992848e-18
+Derivative calculation 265
+  265   3.134259e-08   2.993800e-05   8.656786e-05   291       266       1         0         
+# fwd 557, ||Misfit|| 3.086509606194347e-08
+# fwd 558, ||Misfit|| 3.086509606194347e-08
+# Der 266, ||Misfit|| 6.173019212388719e-08, ||Misfit IC|| 0.0005876684380305308, ||Grad|| 1.4597945371457334e-17
+Derivative calculation 266
+  266   3.086510e-08   3.847748e-05   1.834451e-04   292       267       1         0         
+# fwd 559, ||Misfit|| 3.0326395963403885e-08
+# fwd 560, ||Misfit|| 3.0326395963403885e-08
+# Der 267, ||Misfit|| 6.065279192680755e-08, ||Misfit IC|| 0.0005839718447008312, ||Grad|| 2.384742832793716e-17
+Derivative calculation 267
+  267   3.032640e-08   4.913618e-05   2.089886e-04   293       268       1         0         
+# fwd 561, ||Misfit|| 2.9761697655509108e-08
+# fwd 562, ||Misfit|| 2.9761697655509108e-08
+# Der 268, ||Misfit|| 5.952339531101827e-08, ||Misfit IC|| 0.000580093314597391, ||Grad|| 1.970535557723893e-17
+Derivative calculation 268
+  268   2.976170e-08   4.473062e-05   2.220066e-04   294       269       1         0         
+# fwd 563, ||Misfit|| 2.9216589475894156e-08
+# fwd 564, ||Misfit|| 2.9216589475894156e-08
+# Der 269, ||Misfit|| 5.84331789517881e-08, ||Misfit IC|| 0.0005766133505361819, ||Grad|| 1.6369843368783666e-17
+Derivative calculation 269
+  269   2.921659e-08   4.094406e-05   2.003888e-04   295       270       1         0         
+# fwd 565, ||Misfit|| 2.8772087841050167e-08
+# fwd 566, ||Misfit|| 2.8772087841050167e-08
+# Der 270, ||Misfit|| 5.754417568209976e-08, ||Misfit IC|| 0.000574640508937235, ||Grad|| 1.2304936125840522e-17
+Derivative calculation 270
+  270   2.877209e-08   3.549502e-05   1.141507e-04   296       271       1         0         
+# fwd 567, ||Misfit|| 2.811940395210378e-08
+# fwd 568, ||Misfit|| 2.811940395210378e-08
+# Der 271, ||Misfit|| 5.62388079042077e-08, ||Misfit IC|| 0.0005704132586277684, ||Grad|| 4.559907309738101e-18
+Derivative calculation 271
+  271   2.811940e-08   2.176320e-05   2.480555e-04   297       272       1         0         
+# fwd 569, ||Misfit|| 2.7678772000687294e-08
+# fwd 570, ||Misfit|| 2.7678772000687294e-08
+# Der 272, ||Misfit|| 5.535754400137432e-08, ||Misfit IC|| 0.0005680840353193659, ||Grad|| 6.167606785603421e-18
+Derivative calculation 272
+  272   2.767877e-08   2.515554e-05   1.370172e-04   298       273       1         0         
+# fwd 571, ||Misfit|| 2.7287206562381905e-08
+# fwd 572, ||Misfit|| 2.7287206562381905e-08
+# Der 273, ||Misfit|| 5.457441312476403e-08, ||Misfit IC|| 0.0005624976070966676, ||Grad|| 9.300238727332563e-18
+Derivative calculation 273
+  273   2.728721e-08   3.075754e-05   3.376296e-04   299       274       1         0         
+# fwd 573, ||Misfit|| 2.6997073359933688e-08
+# fwd 574, ||Misfit|| 2.6997073359933688e-08
+# Der 274, ||Misfit|| 5.3994146719867726e-08, ||Misfit IC|| 0.0005617753136121928, ||Grad|| 7.34495138055895e-18
+Derivative calculation 274
+  274   2.699707e-08   2.738617e-05   4.504962e-05   300       275       1         0         
+# fwd 575, ||Misfit|| 2.763970060541318e-08
+# fwd 576, ||Misfit|| 2.6812157145036296e-08
+# fwd 577, ||Misfit|| 2.6812157145036296e-08
+# Der 275, ||Misfit|| 5.362431429007275e-08, ||Misfit IC|| 0.0005598455843225695, ||Grad|| 1.7723810449369184e-17
+Derivative calculation 275
+  275   2.681216e-08   4.236787e-05   1.170268e-04   302       276       2         0         
+# fwd 578, ||Misfit|| 2.6619991287600812e-08
+# fwd 579, ||Misfit|| 2.6619991287600812e-08
+# Der 276, ||Misfit|| 5.3239982575201407e-08, ||Misfit IC|| 0.0005591103605540528, ||Grad|| 5.7874730665323734e-18
+Derivative calculation 276
+  276   2.661999e-08   2.446506e-05   4.739125e-05   303       277       1         0         
+# fwd 580, ||Misfit|| 2.6453634908360166e-08
+# fwd 581, ||Misfit|| 2.6453634908360166e-08
+# Der 277, ||Misfit|| 5.290726981672016e-08, ||Misfit IC|| 0.0005582386016299016, ||Grad|| 4.508483585986523e-18
+Derivative calculation 277
+  277   2.645363e-08   2.167505e-05   5.138293e-05   304       278       1         0         
+# fwd 582, ||Misfit|| 2.5800254899614464e-08
+# fwd 583, ||Misfit|| 2.5800254899614464e-08
+# Der 278, ||Misfit|| 5.1600509799229305e-08, ||Misfit IC|| 0.0005536561576603835, ||Grad|| 5.043818237607024e-18
+Derivative calculation 278
+  278   2.580025e-08   2.279454e-05   2.722516e-04   305       279       1         0         
+# fwd 584, ||Misfit|| 2.5451911864426468e-08
+# fwd 585, ||Misfit|| 2.5451911864426468e-08
+# Der 279, ||Misfit|| 5.090382372885286e-08, ||Misfit IC|| 0.0005509323481234186, ||Grad|| 3.812976550138726e-18
+Derivative calculation 279
+  279   2.545191e-08   1.978513e-05   1.622800e-04   306       280       1         0         
+# fwd 586, ||Misfit|| 2.539456673528674e-08
+# fwd 587, ||Misfit|| 2.539456673528674e-08
+# Der 280, ||Misfit|| 5.078913347057359e-08, ||Misfit IC|| 0.0005428345123133812, ||Grad|| 6.325765546145981e-17
+Derivative calculation 280
+  280   2.539457e-08   7.980524e-05   4.948152e-04   307       281       1         0         
+# fwd 588, ||Misfit|| 2.4685218684215542e-08
+# fwd 589, ||Misfit|| 2.4685218684215542e-08
+# Der 281, ||Misfit|| 4.9370437368430885e-08, ||Misfit IC|| 0.0005421869356105944, ||Grad|| 1.423019628420037e-17
+Derivative calculation 281
+  281   2.468522e-08   3.796382e-05   4.539752e-05   308       282       1         0         
+# fwd 590, ||Misfit|| 2.4496768808284475e-08
+# fwd 591, ||Misfit|| 2.4496768808284475e-08
+# Der 282, ||Misfit|| 4.8993537616568964e-08, ||Misfit IC|| 0.0005424640244295354, ||Grad|| 8.258473758645411e-18
+Derivative calculation 282
+  282   2.449677e-08   2.894437e-05   3.421303e-05   309       283       1         0         
+# fwd 592, ||Misfit|| 2.435806429221257e-08
+# fwd 593, ||Misfit|| 2.435806429221257e-08
+# Der 283, ||Misfit|| 4.871612858442516e-08, ||Misfit IC|| 0.0005418724781855456, ||Grad|| 1.9661911403188012e-18
+Derivative calculation 283
+  283   2.435806e-08   1.432586e-05   3.755154e-05   310       284       1         0         
+# fwd 594, ||Misfit|| 2.4225835283921002e-08
+# fwd 595, ||Misfit|| 2.4225835283921002e-08
+# Der 284, ||Misfit|| 4.845167056784181e-08, ||Misfit IC|| 0.0005401235982046877, ||Grad|| 3.3726022568213335e-18
+Derivative calculation 284
+  284   2.422584e-08   1.868717e-05   1.084991e-04   311       285       1         0         
+# fwd 596, ||Misfit|| 2.407415085537264e-08
+# fwd 597, ||Misfit|| 2.407415085537264e-08
+# Der 285, ||Misfit|| 4.81483017107455e-08, ||Misfit IC|| 0.0005382396928210219, ||Grad|| 3.525545921444855e-18
+Derivative calculation 285
+  285   2.407415e-08   1.908552e-05   1.171610e-04   312       286       1         0         
+# fwd 598, ||Misfit|| 2.350542172184552e-08
+# fwd 599, ||Misfit|| 2.350542172184552e-08
+# Der 286, ||Misfit|| 4.701084344369143e-08, ||Misfit IC|| 0.0005320456221841558, ||Grad|| 8.463937587155223e-18
+Derivative calculation 286
+  286   2.350542e-08   2.937262e-05   3.812529e-04   313       287       1         0         
+# fwd 600, ||Misfit|| 2.337966200039578e-08
+# fwd 601, ||Misfit|| 2.337966200039578e-08
+# Der 287, ||Misfit|| 4.675932400079164e-08, ||Misfit IC|| 0.0005250596318962438, ||Grad|| 5.070017764023623e-17
+Derivative calculation 287
+  287   2.337966e-08   7.152839e-05   4.459772e-04   314       288       1         0         
+# fwd 602, ||Misfit|| 2.2799153398206167e-08
+# fwd 603, ||Misfit|| 2.2799153398206167e-08
+# Der 288, ||Misfit|| 4.559830679641238e-08, ||Misfit IC|| 0.000525851509259406, ||Grad|| 3.813595808513129e-18
+Derivative calculation 288
+  288   2.279915e-08   1.985028e-05   6.547687e-05   315       289       1         0         
+# fwd 604, ||Misfit|| 2.2597249399362168e-08
+# fwd 605, ||Misfit|| 2.2597249399362168e-08
+# Der 289, ||Misfit|| 4.5194498798724455e-08, ||Misfit IC|| 0.0005267144149180917, ||Grad|| 2.818300527696465e-18
+Derivative calculation 289
+  289   2.259725e-08   1.701636e-05   7.529910e-05   316       290       1         0         
+# fwd 606, ||Misfit|| 2.2693829667130246e-08
+# fwd 607, ||Misfit|| 2.2432146512634e-08
+# fwd 608, ||Misfit|| 2.2432146512634e-08
+# Der 290, ||Misfit|| 4.486429302526824e-08, ||Misfit IC|| 0.0005262658288171988, ||Grad|| 2.1722675280745798e-17
+Derivative calculation 290
+  290   2.243215e-08   4.685508e-05   5.056416e-05   318       291       2         0         
+# fwd 609, ||Misfit|| 2.225049636294481e-08
+# fwd 610, ||Misfit|| 2.225049636294481e-08
+# Der 291, ||Misfit|| 4.450099272588979e-08, ||Misfit IC|| 0.0005257782203173721, ||Grad|| 4.938788588827974e-18
+Derivative calculation 291
+  291   2.225050e-08   2.250972e-05   4.254885e-05   319       292       1         0         
+# fwd 611, ||Misfit|| 2.2118080515260666e-08
+# fwd 612, ||Misfit|| 2.2118080515260666e-08
+# Der 292, ||Misfit|| 4.4236161030521504e-08, ||Misfit IC|| 0.0005248016882216684, ||Grad|| 3.696559984691786e-18
+Derivative calculation 292
+  292   2.211808e-08   1.957134e-05   6.054912e-05   320       293       1         0         
+# fwd 613, ||Misfit|| 2.1961848293933022e-08
+# fwd 614, ||Misfit|| 2.1961848293933022e-08
+# Der 293, ||Misfit|| 4.3923696587866044e-08, ||Misfit IC|| 0.0005233040529346031, ||Grad|| 8.748687541339309e-18
+Derivative calculation 293
+  293   2.196185e-08   2.987357e-05   9.207325e-05   321       294       1         0         
+# fwd 615, ||Misfit|| 2.1683916368154768e-08
+# fwd 616, ||Misfit|| 2.1683916368154768e-08
+# Der 294, ||Misfit|| 4.3367832736309576e-08, ||Misfit IC|| 0.0005208046991793581, ||Grad|| 1.2915617940249257e-17
+Derivative calculation 294
+  294   2.168392e-08   3.623088e-05   1.554428e-04   322       295       1         0         
+# fwd 617, ||Misfit|| 2.1280138977362062e-08
+# fwd 618, ||Misfit|| 2.1280138977362062e-08
+# Der 295, ||Misfit|| 4.25602779547241e-08, ||Misfit IC|| 0.0005170561927469108, ||Grad|| 1.560116400099797e-17
+Derivative calculation 295
+  295   2.128014e-08   3.974461e-05   2.376345e-04   323       296       1         0         
+# fwd 619, ||Misfit|| 2.0937877382756678e-08
+# fwd 620, ||Misfit|| 2.0937877382756678e-08
+# Der 296, ||Misfit|| 4.187575476551315e-08, ||Misfit IC|| 0.0005128456324388651, ||Grad|| 8.703874707332919e-18
+Derivative calculation 296
+  296   2.093788e-08   2.974106e-05   2.718660e-04   324       297       1         0         
+# fwd 621, ||Misfit|| 2.0723101065081425e-08
+# fwd 622, ||Misfit|| 2.0723101065081425e-08
+# Der 297, ||Misfit|| 4.144620213016269e-08, ||Misfit IC|| 0.000513175487087448, ||Grad|| 3.0664671258549795e-18
+Derivative calculation 297
+  297   2.072310e-08   1.782026e-05   2.900521e-05   325       298       1         0         
+# fwd 623, ||Misfit|| 2.0567711180320566e-08
+# fwd 624, ||Misfit|| 2.0567711180320566e-08
+# Der 298, ||Misfit|| 4.1135422360641337e-08, ||Misfit IC|| 0.0005135014536441839, ||Grad|| 2.545815117368204e-18
+Derivative calculation 298
+  298   2.056771e-08   1.627897e-05   4.014546e-05   326       299       1         0         
+# fwd 625, ||Misfit|| 2.0475531947152834e-08
+# fwd 626, ||Misfit|| 2.0475531947152834e-08
+# Der 299, ||Misfit|| 4.095106389430563e-08, ||Misfit IC|| 0.0005131880571672875, ||Grad|| 1.8853856893503777e-17
+Derivative calculation 299
+  299   2.047553e-08   4.371346e-05   2.522861e-05   327       300       1         0         
+# fwd 627, ||Misfit|| 2.0346396729770596e-08
+# fwd 628, ||Misfit|| 2.0346396729770596e-08
+# Der 300, ||Misfit|| 4.0692793459541264e-08, ||Misfit IC|| 0.0005124564984121228, ||Grad|| 1.013352230597301e-17
+Derivative calculation 300
+  300   2.034640e-08   3.211503e-05   4.551405e-05   328       301       1         0         
+# fwd 629, ||Misfit|| 1.9927117719294037e-08
+# fwd 630, ||Misfit|| 1.9927117719294037e-08
+# Der 301, ||Misfit|| 3.985423543858778e-08, ||Misfit IC|| 0.0005085056038122372, ||Grad|| 4.756738704393196e-18
+Derivative calculation 301
+  301   1.992712e-08   2.207266e-05   2.484659e-04   329       302       1         0         
+# fwd 631, ||Misfit|| 1.9785363127389048e-08
+# fwd 632, ||Misfit|| 1.9785363127389048e-08
+# Der 302, ||Misfit|| 3.957072625477789e-08, ||Misfit IC|| 0.0005071128586310237, ||Grad|| 4.302740179324485e-18
+Derivative calculation 302
+  302   1.978536e-08   2.102946e-05   8.845706e-05   330       303       1         0         
+# fwd 633, ||Misfit|| 1.926378436453567e-08
+# fwd 634, ||Misfit|| 1.926378436453567e-08
+# Der 303, ||Misfit|| 3.852756872907097e-08, ||Misfit IC|| 0.0005008746315310572, ||Grad|| 7.422313647221692e-18
+Derivative calculation 303
+  303   1.926378e-08   2.752625e-05   4.033448e-04   331       304       1         0         
+# fwd 635, ||Misfit|| 1.9732970516935323e-08
+# fwd 636, ||Misfit|| 1.8977621160401188e-08
+# fwd 637, ||Misfit|| 1.8977621160401188e-08
+# Der 304, ||Misfit|| 3.7955242320802296e-08, ||Misfit IC|| 0.0004972611650859162, ||Grad|| 8.183154833481737e-18
+Derivative calculation 304
+  304   1.897762e-08   2.884883e-05   2.438945e-04   333       305       2         0         
+# fwd 638, ||Misfit|| 1.8736227928208895e-08
+# fwd 639, ||Misfit|| 1.8736227928208895e-08
+# Der 305, ||Misfit|| 3.747245585641778e-08, ||Misfit IC|| 0.0004958480173386389, ||Grad|| 3.0161450035894763e-18
+Derivative calculation 305
+  305   1.873623e-08   1.759974e-05   9.499713e-05   334       306       1         0         
+# fwd 640, ||Misfit|| 1.8545678382122618e-08
+# fwd 641, ||Misfit|| 1.8545678382122618e-08
+# Der 306, ||Misfit|| 3.7091356764245143e-08, ||Misfit IC|| 0.0004946149039587461, ||Grad|| 1.0319654324799893e-17
+Derivative calculation 306
+  306   1.854568e-08   3.235423e-05   8.321268e-05   335       307       1         0         
+# fwd 642, ||Misfit|| 1.858557317039029e-08
+# fwd 643, ||Misfit|| 1.847224866581158e-08
+# fwd 644, ||Misfit|| 1.847224866581158e-08
+# Der 307, ||Misfit|| 3.6944497331623404e-08, ||Misfit IC|| 0.00049435503627021, ||Grad|| 3.675015169729967e-18
+Derivative calculation 307
+  307   1.847225e-08   1.944063e-05   1.907743e-05   337       308       2         0         
+# fwd 645, ||Misfit|| 1.84200246005573e-08
+# fwd 646, ||Misfit|| 1.84200246005573e-08
+# Der 308, ||Misfit|| 3.684004920111488e-08, ||Misfit IC|| 0.0004944291015092605, ||Grad|| 3.1830902641743007e-18
+Derivative calculation 308
+  308   1.842002e-08   1.809645e-05   8.033296e-06   338       309       1         0         
+# fwd 647, ||Misfit|| 1.790293609441715e-08
+# fwd 648, ||Misfit|| 1.790293609441715e-08
+# Der 309, ||Misfit|| 3.5805872188834324e-08, ||Misfit IC|| 0.0004930672891688642, ||Grad|| 1.5122605492806233e-18
+Derivative calculation 309
+  309   1.790294e-08   1.257636e-05   1.019345e-04   339       310       1         0         
+# fwd 649, ||Misfit|| 1.7563082472416023e-08
+# fwd 650, ||Misfit|| 1.7563082472416023e-08
+# Der 310, ||Misfit|| 3.512616494483185e-08, ||Misfit IC|| 0.0004909661178649021, ||Grad|| 1.5695099324519551e-18
+Derivative calculation 310
+  310   1.756308e-08   1.285612e-05   1.408290e-04   340       311       1         0         
+# fwd 651, ||Misfit|| 1.7147401563353848e-08
+# fwd 652, ||Misfit|| 1.7147401563353848e-08
+# Der 311, ||Misfit|| 3.429480312670768e-08, ||Misfit IC|| 0.0004842121782336995, ||Grad|| 9.82314921397581e-18
+Derivative calculation 311
+  311   1.714740e-08   3.164963e-05   4.619036e-04   341       312       1         0         
+# fwd 653, ||Misfit|| 1.7109046748224783e-08
+# fwd 654, ||Misfit|| 1.7109046748224783e-08
+# Der 312, ||Misfit|| 3.421809349644961e-08, ||Misfit IC|| 0.0004807227290882517, ||Grad|| 3.622947896935664e-17
+Derivative calculation 312
+  312   1.710905e-08   6.040738e-05   2.476052e-04   342       313       1         0         
+# fwd 655, ||Misfit|| 1.666405890557021e-08
+# fwd 656, ||Misfit|| 1.666405890557021e-08
+# Der 313, ||Misfit|| 3.332811781114067e-08, ||Misfit IC|| 0.0004816225288293375, ||Grad|| 5.4011172731569065e-18
+Derivative calculation 313
+  313   1.666406e-08   2.340763e-05   6.946484e-05   343       314       1         0         
+# fwd 657, ||Misfit|| 1.6563907533090133e-08
+# fwd 658, ||Misfit|| 1.6563907533090133e-08
+# Der 314, ||Misfit|| 3.312781506618015e-08, ||Misfit IC|| 0.00048126207099838045, ||Grad|| 7.138908206235286e-18
+Derivative calculation 314
+  314   1.656391e-08   2.689465e-05   3.342481e-05   344       315       1         0         
+# fwd 659, ||Misfit|| 1.6464043953454704e-08
+# fwd 660, ||Misfit|| 1.6464043953454704e-08
+# Der 315, ||Misfit|| 3.292808790690952e-08, ||Misfit IC|| 0.00048010760440915593, ||Grad|| 1.6391923658781897e-18
+Derivative calculation 315
+  315   1.646404e-08   1.306384e-05   8.334090e-05   345       316       1         0         
+# fwd 661, ||Misfit|| 1.6380786265507196e-08
+# fwd 662, ||Misfit|| 1.6380786265507196e-08
+# Der 316, ||Misfit|| 3.2761572531014545e-08, ||Misfit IC|| 0.0004785168721959001, ||Grad|| 3.040500207891411e-18
+Derivative calculation 316
+  316   1.638079e-08   1.769550e-05   1.154229e-04   346       317       1         0         
+# fwd 663, ||Misfit|| 1.624507574022514e-08
+# fwd 664, ||Misfit|| 1.624507574022514e-08
+# Der 317, ||Misfit|| 3.249015148045009e-08, ||Misfit IC|| 0.00047678067771206653, ||Grad|| 3.2542436075723305e-18
+Derivative calculation 317
+  317   1.624508e-08   1.827690e-05   1.267092e-04   347       318       1         0         
+# fwd 665, ||Misfit|| 1.5890973669699434e-08
+# fwd 666, ||Misfit|| 1.5890973669699434e-08
+# Der 318, ||Misfit|| 3.178194733939907e-08, ||Misfit IC|| 0.0004728327150869269, ||Grad|| 4.0315118415251665e-18
+Derivative calculation 318
+  318   1.589097e-08   2.025608e-05   2.912685e-04   348       319       1         0         
+# fwd 667, ||Misfit|| 1.6002772128596702e-08
+# fwd 668, ||Misfit|| 1.5780251930340335e-08
+# fwd 669, ||Misfit|| 1.5780251930340335e-08
+# Der 319, ||Misfit|| 3.1560503860680776e-08, ||Misfit IC|| 0.00047116872665271125, ||Grad|| 5.8613653743749764e-18
+Derivative calculation 319
+  319   1.578025e-08   2.435297e-05   1.239356e-04   350       320       2         0         
+# fwd 670, ||Misfit|| 1.565771247883483e-08
+# fwd 671, ||Misfit|| 1.565771247883483e-08
+# Der 320, ||Misfit|| 3.1315424957669746e-08, ||Misfit IC|| 0.00047005307753141755, ||Grad|| 2.1525736159910205e-18
+Derivative calculation 320
+  320   1.565771e-08   1.486841e-05   8.397635e-05   351       321       1         0         
+# fwd 672, ||Misfit|| 1.5534920024558265e-08
+# fwd 673, ||Misfit|| 1.5534920024558265e-08
+# Der 321, ||Misfit|| 3.106984004911656e-08, ||Misfit IC|| 0.00046906902818189016, ||Grad|| 1.3122924403100226e-18
+Derivative calculation 321
+  321   1.553492e-08   1.171931e-05   7.369661e-05   352       322       1         0         
+# fwd 674, ||Misfit|| 1.5390425441163684e-08
+# fwd 675, ||Misfit|| 1.5390425441163684e-08
+# Der 322, ||Misfit|| 3.078085088232731e-08, ||Misfit IC|| 0.0004679330193766231, ||Grad|| 5.059769041607129e-18
+Derivative calculation 322
+  322   1.539043e-08   2.268212e-05   8.514934e-05   353       323       1         0         
+# fwd 676, ||Misfit|| 1.5341716159191297e-08
+# fwd 677, ||Misfit|| 1.5341716159191297e-08
+# Der 323, ||Misfit|| 3.0683432318382615e-08, ||Misfit IC|| 0.000465354204991257, ||Grad|| 1.9972428191969537e-17
+Derivative calculation 323
+  323   1.534172e-08   4.492487e-05   1.971648e-04   354       324       1         0         
+# fwd 678, ||Misfit|| 1.5190195672658098e-08
+# fwd 679, ||Misfit|| 1.5190195672658098e-08
+# Der 324, ||Misfit|| 3.038039134531649e-08, ||Misfit IC|| 0.00046632454080113456, ||Grad|| 2.5834770398284302e-18
+Derivative calculation 324
+  324   1.519020e-08   1.630536e-05   7.752461e-05   355       325       1         0         
+# fwd 680, ||Misfit|| 1.5102990860653445e-08
+# fwd 681, ||Misfit|| 1.5102990860653445e-08
+# Der 325, ||Misfit|| 3.0205981721307e-08, ||Misfit IC|| 0.0004665158429813561, ||Grad|| 2.2859329346507957e-18
+Derivative calculation 325
+  325   1.510299e-08   1.535419e-05   2.101780e-05   356       326       1         0         
+# fwd 682, ||Misfit|| 1.4993265790220078e-08
+# fwd 683, ||Misfit|| 1.4993265790220078e-08
+# Der 326, ||Misfit|| 2.998653158044029e-08, ||Misfit IC|| 0.0004663223515773081, ||Grad|| 3.558266256930285e-18
+Derivative calculation 326
+  326   1.499327e-08   1.909652e-05   2.425311e-05   357       327       1         0         
+# fwd 684, ||Misfit|| 1.473916967349491e-08
+# fwd 685, ||Misfit|| 1.473916967349491e-08
+# Der 327, ||Misfit|| 2.9478339346989704e-08, ||Misfit IC|| 0.00046415430231553425, ||Grad|| 7.179804955283447e-18
+Derivative calculation 327
+  327   1.473917e-08   2.704813e-05   1.632690e-04   358       328       1         0         
+# fwd 686, ||Misfit|| 1.5964273563061142e-08
+# fwd 687, ||Misfit|| 1.4586080321729583e-08
+# fwd 688, ||Misfit|| 1.4586080321729583e-08
+# Der 328, ||Misfit|| 2.917216064345929e-08, ||Misfit IC|| 0.00046384571596004223, ||Grad|| 2.8902077389021687e-18
+Derivative calculation 328
+  328   1.458608e-08   1.724388e-05   3.986637e-05   360       329       2         0         
+# fwd 689, ||Misfit|| 1.4343820828948812e-08
+# fwd 690, ||Misfit|| 1.4343820828948812e-08
+# Der 329, ||Misfit|| 2.8687641657897667e-08, ||Misfit IC|| 0.00046029197837293637, ||Grad|| 2.5009276690987333e-18
+Derivative calculation 329
+  329   1.434382e-08   1.616411e-05   2.769469e-04   361       330       1         0         
+# fwd 691, ||Misfit|| 1.4104140989223705e-08
+# fwd 692, ||Misfit|| 1.4104140989223705e-08
+# Der 330, ||Misfit|| 2.820828197844722e-08, ||Misfit IC|| 0.00045772850483490605, ||Grad|| 1.4364717415874892e-18
+Derivative calculation 330
+  330   1.410414e-08   1.235887e-05   2.038043e-04   362       331       1         0         
+# fwd 693, ||Misfit|| 1.4391412384871024e-08
+# fwd 694, ||Misfit|| 1.3955483352951211e-08
+# fwd 695, ||Misfit|| 1.3955483352951211e-08
+# Der 331, ||Misfit|| 2.791096670590232e-08, ||Misfit IC|| 0.0004562656742262583, ||Grad|| 2.1523041705721938e-17
+Derivative calculation 331
+  331   1.395548e-08   4.665057e-05   1.174047e-04   364       332       2         0         
+# fwd 696, ||Misfit|| 1.3725636487688164e-08
+# fwd 697, ||Misfit|| 1.3725636487688164e-08
+# Der 332, ||Misfit|| 2.745127297537621e-08, ||Misfit IC|| 0.00045463045584086606, ||Grad|| 4.733989328380398e-18
+Derivative calculation 332
+  332   1.372564e-08   2.200605e-05   1.336170e-04   365       333       1         0         
+# fwd 698, ||Misfit|| 1.359952102303155e-08
+# fwd 699, ||Misfit|| 1.359952102303155e-08
+# Der 333, ||Misfit|| 2.719904204606294e-08, ||Misfit IC|| 0.0004543790085397153, ||Grad|| 2.7962908114231296e-18
+Derivative calculation 333
+  333   1.359952e-08   1.699958e-05   2.698281e-05   366       334       1         0         
+# fwd 700, ||Misfit|| 1.3413771896420912e-08
+# fwd 701, ||Misfit|| 1.3413771896420912e-08
+# Der 334, ||Misfit|| 2.682754379284193e-08, ||Misfit IC|| 0.0004537798767489887, ||Grad|| 3.976197607422284e-18
+Derivative calculation 334
+  334   1.341377e-08   2.020565e-05   5.342977e-05   367       335       1         0         
+# fwd 702, ||Misfit|| 1.3169357768134837e-08
+# fwd 703, ||Misfit|| 1.3169357768134837e-08
+# Der 335, ||Misfit|| 2.6338715536269632e-08, ||Misfit IC|| 0.000452131999352076, ||Grad|| 3.934168084003436e-18
+Derivative calculation 335
+  335   1.316936e-08   2.010838e-05   1.346213e-04   368       336       1         0         
+# fwd 704, ||Misfit|| 1.475094339681808e-08
+# fwd 705, ||Misfit|| 1.3016210293316243e-08
+# fwd 706, ||Misfit|| 1.3016210293316243e-08
+# Der 336, ||Misfit|| 2.6032420586632566e-08, ||Misfit IC|| 0.00045017851364491645, ||Grad|| 1.33875577846957e-17
+Derivative calculation 336
+  336   1.301621e-08   3.684354e-05   1.633490e-04   370       337       2         0         
+# fwd 707, ||Misfit|| 1.2733942855885803e-08
+# fwd 708, ||Misfit|| 1.2733942855885803e-08
+# Der 337, ||Misfit|| 2.5467885711771672e-08, ||Misfit IC|| 0.00044746534049089625, ||Grad|| 3.1881250690700306e-18
+Derivative calculation 337
+  337   1.273394e-08   1.813105e-05   2.335914e-04   371       338       1         0         
+# fwd 709, ||Misfit|| 1.253947177418945e-08
+# fwd 710, ||Misfit|| 1.253947177418945e-08
+# Der 338, ||Misfit|| 2.507894354837879e-08, ||Misfit IC|| 0.00044424799692871134, ||Grad|| 8.44477900594308e-18
+Derivative calculation 338
+  338   1.253947e-08   2.925536e-05   2.926252e-04   372       339       1         0         
+# fwd 711, ||Misfit|| 1.2580524117899546e-08
+# fwd 712, ||Misfit|| 1.2441835487226239e-08
+# fwd 713, ||Misfit|| 1.2441835487226239e-08
+# Der 339, ||Misfit|| 2.4883670974452488e-08, ||Misfit IC|| 0.0004432337698479799, ||Grad|| 6.158991006695151e-18
+Derivative calculation 339
+  339   1.244184e-08   2.501632e-05   9.337473e-05   374       340       2         0         
+# fwd 714, ||Misfit|| 1.238572328422776e-08
+# fwd 715, ||Misfit|| 1.238572328422776e-08
+# Der 340, ||Misfit|| 2.477144656845565e-08, ||Misfit IC|| 0.00044341474891207194, ||Grad|| 4.093481955027652e-18
+Derivative calculation 340
+  340   1.238572e-08   2.042893e-05   1.941796e-05   375       341       1         0         
+# fwd 716, ||Misfit|| 1.2179568033877086e-08
+# fwd 717, ||Misfit|| 1.2179568033877086e-08
+# Der 341, ||Misfit|| 2.4359136067754116e-08, ||Misfit IC|| 0.00044253705946721675, ||Grad|| 1.1946820632402813e-18
+Derivative calculation 341
+  341   1.217957e-08   1.115931e-05   7.846314e-05   376       342       1         0         
+# fwd 718, ||Misfit|| 1.1963747991200889e-08
+# fwd 719, ||Misfit|| 1.1963747991200889e-08
+# Der 342, ||Misfit|| 2.3927495982401692e-08, ||Misfit IC|| 0.00044011755667077985, ||Grad|| 2.122769366435715e-18
+Derivative calculation 342
+  342   1.196375e-08   1.477850e-05   2.219103e-04   377       343       1         0         
+# fwd 720, ||Misfit|| 1.1782362069579381e-08
+# fwd 721, ||Misfit|| 1.1782362069579381e-08
+# Der 343, ||Misfit|| 2.3564724139158746e-08, ||Misfit IC|| 0.00043798420139118063, ||Grad|| 2.1350128029679685e-18
+Derivative calculation 343
+  343   1.178236e-08   1.484586e-05   1.973152e-04   378       344       1         0         
+# fwd 722, ||Misfit|| 1.1665739414219109e-08
+# fwd 723, ||Misfit|| 1.1665739414219109e-08
+# Der 344, ||Misfit|| 2.3331478828438088e-08, ||Misfit IC|| 0.0004334912520808019, ||Grad|| 9.12450725528421e-18
+Derivative calculation 344
+  344   1.166574e-08   3.039442e-05   4.513775e-04   379       345       1         0         
+# fwd 724, ||Misfit|| 1.1558891479316089e-08
+# fwd 725, ||Misfit|| 1.1558891479316089e-08
+# Der 345, ||Misfit|| 2.3117782958632085e-08, ||Misfit IC|| 0.0004336722866414691, ||Grad|| 1.1487121906443905e-17
+Derivative calculation 345
+  345   1.155889e-08   3.406095e-05   3.131079e-05   380       346       1         0         
+# fwd 726, ||Misfit|| 1.1466263542797307e-08
+# fwd 727, ||Misfit|| 1.1466263542797307e-08
+# Der 346, ||Misfit|| 2.2932527085594607e-08, ||Misfit IC|| 0.0004340765005625603, ||Grad|| 3.857717161513026e-18
+Derivative calculation 346
+  346   1.146626e-08   1.979067e-05   4.657712e-05   381       347       1         0         
+# fwd 728, ||Misfit|| 1.1379255251565137e-08
+# fwd 729, ||Misfit|| 1.1379255251565137e-08
+# Der 347, ||Misfit|| 2.2758510503130273e-08, ||Misfit IC|| 0.0004341563448001818, ||Grad|| 2.2098367491652178e-18
+Derivative calculation 347
+  347   1.137926e-08   1.503437e-05   2.509479e-05   382       348       1         0         
+# fwd 730, ||Misfit|| 1.1261690080913126e-08
+# fwd 731, ||Misfit|| 1.1261690080913126e-08
+# Der 348, ||Misfit|| 2.252338016182627e-08, ||Misfit IC|| 0.00043421122577031785, ||Grad|| 3.0740924425604216e-18
+Derivative calculation 348
+  348   1.126169e-08   1.769152e-05   3.310974e-05   383       349       1         0         
+# fwd 732, ||Misfit|| 1.097135459873527e-08
+# fwd 733, ||Misfit|| 1.097135459873527e-08
+# Der 349, ||Misfit|| 2.1942709197470634e-08, ||Misfit IC|| 0.0004332903830688241, ||Grad|| 5.4388534974014975e-18
+Derivative calculation 349
+  349   1.097135e-08   2.350799e-05   9.058319e-05   384       350       1         0         
+# fwd 734, ||Misfit|| 1.0758536960591223e-08
+# fwd 735, ||Misfit|| 1.0758536960591223e-08
+# Der 350, ||Misfit|| 2.1517073921182506e-08, ||Misfit IC|| 0.0004322419701508054, ||Grad|| 4.305096383765471e-18
+Derivative calculation 350
+  350   1.075854e-08   2.091914e-05   9.344920e-05   385       351       1         0         
+# fwd 736, ||Misfit|| 1.0538218295348328e-08
+# fwd 737, ||Misfit|| 1.0538218295348328e-08
+# Der 351, ||Misfit|| 2.1076436590696574e-08, ||Misfit IC|| 0.00043177983183820354, ||Grad|| 9.632792563638919e-18
+Derivative calculation 351
+  351   1.053822e-08   3.120037e-05   1.268350e-04   386       352       1         0         
+# fwd 738, ||Misfit|| 1.0297809706811273e-08
+# fwd 739, ||Misfit|| 1.0297809706811273e-08
+# Der 352, ||Misfit|| 2.0595619413622535e-08, ||Misfit IC|| 0.0004312712173517769, ||Grad|| 2.029863851371297e-18
+Derivative calculation 352
+  352   1.029781e-08   1.441034e-05   4.978927e-05   387       353       1         0         
+# fwd 740, ||Misfit|| 1.0246015089519315e-08
+# fwd 741, ||Misfit|| 1.0246015089519315e-08
+# Der 353, ||Misfit|| 2.0492030179038345e-08, ||Misfit IC|| 0.0004307779252996991, ||Grad|| 2.2331651204607528e-17
+Derivative calculation 353
+  353   1.024602e-08   4.745964e-05   5.130366e-05   388       354       1         0         
+# fwd 742, ||Misfit|| 1.0118492069732536e-08
+# fwd 743, ||Misfit|| 1.0118492069732536e-08
+# Der 354, ||Misfit|| 2.023698413946511e-08, ||Misfit IC|| 0.00043111689661170935, ||Grad|| 1.3181893427834927e-18
+Derivative calculation 354
+  354   1.011849e-08   1.179070e-05   4.124314e-05   389       355       1         0         
+# fwd 744, ||Misfit|| 1.0094144674169273e-08
+# fwd 745, ||Misfit|| 1.0094144674169273e-08
+# Der 355, ||Misfit|| 2.0188289348338655e-08, ||Misfit IC|| 0.0004312320776101285, ||Grad|| 1.350523019997866e-18
+Derivative calculation 355
+  355   1.009414e-08   1.190857e-05   1.428364e-05   390       356       1         0         
+# fwd 746, ||Misfit|| 1.0012290220844942e-08
+# fwd 747, ||Misfit|| 1.0012290220844942e-08
+# Der 356, ||Misfit|| 2.002458044168989e-08, ||Misfit IC|| 0.00043125503112111845, ||Grad|| 9.594388650416774e-19
+Derivative calculation 356
+  356   1.001229e-08   1.008504e-05   2.833141e-05   391       357       1         0         
+# fwd 748, ||Misfit|| 9.814055468179894e-09
+# fwd 749, ||Misfit|| 9.814055468179894e-09
+# Der 357, ||Misfit|| 1.9628110936359765e-08, ||Misfit IC|| 0.0004308029207337217, ||Grad|| 5.521985272749013e-19
+Derivative calculation 357
+  357   9.814055e-09   7.595298e-06   6.824709e-05   392       358       1         0         
+# fwd 750, ||Misfit|| 9.679783236976208e-09
+# fwd 751, ||Misfit|| 9.679783236976208e-09
+# Der 358, ||Misfit|| 1.935956647395257e-08, ||Misfit IC|| 0.00042914784093981345, ||Grad|| 4.2414878242076765e-18
+Derivative calculation 358
+  358   9.679783e-09   2.073019e-05   1.568495e-04   393       359       1         0         
+# fwd 752, ||Misfit|| 9.494101249945814e-09
+# fwd 753, ||Misfit|| 9.494101249945814e-09
+# Der 359, ||Misfit|| 1.89882024998916e-08, ||Misfit IC|| 0.0004276735016523973, ||Grad|| 2.2571585223479484e-18
+Derivative calculation 359
+  359   9.494101e-09   1.521147e-05   1.310867e-04   394       360       1         0         
+# fwd 754, ||Misfit|| 9.369308097583741e-09
+# fwd 755, ||Misfit|| 9.369308097583741e-09
+# Der 360, ||Misfit|| 1.8738616195167366e-08, ||Misfit IC|| 0.0004269176222523367, ||Grad|| 1.9102514132336296e-18
+Derivative calculation 360
+  360   9.369308e-09   1.399193e-05   7.513312e-05   395       361       1         0         
+# fwd 756, ||Misfit|| 1.0456557784825817e-08
+# fwd 757, ||Misfit|| 9.313130022335665e-09
+# fwd 758, ||Misfit|| 9.313130022335665e-09
+# Der 361, ||Misfit|| 1.862626004467141e-08, ||Misfit IC|| 0.00042619548591641164, ||Grad|| 1.0694576095246682e-17
+Derivative calculation 361
+  361   9.313130e-09   3.287672e-05   6.753796e-05   397       362       2         0         
+# fwd 759, ||Misfit|| 9.185949146139417e-09
+# fwd 760, ||Misfit|| 9.185949146139417e-09
+# Der 362, ||Misfit|| 1.837189829227896e-08, ||Misfit IC|| 0.00042441872083026795, ||Grad|| 2.2166765724855164e-18
+Derivative calculation 362
+  362   9.185949e-09   1.512976e-05   1.696239e-04   398       363       1         0         
+# fwd 761, ||Misfit|| 9.108974360665688e-09
+# fwd 762, ||Misfit|| 9.108974360665688e-09
+# Der 363, ||Misfit|| 1.8217948721331234e-08, ||Misfit IC|| 0.00042372601579811724, ||Grad|| 1.4965408189770539e-18
+Derivative calculation 363
+  363   9.108974e-09   1.248818e-05   6.466653e-05   399       364       1         0         
+# fwd 763, ||Misfit|| 8.82859127086456e-09
+# fwd 764, ||Misfit|| 8.82859127086456e-09
+# Der 364, ||Misfit|| 1.7657182541729238e-08, ||Misfit IC|| 0.00042057702336156886, ||Grad|| 1.303714990548105e-18
+Derivative calculation 364
+  364   8.828591e-09   1.169405e-05   2.996061e-04   400       365       1         0         
+# fwd 765, ||Misfit|| 8.668690691998502e-09
+# fwd 766, ||Misfit|| 8.668690691998502e-09
+# Der 365, ||Misfit|| 1.7337381383997027e-08, ||Misfit IC|| 0.00041885522703555235, ||Grad|| 1.7858766975815954e-18
+Derivative calculation 365
+  365   8.668691e-09   1.357754e-05   1.678999e-04   401       366       1         0         
+# fwd 767, ||Misfit|| 8.682966499708005e-09
+# fwd 768, ||Misfit|| 8.465305648695529e-09
+# fwd 769, ||Misfit|| 8.465305648695529e-09
+# Der 366, ||Misfit|| 1.6930611297391087e-08, ||Misfit IC|| 0.00041502359886507243, ||Grad|| 6.345703293771985e-18
+Derivative calculation 366
+  366   8.465306e-09   2.532687e-05   3.971319e-04   403       367       2         0         
+# fwd 770, ||Misfit|| 8.266298842602545e-09
+# fwd 771, ||Misfit|| 8.266298842602545e-09
+# Der 367, ||Misfit|| 1.653259768520506e-08, ||Misfit IC|| 0.00041269139918813103, ||Grad|| 5.3995876237769854e-18
+Derivative calculation 367
+  367   8.266299e-09   2.336252e-05   2.525045e-04   404       368       1         0         
+# fwd 772, ||Misfit|| 8.213668351937716e-09
+# fwd 773, ||Misfit|| 8.213668351937716e-09
+# Der 368, ||Misfit|| 1.6427336703875452e-08, ||Misfit IC|| 0.0004124018591402784, ||Grad|| 6.6467117083212924e-18
+Derivative calculation 368
+  368   8.213668e-09   2.599353e-05   3.520775e-05   405       369       1         0         
+# fwd 774, ||Misfit|| 8.154850912516261e-09
+# fwd 775, ||Misfit|| 8.154850912516261e-09
+# Der 369, ||Misfit|| 1.6309701825032404e-08, ||Misfit IC|| 0.0004127539925281981, ||Grad|| 1.1151735921460907e-18
+Derivative calculation 369
+  369   8.154851e-09   1.080160e-05   4.153199e-05   406       370       1         0         
+# fwd 776, ||Misfit|| 8.122245009328424e-09
+# fwd 777, ||Misfit|| 8.122245009328424e-09
+# Der 370, ||Misfit|| 1.624449001865684e-08, ||Misfit IC|| 0.00041294951522093386, ||Grad|| 1.5039858110331214e-18
+Derivative calculation 370
+  370   8.122245e-09   1.244733e-05   2.650683e-05   407       371       1         0         
+# fwd 778, ||Misfit|| 8.081339755251515e-09
+# fwd 779, ||Misfit|| 8.081339755251515e-09
+# Der 371, ||Misfit|| 1.616267951050314e-08, ||Misfit IC|| 0.00041280204523013646, ||Grad|| 2.198326517203628e-18
+Derivative calculation 371
+  371   8.081340e-09   1.497360e-05   1.665186e-05   408       372       1         0         
+# fwd 780, ||Misfit|| 7.959300912313398e-09
+# fwd 781, ||Misfit|| 7.959300912313398e-09
+# Der 372, ||Misfit|| 1.5918601824626593e-08, ||Misfit IC|| 0.0004118186177636557, ||Grad|| 3.0630570750106454e-18
+Derivative calculation 372
+  372   7.959301e-09   1.762813e-05   1.043954e-04   409       373       1         0         
+# fwd 782, ||Misfit|| 7.838684393713103e-09
+# fwd 783, ||Misfit|| 7.838684393713103e-09
+# Der 373, ||Misfit|| 1.5677368787426256e-08, ||Misfit IC|| 0.000410050600971982, ||Grad|| 2.394126397791073e-18
+Derivative calculation 373
+  373   7.838684e-09   1.561262e-05   1.890606e-04   410       374       1         0         
+# fwd 784, ||Misfit|| 7.766102679594013e-09
+# fwd 785, ||Misfit|| 7.766102679594013e-09
+# Der 374, ||Misfit|| 1.553220535918792e-08, ||Misfit IC|| 0.0004077263445514986, ||Grad|| 6.509872692737534e-18
+Derivative calculation 374
+  374   7.766103e-09   2.567816e-05   2.608466e-04   411       375       1         0         
+# fwd 786, ||Misfit|| 7.708871693919357e-09
+# fwd 787, ||Misfit|| 7.708871693919357e-09
+# Der 375, ||Misfit|| 1.541774338783876e-08, ||Misfit IC|| 0.00040764687440316506, ||Grad|| 2.2708171585298165e-18
+Derivative calculation 375
+  375   7.708872e-09   1.520149e-05   9.222138e-06   412       376       1         0         
+# fwd 788, ||Misfit|| 7.687884475355013e-09
+# fwd 789, ||Misfit|| 7.687884475355013e-09
+# Der 376, ||Misfit|| 1.537576895070993e-08, ||Misfit IC|| 0.0004078257612502586, ||Grad|| 1.7064683589192717e-18
+Derivative calculation 376
+  376   7.687884e-09   1.319971e-05   2.223157e-05   413       377       1         0         
+# fwd 790, ||Misfit|| 7.592452646573287e-09
+# fwd 791, ||Misfit|| 7.592452646573287e-09
+# Der 377, ||Misfit|| 1.518490529314658e-08, ||Misfit IC|| 0.00040683120682368776, ||Grad|| 2.1737238262935575e-18
+Derivative calculation 377
+  377   7.592453e-09   1.488798e-05   1.072251e-04   414       378       1         0         
+# fwd 792, ||Misfit|| 7.507032682377282e-09
+# fwd 793, ||Misfit|| 7.507032682377282e-09
+# Der 378, ||Misfit|| 1.5014065364754544e-08, ||Misfit IC|| 0.0004057729560885638, ||Grad|| 1.0569204089417968e-18
+Derivative calculation 378
+  378   7.507033e-09   1.047852e-05   1.192677e-04   415       379       1         0         
+# fwd 794, ||Misfit|| 7.395927247558544e-09
+# fwd 795, ||Misfit|| 7.395927247558544e-09
+# Der 379, ||Misfit|| 1.4791854495117096e-08, ||Misfit IC|| 0.00040444659178105866, ||Grad|| 9.272240061748343e-19
+Derivative calculation 379
+  379   7.395927e-09   9.788142e-06   1.495345e-04   416       380       1         0         
+# fwd 796, ||Misfit|| 7.2277642714400785e-09
+# fwd 797, ||Misfit|| 7.2277642714400785e-09
+# Der 380, ||Misfit|| 1.4455528542880076e-08, ||Misfit IC|| 0.0004018662416609658, ||Grad|| 7.696654416893816e-19
+Derivative calculation 380
+  380   7.227764e-09   8.870716e-06   2.985053e-04   417       381       1         0         
+# fwd 798, ||Misfit|| 7.221364702885421e-09
+# fwd 799, ||Misfit|| 7.221364702885421e-09
+# Der 381, ||Misfit|| 1.4442729405770899e-08, ||Misfit IC|| 0.00040033099090814017, ||Grad|| 2.7078578555643468e-17
+Derivative calculation 381
+  381   7.221365e-09   5.224499e-05   1.627890e-04   418       382       1         0         
+# fwd 800, ||Misfit|| 7.0866023005064254e-09
+# fwd 801, ||Misfit|| 7.0866023005064254e-09
+# Der 382, ||Misfit|| 1.4173204601012758e-08, ||Misfit IC|| 0.0004002847801061792, ||Grad|| 1.1013383949911939e-18
+Derivative calculation 382
+  382   7.086602e-09   1.061841e-05   1.222726e-05   419       383       1         0         
+# fwd 802, ||Misfit|| 7.055037877081762e-09
+# fwd 803, ||Misfit|| 7.055037877081762e-09
+# Der 383, ||Misfit|| 1.411007575416344e-08, ||Misfit IC|| 0.000400469312462873, ||Grad|| 3.982826126483463e-19
+Derivative calculation 383
+  383   7.055038e-09   6.471736e-06   3.476570e-05   420       384       1         0         
+# fwd 804, ||Misfit|| 7.014084441302188e-09
+# fwd 805, ||Misfit|| 7.014084441302188e-09
+# Der 384, ||Misfit|| 1.4028168882604394e-08, ||Misfit IC|| 0.0004003470377809871, ||Grad|| 6.379520285569716e-19
+Derivative calculation 384
+  384   7.014084e-09   8.164963e-06   2.797830e-05   421       385       1         0         
+# fwd 806, ||Misfit|| 6.95935061099105e-09
+# fwd 807, ||Misfit|| 6.95935061099105e-09
+# Der 385, ||Misfit|| 1.391870122198205e-08, ||Misfit IC|| 0.0004006072784378049, ||Grad|| 9.471971178514321e-19
+Derivative calculation 385
+  385   6.959351e-09   9.913058e-06   7.555758e-05   422       386       1         0         
+# fwd 808, ||Misfit|| 6.855595468541666e-09
+# fwd 809, ||Misfit|| 6.855595468541666e-09
+# Der 386, ||Misfit|| 1.3711190937083317e-08, ||Misfit IC|| 0.0003974981393645957, ||Grad|| 2.5933721497492313e-18
+Derivative calculation 386
+  386   6.855595e-09   1.623132e-05   2.999368e-04   423       387       1         0         
+# fwd 810, ||Misfit|| 6.72989137130712e-09
+# fwd 811, ||Misfit|| 6.72989137130712e-09
+# Der 387, ||Misfit|| 1.3459782742614303e-08, ||Misfit IC|| 0.0003968579638779816, ||Grad|| 1.1373147908089726e-18
+Derivative calculation 387
+  387   6.729891e-09   1.078667e-05   6.905440e-05   424       388       1         0         
+# fwd 812, ||Misfit|| 6.659718943242094e-09
+# fwd 813, ||Misfit|| 6.659718943242094e-09
+# Der 388, ||Misfit|| 1.3319437886484212e-08, ||Misfit IC|| 0.00039596462185271787, ||Grad|| 1.7422505472963453e-18
+Derivative calculation 388
+  388   6.659719e-09   1.331873e-05   9.861802e-05   425       389       1         0         
+# fwd 814, ||Misfit|| 6.646430070673866e-09
+# fwd 815, ||Misfit|| 6.646430070673866e-09
+# Der 389, ||Misfit|| 1.3292860141347707e-08, ||Misfit IC|| 0.0003945606030159145, ||Grad|| 9.902724339468798e-18
+Derivative calculation 389
+  389   6.646430e-09   3.161079e-05   1.407820e-04   426       390       1         0         
+# fwd 816, ||Misfit|| 6.603783682387637e-09
+# fwd 817, ||Misfit|| 6.603783682387637e-09
+# Der 390, ||Misfit|| 1.3207567364775332e-08, ||Misfit IC|| 0.00039486799958863585, ||Grad|| 1.1023601526592308e-18
+Derivative calculation 390
+  390   6.603784e-09   1.063697e-05   3.267618e-05   427       391       1         0         
+# fwd 818, ||Misfit|| 6.588601618706921e-09
+# fwd 819, ||Misfit|| 6.588601618706921e-09
+# Der 391, ||Misfit|| 1.3177203237413744e-08, ||Misfit IC|| 0.00039481914593498293, ||Grad|| 5.9336130783016345e-19
+Derivative calculation 391
+  391   6.588602e-09   7.852019e-06   4.145500e-06   428       392       1         0         
+# fwd 820, ||Misfit|| 6.558498862190054e-09
+# fwd 821, ||Misfit|| 6.558498862190054e-09
+# Der 392, ||Misfit|| 1.3116997724380019e-08, ||Misfit IC|| 0.0003944713663629183, ||Grad|| 1.842236016474011e-18
+Derivative calculation 392
+  392   6.558499e-09   1.367337e-05   3.056986e-05   429       393       1         0         
+# fwd 822, ||Misfit|| 6.515528043356622e-09
+# fwd 823, ||Misfit|| 6.515528043356622e-09
+# Der 393, ||Misfit|| 1.3031056086713195e-08, ||Misfit IC|| 0.00039378120698400427, ||Grad|| 3.3640607922485366e-18
+Derivative calculation 393
+  393   6.515528e-09   1.844067e-05   6.248265e-05   430       394       1         0         
+# fwd 824, ||Misfit|| 6.455401244852477e-09
+# fwd 825, ||Misfit|| 6.455401244852477e-09
+# Der 394, ||Misfit|| 1.291080248970497e-08, ||Misfit IC|| 0.00039293780150294056, ||Grad|| 2.6182943791252873e-18
+Derivative calculation 394
+  394   6.455401e-09   1.629249e-05   7.528948e-05   431       395       1         0         
+# fwd 826, ||Misfit|| 6.376617920182881e-09
+# fwd 827, ||Misfit|| 6.376617920182881e-09
+# Der 395, ||Misfit|| 1.275323584036572e-08, ||Misfit IC|| 0.0003908327559198678, ||Grad|| 1.9138456012214933e-18
+Derivative calculation 395
+  395   6.376618e-09   1.398896e-05   1.989805e-04   432       396       1         0         
+# fwd 828, ||Misfit|| 6.3004368017288625e-09
+# fwd 829, ||Misfit|| 6.3004368017288625e-09
+# Der 396, ||Misfit|| 1.2600873603457712e-08, ||Misfit IC|| 0.0003890546876653825, ||Grad|| 3.3090638099420188e-18
+Derivative calculation 396
+  396   6.300437e-09   1.833518e-05   1.722214e-04   433       397       1         0         
+# fwd 830, ||Misfit|| 6.249335455899549e-09
+# fwd 831, ||Misfit|| 6.249335455899549e-09
+# Der 397, ||Misfit|| 1.2498670911798998e-08, ||Misfit IC|| 0.0003885513627169154, ||Grad|| 9.88513934480705e-18
+Derivative calculation 397
+  397   6.249335e-09   3.155522e-05   4.898750e-05   434       398       1         0         
+# fwd 832, ||Misfit|| 6.201280822459603e-09
+# fwd 833, ||Misfit|| 6.201280822459603e-09
+# Der 398, ||Misfit|| 1.2402561644919168e-08, ||Misfit IC|| 0.00038854269939237417, ||Grad|| 3.1269798331024425e-18
+Derivative calculation 398
+  398   6.201281e-09   1.778620e-05   4.631582e-06   435       399       1         0         
+# fwd 834, ||Misfit|| 6.136069299018058e-09
+# fwd 835, ||Misfit|| 6.136069299018058e-09
+# Der 399, ||Misfit|| 1.227213859803615e-08, ||Misfit IC|| 0.0003880694427033172, ||Grad|| 6.781070314611112e-19
+Derivative calculation 399
+  399   6.136069e-09   8.467275e-06   4.510140e-05   436       400       1         0         
+# fwd 836, ||Misfit|| 6.088139452053936e-09
+# fwd 837, ||Misfit|| 6.088139452053936e-09
+# Der 400, ||Misfit|| 1.2176278904107773e-08, ||Misfit IC|| 0.0003873179412119663, ||Grad|| 1.3255673966446261e-18
+Derivative calculation 400
+  400   6.088139e-09   1.176965e-05   7.188735e-05   437       401       1         0         
+# fwd 838, ||Misfit|| 5.983314653256016e-09
+# fwd 839, ||Misfit|| 5.983314653256016e-09
+# Der 401, ||Misfit|| 1.1966629306511996e-08, ||Misfit IC|| 0.00038603921749132597, ||Grad|| 2.6676399725413767e-18
+Derivative calculation 401
+  401   5.983315e-09   1.657072e-05   1.227066e-04   438       402       1         0         
+# fwd 840, ||Misfit|| 5.783300010161012e-09
+# fwd 841, ||Misfit|| 5.783300010161012e-09
+# Der 402, ||Misfit|| 1.1566600020322054e-08, ||Misfit IC|| 0.0003834433973049379, ||Grad|| 2.809091590113841e-18
+Derivative calculation 402
+  402   5.783300e-09   1.698452e-05   2.558773e-04   439       403       1         0         
+# fwd 842, ||Misfit|| 5.644177191552833e-09
+# fwd 843, ||Misfit|| 5.644177191552833e-09
+# Der 403, ||Misfit|| 1.1288354383105726e-08, ||Misfit IC|| 0.0003800159312776588, ||Grad|| 3.052288502252614e-17
+Derivative calculation 403
+  403   5.644177e-09   5.544668e-05   3.471078e-04   440       404       1         0         
+# fwd 844, ||Misfit|| 5.529546753145401e-09
+# fwd 845, ||Misfit|| 5.529546753145401e-09
+# Der 404, ||Misfit|| 1.1059093506290813e-08, ||Misfit IC|| 0.0003786654349068568, ||Grad|| 8.53634105337552e-18
+Derivative calculation 404
+  404   5.529547e-09   2.936298e-05   1.467309e-04   441       405       1         0         
+# fwd 846, ||Misfit|| 5.467631491585649e-09
+# fwd 847, ||Misfit|| 5.467631491585649e-09
+# Der 405, ||Misfit|| 1.0935262983171245e-08, ||Misfit IC|| 0.0003798048131617493, ||Grad|| 1.7601520524252144e-18
+Derivative calculation 405
+  405   5.467631e-09   1.339847e-05   1.257857e-04   442       406       1         0         
+# fwd 848, ||Misfit|| 5.4318426709627185e-09
+# fwd 849, ||Misfit|| 5.4318426709627185e-09
+# Der 406, ||Misfit|| 1.0863685341925477e-08, ||Misfit IC|| 0.0003798412870117388, ||Grad|| 5.660064996407983e-19
+Derivative calculation 406
+  406   5.431843e-09   7.703395e-06   8.758895e-06   443       407       1         0         
+# fwd 850, ||Misfit|| 5.390859750515754e-09
+# fwd 851, ||Misfit|| 5.390859750515754e-09
+# Der 407, ||Misfit|| 1.0781719501031592e-08, ||Misfit IC|| 0.0003795682687752004, ||Grad|| 8.741861954785606e-19
+Derivative calculation 407
+  407   5.390860e-09   9.499257e-06   2.730633e-05   444       408       1         0         
+# fwd 852, ||Misfit|| 5.306971929648084e-09
+# fwd 853, ||Misfit|| 5.306971929648084e-09
+# Der 408, ||Misfit|| 1.0613943859296256e-08, ||Misfit IC|| 0.0003788767684787777, ||Grad|| 2.181699884154718e-18
+Derivative calculation 408
+  408   5.306972e-09   1.487354e-05   6.951820e-05   445       409       1         0         
+# fwd 854, ||Misfit|| 5.198263209774731e-09
+# fwd 855, ||Misfit|| 5.198263209774731e-09
+# Der 409, ||Misfit|| 1.0396526419549472e-08, ||Misfit IC|| 0.00037784517744167797, ||Grad|| 2.7163575402872208e-18
+Derivative calculation 409
+  409   5.198263e-09   1.657553e-05   1.046113e-04   446       410       1         0         
+# fwd 856, ||Misfit|| 5.2473624366607336e-09
+# fwd 857, ||Misfit|| 5.158070507270713e-09
+# fwd 858, ||Misfit|| 5.158070507270713e-09
+# Der 410, ||Misfit|| 1.0316141014541445e-08, ||Misfit IC|| 0.00037784493006055934, ||Grad|| 5.496603534094902e-18
+Derivative calculation 410
+  410   5.158071e-09   2.355682e-05   2.662631e-05   448       411       2         0         
+# fwd 859, ||Misfit|| 5.082425302573557e-09
+# fwd 860, ||Misfit|| 5.082425302573557e-09
+# Der 411, ||Misfit|| 1.0164850605147099e-08, ||Misfit IC|| 0.0003773888916982268, ||Grad|| 1.0306071922557737e-18
+Derivative calculation 411
+  411   5.082425e-09   1.029705e-05   4.707520e-05   449       412       1         0         
+# fwd 861, ||Misfit|| 5.049067462488418e-09
+# fwd 862, ||Misfit|| 5.049067462488418e-09
+# Der 412, ||Misfit|| 1.0098134924976972e-08, ||Misfit IC|| 0.00037750197694154234, ||Grad|| 5.13377836812027e-19
+Derivative calculation 412
+  412   5.049067e-09   7.337006e-06   2.174712e-05   450       413       1         0         
+# fwd 863, ||Misfit|| 5.011090181273858e-09
+# fwd 864, ||Misfit|| 5.011090181273858e-09
+# Der 413, ||Misfit|| 1.0022180362547765e-08, ||Misfit IC|| 0.0003776901197937803, ||Grad|| 7.137644911111139e-19
+Derivative calculation 413
+  413   5.011090e-09   8.578175e-06   3.449597e-05   451       414       1         0         
+# fwd 865, ||Misfit|| 4.951679847667301e-09
+# fwd 866, ||Misfit|| 4.951679847667301e-09
+# Der 414, ||Misfit|| 9.90335969533456e-09, ||Misfit IC|| 0.00037738525567270587, ||Grad|| 1.2271442801205107e-18
+Derivative calculation 414
+  414   4.951680e-09   1.117218e-05   2.887362e-05   452       415       1         0         
+# fwd 867, ||Misfit|| 4.860190345061452e-09
+# fwd 868, ||Misfit|| 4.860190345061452e-09
+# Der 415, ||Misfit|| 9.720380690122947e-09, ||Misfit IC|| 0.0003762660791080351, ||Grad|| 2.5416018584128456e-18
+Derivative calculation 415
+  415   4.860190e-09   1.606086e-05   1.065391e-04   453       416       1         0         
+# fwd 869, ||Misfit|| 4.860819459326319e-09
+# fwd 870, ||Misfit|| 4.826651081597193e-09
+# fwd 871, ||Misfit|| 4.826651081597193e-09
+# Der 416, ||Misfit|| 9.653302163194363e-09, ||Misfit IC|| 0.00037556992095123993, ||Grad|| 2.138090684761996e-18
+Derivative calculation 416
+  416   4.826651e-09   1.475639e-05   6.763728e-05   455       417       2         0         
+# fwd 872, ||Misfit|| 4.7702000290137404e-09
+# fwd 873, ||Misfit|| 4.7702000290137404e-09
+# Der 417, ||Misfit|| 9.5404000580275e-09, ||Misfit IC|| 0.00037478927631635136, ||Grad|| 1.317722724883616e-18
+Derivative calculation 417
+  417   4.770200e-09   1.160315e-05   8.403298e-05   456       418       1         0         
+# fwd 874, ||Misfit|| 4.6814070228833e-09
+# fwd 875, ||Misfit|| 4.6814070228833e-09
+# Der 418, ||Misfit|| 9.362814045766634e-09, ||Misfit IC|| 0.0003722097202761468, ||Grad|| 1.0684728964973324e-18
+Derivative calculation 418
+  418   4.681407e-09   1.041436e-05   2.739583e-04   457       419       1         0         
+# fwd 876, ||Misfit|| 4.644904380371764e-09
+# fwd 877, ||Misfit|| 4.644904380371764e-09
+# Der 419, ||Misfit|| 9.28980876074357e-09, ||Misfit IC|| 0.00037171608402189373, ||Grad|| 5.867859920977521e-19
+Derivative calculation 419
+  419   4.644904e-09   7.747871e-06   6.045315e-05   458       420       1         0         
+# fwd 878, ||Misfit|| 4.612248280456044e-09
+# fwd 879, ||Misfit|| 4.612248280456044e-09
+# Der 420, ||Misfit|| 9.224496560912015e-09, ||Misfit IC|| 0.00037159255550129824, ||Grad|| 4.3063969426858755e-19
+Derivative calculation 420
+  420   4.612248e-09   6.653117e-06   1.225470e-05   459       421       1         0         
+# fwd 880, ||Misfit|| 4.407917833190864e-09
+# fwd 881, ||Misfit|| 4.407917833190864e-09
+# Der 421, ||Misfit|| 8.815835666381768e-09, ||Misfit IC|| 0.0003702498860083102, ||Grad|| 8.124227992185023e-19
+Derivative calculation 421
+  421   4.407918e-09   9.177761e-06   1.245637e-04   460       422       1         0         
+# fwd 882, ||Misfit|| 4.321412687249548e-09
+# fwd 883, ||Misfit|| 4.321412687249548e-09
+# Der 422, ||Misfit|| 8.642825374499093e-09, ||Misfit IC|| 0.0003694668065045477, ||Grad|| 6.07409570670526e-18
+Derivative calculation 422
+  422   4.321413e-09   2.478742e-05   7.433769e-05   461       423       1         0         
+# fwd 884, ||Misfit|| 4.2615775031864094e-09
+# fwd 885, ||Misfit|| 4.2615775031864094e-09
+# Der 423, ||Misfit|| 8.52315500637282e-09, ||Misfit IC|| 0.0003674297994100964, ||Grad|| 3.1321827095768738e-18
+Derivative calculation 423
+  423   4.261578e-09   1.781594e-05   1.969426e-04   462       424       1         0         
+# fwd 886, ||Misfit|| 4.227130397307671e-09
+# fwd 887, ||Misfit|| 4.227130397307671e-09
+# Der 424, ||Misfit|| 8.454260794615358e-09, ||Misfit IC|| 0.0003678209904734062, ||Grad|| 6.718383548203168e-19
+Derivative calculation 424
+  424   4.227130e-09   8.352307e-06   3.839233e-05   463       425       1         0         
+# fwd 888, ||Misfit|| 4.208123920899068e-09
+# fwd 889, ||Misfit|| 4.208123920899068e-09
+# Der 425, ||Misfit|| 8.41624784179817e-09, ||Misfit IC|| 0.00036781563961643687, ||Grad|| 7.649089723580574e-19
+Derivative calculation 425
+  425   4.208124e-09   8.878714e-06   9.668481e-06   464       426       1         0         
+# fwd 890, ||Misfit|| 4.1574013682142195e-09
+# fwd 891, ||Misfit|| 4.1574013682142195e-09
+# Der 426, ||Misfit|| 8.314802736428366e-09, ||Misfit IC|| 0.00036734481673782545, ||Grad|| 1.3215047484880291e-18
+Derivative calculation 426
+  426   4.157401e-09   1.159913e-05   5.234494e-05   465       427       1         0         
+# fwd 892, ||Misfit|| 4.07782512716914e-09
+# fwd 893, ||Misfit|| 4.07782512716914e-09
+# Der 427, ||Misfit|| 8.155650254338273e-09, ||Misfit IC|| 0.0003662828490931076, ||Grad|| 1.6516403092594022e-18
+Derivative calculation 427
+  427   4.077825e-09   1.297023e-05   1.096546e-04   466       428       1         0         
+# fwd 894, ||Misfit|| 3.9410364293294765e-09
+# fwd 895, ||Misfit|| 3.9410364293294765e-09
+# Der 428, ||Misfit|| 7.882072858658958e-09, ||Misfit IC|| 0.00036377091905471967, ||Grad|| 7.921009740242537e-18
+Derivative calculation 428
+  428   3.941036e-09   2.828362e-05   2.669359e-04   467       429       1         0         
+# fwd 896, ||Misfit|| 3.8583468271728734e-09
+# fwd 897, ||Misfit|| 3.8583468271728734e-09
+# Der 429, ||Misfit|| 7.716693654345747e-09, ||Misfit IC|| 0.00036089910431537755, ||Grad|| 8.636242317643545e-18
+Derivative calculation 429
+  429   3.858347e-09   2.961416e-05   3.333150e-04   468       430       1         0         
+# fwd 898, ||Misfit|| 3.752325622049632e-09
+# fwd 899, ||Misfit|| 3.752325622049632e-09
+# Der 430, ||Misfit|| 7.504651244099228e-09, ||Misfit IC|| 0.0003610274996796972, ||Grad|| 7.935653777666696e-19
+Derivative calculation 430
+  430   3.752326e-09   9.105790e-06   2.700454e-05   469       431       1         0         
+# fwd 900, ||Misfit|| 3.7091686987526244e-09
+# fwd 901, ||Misfit|| 3.7091686987526244e-09
+# Der 431, ||Misfit|| 7.418337397505253e-09, ||Misfit IC|| 0.00036083838285576504, ||Grad|| 8.730150157343751e-19
+Derivative calculation 431
+  431   3.709169e-09   9.469501e-06   2.238452e-05   470       432       1         0         
+# fwd 902, ||Misfit|| 3.65175679306123e-09
+# fwd 903, ||Misfit|| 3.65175679306123e-09
+# Der 432, ||Misfit|| 7.303513586122484e-09, ||Misfit IC|| 0.0003603253000777758, ||Grad|| 1.0667776002392623e-18
+Derivative calculation 432
+  432   3.651757e-09   1.041916e-05   5.986191e-05   471       433       1         0         
+# fwd 904, ||Misfit|| 3.609581795957487e-09
+# fwd 905, ||Misfit|| 3.609581795957487e-09
+# Der 433, ||Misfit|| 7.219163591914935e-09, ||Misfit IC|| 0.00035949533525862076, ||Grad|| 5.982483666868858e-18
+Derivative calculation 433
+  433   3.609582e-09   2.461152e-05   9.684981e-05   472       434       1         0         
+# fwd 906, ||Misfit|| 3.509236064340869e-09
+# fwd 907, ||Misfit|| 3.509236064340869e-09
+# Der 434, ||Misfit|| 7.018472128681754e-09, ||Misfit IC|| 0.0003578263538460498, ||Grad|| 8.90343290785918e-19
+Derivative calculation 434
+  434   3.509236e-09   9.580889e-06   2.128634e-04   473       435       1         0         
+# fwd 908, ||Misfit|| 3.470996894796482e-09
+# fwd 909, ||Misfit|| 3.470996894796482e-09
+# Der 435, ||Misfit|| 6.941993789592933e-09, ||Misfit IC|| 0.0003577257459205678, ||Grad|| 5.542062620949233e-19
+Derivative calculation 435
+  435   3.470997e-09   7.580168e-06   1.366484e-05   474       436       1         0         
+# fwd 910, ||Misfit|| 3.48099022340588e-09
+# fwd 911, ||Misfit|| 3.4095847817401633e-09
+# fwd 912, ||Misfit|| 3.4095847817401633e-09
+# Der 436, ||Misfit|| 6.819169563480312e-09, ||Misfit IC|| 0.0003573994605095667, ||Grad|| 4.850961830269975e-18
+Derivative calculation 436
+  436   3.409585e-09   2.212812e-05   4.164570e-05   476       437       2         0         
+# fwd 913, ||Misfit|| 3.3609285152726362e-09
+# fwd 914, ||Misfit|| 3.3609285152726362e-09
+# Der 437, ||Misfit|| 6.721857030545322e-09, ||Misfit IC|| 0.0003568718952106828, ||Grad|| 1.0501429618906577e-18
+Derivative calculation 437
+  437   3.360929e-09   1.042316e-05   6.661425e-05   477       438       1         0         
+# fwd 915, ||Misfit|| 3.3481968888940675e-09
+# fwd 916, ||Misfit|| 3.3481968888940675e-09
+# Der 438, ||Misfit|| 6.696393777788107e-09, ||Misfit IC|| 0.00035683611231105615, ||Grad|| 7.37243442651234e-19
+Derivative calculation 438
+  438   3.348197e-09   8.762650e-06   4.587798e-06   478       439       1         0         
+# fwd 917, ||Misfit|| 3.280441654313262e-09
+# fwd 918, ||Misfit|| 3.280441654313262e-09
+# Der 439, ||Misfit|| 6.560883308626563e-09, ||Misfit IC|| 0.0003558313293641585, ||Grad|| 3.338057237057861e-19
+Derivative calculation 439
+  439   3.280442e-09   5.954092e-06   1.282632e-04   479       440       1         0         
+# fwd 919, ||Misfit|| 3.2429862708831124e-09
+# fwd 920, ||Misfit|| 3.2429862708831124e-09
+# Der 440, ||Misfit|| 6.485972541766212e-09, ||Misfit IC|| 0.0003552306299773004, ||Grad|| 3.5979644675510792e-19
+Derivative calculation 440
+  440   3.242986e-09   6.140745e-06   7.865437e-05   480       441       1         0         
+# fwd 921, ||Misfit|| 3.1912030496612415e-09
+# fwd 922, ||Misfit|| 3.1912030496612415e-09
+# Der 441, ||Misfit|| 6.382406099322482e-09, ||Misfit IC|| 0.00035400273764805485, ||Grad|| 2.3533904651847084e-18
+Derivative calculation 441
+  441   3.191203e-09   1.541236e-05   1.572530e-04   481       442       1         0         
+# fwd 923, ||Misfit|| 3.1857032302957415e-09
+# fwd 924, ||Misfit|| 3.1857032302957415e-09
+# Der 442, ||Misfit|| 6.371406460591472e-09, ||Misfit IC|| 0.0003528242151109349, ||Grad|| 3.832663978713077e-18
+Derivative calculation 442
+  442   3.185703e-09   1.968171e-05   1.612507e-04   482       443       1         0         
+# fwd 925, ||Misfit|| 3.150410178494873e-09
+# fwd 926, ||Misfit|| 3.150410178494873e-09
+# Der 443, ||Misfit|| 6.3008203569897095e-09, ||Misfit IC|| 0.0003535452828519755, ||Grad|| 8.638288087195653e-19
+Derivative calculation 443
+  443   3.150410e-09   9.341400e-06   1.012986e-04   483       444       1         0         
+# fwd 927, ||Misfit|| 3.1429806706098916e-09
+# fwd 928, ||Misfit|| 3.1429806706098916e-09
+# Der 444, ||Misfit|| 6.285961341219829e-09, ||Misfit IC|| 0.0003537608505534399, ||Grad|| 2.3495020021719406e-19
+Derivative calculation 444
+  444   3.142981e-09   4.911402e-06   3.137954e-05   484       445       1         0         
+# fwd 929, ||Misfit|| 3.137276698220033e-09
+# fwd 930, ||Misfit|| 3.137276698220033e-09
+# Der 445, ||Misfit|| 6.274553396440074e-09, ||Misfit IC|| 0.0003538258349517521, ||Grad|| 2.2872140280988706e-19
+Derivative calculation 445
+  445   3.137277e-09   4.851318e-06   1.147919e-05   485       446       1         0         
+# fwd 931, ||Misfit|| 3.1117619368548066e-09
+# fwd 932, ||Misfit|| 3.1117619368548066e-09
+# Der 446, ||Misfit|| 6.223523873709592e-09, ||Misfit IC|| 0.0003540508393957292, ||Grad|| 3.9551784264197903e-19
+Derivative calculation 446
+  446   3.111762e-09   6.364263e-06   4.696905e-05   486       447       1         0         
+# fwd 933, ||Misfit|| 3.0891799021349774e-09
+# fwd 934, ||Misfit|| 3.0891799021349774e-09
+# Der 447, ||Misfit|| 6.178359804269989e-09, ||Misfit IC|| 0.00035416226925410056, ||Grad|| 5.908576006212949e-19
+Derivative calculation 447
+  447   3.089180e-09   7.754452e-06   2.964497e-05   487       448       1         0         
+# fwd 935, ||Misfit|| 3.0596953408969864e-09
+# fwd 936, ||Misfit|| 3.0596953408969864e-09
+# Der 448, ||Misfit|| 6.119390681793947e-09, ||Misfit IC|| 0.0003533765759765471, ||Grad|| 3.240710449026269e-19
+Derivative calculation 448
+  448   3.059695e-09   5.814707e-06   8.935376e-05   488       449       1         0         
+# fwd 937, ||Misfit|| 3.0709631161804995e-09
+# fwd 938, ||Misfit|| 3.0471692181952265e-09
+# fwd 939, ||Misfit|| 3.0471692181952265e-09
+# Der 449, ||Misfit|| 6.0943384363904216e-09, ||Misfit IC|| 0.00035289139248518507, ||Grad|| 1.8199799662621367e-18
+Derivative calculation 449
+  449   3.047169e-09   1.358268e-05   6.111995e-05   490       450       2         0         
+# fwd 940, ||Misfit|| 3.0254278011495764e-09
+# fwd 941, ||Misfit|| 3.0254278011495764e-09
+# Der 450, ||Misfit|| 6.050855602299156e-09, ||Misfit IC|| 0.00035254768614395154, ||Grad|| 5.989682536130855e-19
+Derivative calculation 450
+  450   3.025428e-09   7.815992e-06   4.544691e-05   491       451       1         0         
+# fwd 942, ||Misfit|| 3.005124690083843e-09
+# fwd 943, ||Misfit|| 3.005124690083843e-09
+# Der 451, ||Misfit|| 6.010249380167646e-09, ||Misfit IC|| 0.0003520390190614735, ||Grad|| 8.477496058159279e-19
+Derivative calculation 451
+  451   3.005125e-09   9.272303e-06   6.832834e-05   492       452       1         0         
+# fwd 944, ||Misfit|| 2.9803072278636773e-09
+# fwd 945, ||Misfit|| 2.9803072278636773e-09
+# Der 452, ||Misfit|| 5.960614455727335e-09, ||Misfit IC|| 0.0003513904076666217, ||Grad|| 3.6433517125709947e-19
+Derivative calculation 452
+  452   2.980307e-09   6.133064e-06   8.530772e-05   493       453       1         0         
+# fwd 946, ||Misfit|| 2.9537635668572777e-09
+# fwd 947, ||Misfit|| 2.9537635668572777e-09
+# Der 453, ||Misfit|| 5.90752713371456e-09, ||Misfit IC|| 0.0003507171995869221, ||Grad|| 2.9264549566685693e-19
+Derivative calculation 453
+  453   2.953764e-09   5.496131e-06   8.887441e-05   494       454       1         0         
+# fwd 948, ||Misfit|| 2.9145495603085766e-09
+# fwd 949, ||Misfit|| 2.9145495603085766e-09
+# Der 454, ||Misfit|| 5.829099120617163e-09, ||Misfit IC|| 0.0003499154634190075, ||Grad|| 3.2482247264465497e-19
+Derivative calculation 454
+  454   2.914550e-09   5.765327e-06   1.046001e-04   495       455       1         0         
+# fwd 950, ||Misfit|| 2.8965304229121087e-09
+# fwd 951, ||Misfit|| 2.8965304229121087e-09
+# Der 455, ||Misfit|| 5.793060845824214e-09, ||Misfit IC|| 0.000349691290542512, ||Grad|| 3.645357415046265e-19
+Derivative calculation 455
+  455   2.896530e-09   6.100366e-06   2.714659e-05   496       456       1         0         
+# fwd 952, ||Misfit|| 2.8838151811863942e-09
+# fwd 953, ||Misfit|| 2.8838151811863942e-09
+# Der 456, ||Misfit|| 5.7676303623728125e-09, ||Misfit IC|| 0.0003494930842963834, ||Grad|| 7.585652540853297e-19
+Derivative calculation 456
+  456   2.883815e-09   8.788726e-06   2.379547e-05   497       457       1         0         
+# fwd 954, ||Misfit|| 2.871613163112057e-09
+# fwd 955, ||Misfit|| 2.871613163112057e-09
+# Der 457, ||Misfit|| 5.743226326224098e-09, ||Misfit IC|| 0.0003494160848239858, ||Grad|| 2.811300397406812e-19
+Derivative calculation 457
+  457   2.871613e-09   5.389334e-06   9.425229e-06   498       458       1         0         
+# fwd 956, ||Misfit|| 2.8584013576607488e-09
+# fwd 957, ||Misfit|| 2.8584013576607488e-09
+# Der 458, ||Misfit|| 5.716802715321532e-09, ||Misfit IC|| 0.000349406681088039, ||Grad|| 7.008121965265479e-19
+Derivative calculation 458
+  458   2.858401e-09   8.426667e-06   8.577898e-06   499       459       1         0         
+# fwd 958, ||Misfit|| 2.84044786768729e-09
+# fwd 959, ||Misfit|| 2.84044786768729e-09
+# Der 459, ||Misfit|| 5.6808957353746365e-09, ||Misfit IC|| 0.00034934579947541684, ||Grad|| 5.655562149069752e-19
+Derivative calculation 459
+  459   2.840448e-09   7.575164e-06   1.446852e-05   500       460       1         0         
+# fwd 960, ||Misfit|| 2.8167610839419345e-09
+# fwd 961, ||Misfit|| 2.8167610839419345e-09
+# Der 460, ||Misfit|| 5.633522167883854e-09, ||Misfit IC|| 0.0003492169454738877, ||Grad|| 2.500750206026542e-19
+Derivative calculation 460
+  460   2.816761e-09   5.048674e-06   1.838774e-05   501       461       1         0         
+# fwd 962, ||Misfit|| 2.7918661380175433e-09
+# fwd 963, ||Misfit|| 2.7918661380175433e-09
+# Der 461, ||Misfit|| 5.583732276035118e-09, ||Misfit IC|| 0.00034888178816696973, ||Grad|| 1.8308092774343323e-19
+Derivative calculation 461
+  461   2.791866e-09   4.326178e-06   3.579204e-05   502       462       1         0         
+# fwd 964, ||Misfit|| 2.7796625806114033e-09
+# fwd 965, ||Misfit|| 2.7796625806114033e-09
+# Der 462, ||Misfit|| 5.559325161222798e-09, ||Misfit IC|| 0.0003486579194311387, ||Grad|| 6.5742204534126745e-19
+Derivative calculation 462
+  462   2.779663e-09   8.152386e-06   2.265226e-05   503       463       1         0         
+# fwd 966, ||Misfit|| 2.767632205746688e-09
+# fwd 967, ||Misfit|| 2.767632205746688e-09
+# Der 463, ||Misfit|| 5.535264411493361e-09, ||Misfit IC|| 0.0003483142153777856, ||Grad|| 2.6831776434712937e-19
+Derivative calculation 463
+  463   2.767632e-09   5.269211e-06   3.504452e-05   504       464       1         0         
+# fwd 968, ||Misfit|| 2.7570350867579806e-09
+# fwd 969, ||Misfit|| 2.7570350867579806e-09
+# Der 464, ||Misfit|| 5.514070173515979e-09, ||Misfit IC|| 0.00034818148434532674, ||Grad|| 2.5291281327060783e-19
+Derivative calculation 464
+  464   2.757035e-09   5.117196e-06   1.545862e-05   505       465       1         0         
+# fwd 970, ||Misfit|| 2.7407073756337495e-09
+# fwd 971, ||Misfit|| 2.7407073756337495e-09
+# Der 465, ||Misfit|| 5.4814147512674875e-09, ||Misfit IC|| 0.0003479930914945584, ||Grad|| 1.9504376809881448e-19
+Derivative calculation 465
+  465   2.740707e-09   4.499585e-06   2.131464e-05   506       466       1         0         
+# fwd 972, ||Misfit|| 2.7112811086443456e-09
+# fwd 973, ||Misfit|| 2.7112811086443456e-09
+# Der 466, ||Misfit|| 5.422562217288709e-09, ||Misfit IC|| 0.0003472052416269132, ||Grad|| 7.103557879789359e-19
+Derivative calculation 466
+  466   2.711281e-09   8.495761e-06   7.831943e-05   507       467       1         0         
+# fwd 974, ||Misfit|| 2.6990365428305567e-09
+# fwd 975, ||Misfit|| 2.6990365428305567e-09
+# Der 467, ||Misfit|| 5.398073085661121e-09, ||Misfit IC|| 0.0003469118912841075, ||Grad|| 4.0160124546687134e-19
+Derivative calculation 467
+  467   2.699037e-09   6.403961e-06   2.996323e-05   508       468       1         0         
+# fwd 976, ||Misfit|| 2.691183891252357e-09
+# fwd 977, ||Misfit|| 2.691183891252357e-09
+# Der 468, ||Misfit|| 5.382367782504688e-09, ||Misfit IC|| 0.00034690615934985456, ||Grad|| 1.53978802041458e-19
+Derivative calculation 468
+  468   2.691184e-09   3.998641e-06   3.397050e-06   509       469       1         0         
+# fwd 978, ||Misfit|| 2.6789066474814066e-09
+# fwd 979, ||Misfit|| 2.6789066474814066e-09
+# Der 469, ||Misfit|| 5.3578132949628075e-09, ||Misfit IC|| 0.0003467875179651032, ||Grad|| 1.9437195508802126e-19
+Derivative calculation 469
+  469   2.678907e-09   4.467261e-06   1.189192e-05   510       470       1         0         
+# fwd 980, ||Misfit|| 2.666006441838049e-09
+# fwd 981, ||Misfit|| 2.666006441838049e-09
+# Der 470, ||Misfit|| 5.332012883676143e-09, ||Misfit IC|| 0.00034647986816414475, ||Grad|| 3.744321975284769e-19
+Derivative calculation 470
+  470   2.666006e-09   6.155894e-06   3.056108e-05   511       471       1         0         
+# fwd 982, ||Misfit|| 2.6563093838618003e-09
+# fwd 983, ||Misfit|| 2.6563093838618003e-09
+# Der 471, ||Misfit|| 5.3126187677236435e-09, ||Misfit IC|| 0.000346038959201505, ||Grad|| 1.287521032217669e-18
+Derivative calculation 471
+  471   2.656309e-09   1.141150e-05   4.425042e-05   512       472       1         0         
+# fwd 984, ||Misfit|| 2.646744126643669e-09
+# fwd 985, ||Misfit|| 2.646744126643669e-09
+# Der 472, ||Misfit|| 5.293488253287294e-09, ||Misfit IC|| 0.000345990975172866, ||Grad|| 1.9074512747690588e-19
+Derivative calculation 472
+  472   2.646744e-09   4.433199e-06   5.631343e-06   513       473       1         0         
+# fwd 986, ||Misfit|| 2.640829186002625e-09
+# fwd 987, ||Misfit|| 2.640829186002625e-09
+# Der 473, ||Misfit|| 5.281658372005285e-09, ||Misfit IC|| 0.00034588684274476476, ||Grad|| 2.0248414706615521e-19
+Derivative calculation 473
+  473   2.640829e-09   4.546996e-06   1.151738e-05   514       474       1         0         
+# fwd 988, ||Misfit|| 2.637297727629985e-09
+# fwd 989, ||Misfit|| 2.637297727629985e-09
+# Der 474, ||Misfit|| 5.274595455259967e-09, ||Misfit IC|| 0.0003458106879602713, ||Grad|| 2.281943516660142e-19
+Derivative calculation 474
+  474   2.637298e-09   4.818959e-06   8.113916e-06   515       475       1         0         
+# fwd 990, ||Misfit|| 2.6191248271720537e-09
+# fwd 991, ||Misfit|| 2.6191248271720537e-09
+# Der 475, ||Misfit|| 5.238249654344087e-09, ||Misfit IC|| 0.0003454012912834621, ||Grad|| 2.1717441529974366e-19
+Derivative calculation 475
+  475   2.619125e-09   4.697206e-06   4.158081e-05   516       476       1         0         
+# fwd 992, ||Misfit|| 2.586833422774165e-09
+# fwd 993, ||Misfit|| 2.586833422774165e-09
+# Der 476, ||Misfit|| 5.173666845548261e-09, ||Misfit IC|| 0.0003445036836853393, ||Grad|| 1.9757887528381096e-19
+Derivative calculation 476
+  476   2.586833e-09   4.503523e-06   8.894579e-05   517       477       1         0         
+# fwd 994, ||Misfit|| 2.5778236382308168e-09
+# fwd 995, ||Misfit|| 2.5778236382308168e-09
+# Der 477, ||Misfit|| 5.155647276461655e-09, ||Misfit IC|| 0.0003436838083923007, ||Grad|| 2.0541605300494297e-18
+Derivative calculation 477
+  477   2.577824e-09   1.439678e-05   8.125712e-05   518       478       1         0         
+# fwd 996, ||Misfit|| 2.5604560329036004e-09
+# fwd 997, ||Misfit|| 2.5604560329036004e-09
+# Der 478, ||Misfit|| 5.120912065807166e-09, ||Misfit IC|| 0.0003436442122390148, ||Grad|| 2.1387947237111315e-19
+Derivative calculation 478
+  478   2.560456e-09   4.685029e-06   5.135275e-06   519       479       1         0         
+# fwd 998, ||Misfit|| 2.5556296087321992e-09
+# fwd 999, ||Misfit|| 2.5556296087321992e-09
+# Der 479, ||Misfit|| 5.1112592174644125e-09, ||Misfit IC|| 0.0003437115590769332, ||Grad|| 1.8835907221869345e-19
+Derivative calculation 479
+  479   2.555630e-09   4.395793e-06   8.634632e-06   520       480       1         0         
+# fwd 1000, ||Misfit|| 2.544289371889788e-09
+# fwd 1001, ||Misfit|| 2.544289371889788e-09
+# Der 480, ||Misfit|| 5.088578743779635e-09, ||Misfit IC|| 0.00034350499871439093, ||Grad|| 1.5574134960425188e-19
+Derivative calculation 480
+  480   2.544289e-09   4.003261e-06   1.941047e-05   521       481       1         0         
+# fwd 1002, ||Misfit|| 2.521971996391702e-09
+# fwd 1003, ||Misfit|| 2.521971996391702e-09
+# Der 481, ||Misfit|| 5.043943992783367e-09, ||Misfit IC|| 0.000343053157848918, ||Grad|| 2.4414848417311676e-19
+Derivative calculation 481
+  481   2.521972e-09   4.986131e-06   4.187060e-05   522       482       1         0         
+# fwd 1004, ||Misfit|| 2.6105464590189123e-09
+# fwd 1005, ||Misfit|| 2.516093735179653e-09
+# fwd 1006, ||Misfit|| 2.516093735179653e-09
+# Der 482, ||Misfit|| 5.032187470359286e-09, ||Misfit IC|| 0.0003428528834821067, ||Grad|| 5.550072882535055e-19
+Derivative calculation 482
+  482   2.516094e-09   7.493390e-06   1.847730e-05   524       483       2         0         
+# fwd 1007, ||Misfit|| 2.5026998519708513e-09
+# fwd 1008, ||Misfit|| 2.5026998519708513e-09
+# Der 483, ||Misfit|| 5.0053997039417224e-09, ||Misfit IC|| 0.0003424321470304186, ||Grad|| 2.7777446175157235e-19
+Derivative calculation 483
+  483   2.502700e-09   5.313574e-06   3.901346e-05   525       484       1         0         
+# fwd 1009, ||Misfit|| 2.485206247377496e-09
+# fwd 1010, ||Misfit|| 2.485206247377496e-09
+# Der 484, ||Misfit|| 4.970412494754991e-09, ||Misfit IC|| 0.0003419053481449147, ||Grad|| 1.6420504033567636e-19
+Derivative calculation 484
+  484   2.485206e-09   4.101684e-06   4.799037e-05   526       485       1         0         
+# fwd 1011, ||Misfit|| 2.4678900398138037e-09
+# fwd 1012, ||Misfit|| 2.4678900398138037e-09
+# Der 485, ||Misfit|| 4.935780079627595e-09, ||Misfit IC|| 0.00034086664143298577, ||Grad|| 1.8172782273548654e-18
+Derivative calculation 485
+  485   2.467890e-09   1.355541e-05   9.457773e-05   527       486       1         0         
+# fwd 1013, ||Misfit|| 2.4448530272911935e-09
+# fwd 1014, ||Misfit|| 2.4448530272911935e-09
+# Der 486, ||Misfit|| 4.889706054582367e-09, ||Misfit IC|| 0.0003401909441442274, ||Grad|| 4.880939050211209e-19
+Derivative calculation 486
+  486   2.444853e-09   7.106260e-06   6.194827e-05   528       487       1         0         
+# fwd 1015, ||Misfit|| 2.432531150537764e-09
+# fwd 1016, ||Misfit|| 2.432531150537764e-09
+# Der 487, ||Misfit|| 4.8650623010755135e-09, ||Misfit IC|| 0.0003401797737557111, ||Grad|| 3.9751351596162456e-19
+Derivative calculation 487
+  487   2.432531e-09   6.424662e-06   4.657092e-06   529       488       1         0         
+# fwd 1017, ||Misfit|| 2.360088398676014e-09
+# fwd 1018, ||Misfit|| 2.360088398676014e-09
+# Der 488, ||Misfit|| 4.720176797352038e-09, ||Misfit IC|| 0.0003382605799871437, ||Grad|| 2.4901180101475115e-19
+Derivative calculation 488
+  488   2.360088e-09   5.069307e-06   1.752257e-04   530       489       1         0         
+# fwd 1019, ||Misfit|| 2.350120564828266e-09
+# fwd 1020, ||Misfit|| 2.350120564828266e-09
+# Der 489, ||Misfit|| 4.7002411296565275e-09, ||Misfit IC|| 0.00033707389072468803, ||Grad|| 4.328742996156998e-18
+Derivative calculation 489
+  489   2.350121e-09   2.089749e-05   1.075655e-04   531       490       1         0         
+# fwd 1021, ||Misfit|| 2.314297971504605e-09
+# fwd 1022, ||Misfit|| 2.314297971504605e-09
+# Der 490, ||Misfit|| 4.628595943009221e-09, ||Misfit IC|| 0.0003361531137050251, ||Grad|| 2.2362280184234077e-19
+Derivative calculation 490
+  490   2.314298e-09   4.832419e-06   8.946682e-05   532       491       1         0         
+# fwd 1023, ||Misfit|| 2.3078274381326034e-09
+# fwd 1024, ||Misfit|| 2.3078274381326034e-09
+# Der 491, ||Misfit|| 4.615654876265232e-09, ||Misfit IC|| 0.00033617083626880193, ||Grad|| 1.6673400866993554e-19
+Derivative calculation 491
+  491   2.307827e-09   4.177051e-06   4.244073e-06   533       492       1         0         
+# fwd 1025, ||Misfit|| 2.2890795405714082e-09
+# fwd 1026, ||Misfit|| 2.2890795405714082e-09
+# Der 492, ||Misfit|| 4.5781590811428016e-09, ||Misfit IC|| 0.00033560065171275367, ||Grad|| 1.8944777622921935e-18
+Derivative calculation 492
+  492   2.289080e-09   1.381981e-05   5.327001e-05   534       493       1         0         
+# fwd 1027, ||Misfit|| 2.2605857975818854e-09
+# fwd 1028, ||Misfit|| 2.2605857975818854e-09
+# Der 493, ||Misfit|| 4.521171595163817e-09, ||Misfit IC|| 0.0003346592233745861, ||Grad|| 2.3859171013777094e-19
+Derivative calculation 493
+  493   2.260586e-09   4.957470e-06   9.069360e-05   535       494       1         0         
+# fwd 1029, ||Misfit|| 2.2458865964213376e-09
+# fwd 1030, ||Misfit|| 2.2458865964213376e-09
+# Der 494, ||Misfit|| 4.491773192842682e-09, ||Misfit IC|| 0.00033383851218279605, ||Grad|| 2.1706101776701777e-19
+Derivative calculation 494
+  494   2.245887e-09   4.740577e-06   7.886464e-05   536       495       1         0         
+# fwd 1031, ||Misfit|| 2.2257689828072945e-09
+# fwd 1032, ||Misfit|| 2.2257689828072945e-09
+# Der 495, ||Misfit|| 4.451537965614564e-09, ||Misfit IC|| 0.00033318326553248356, ||Grad|| 1.815167117962359e-19
+Derivative calculation 495
+  495   2.225769e-09   4.329820e-06   6.231996e-05   537       496       1         0         
+# fwd 1033, ||Misfit|| 2.199049049991317e-09
+# fwd 1034, ||Misfit|| 2.199049049991317e-09
+# Der 496, ||Misfit|| 4.398098099982672e-09, ||Misfit IC|| 0.0003323547793756378, ||Grad|| 2.4534507418049347e-19
+Derivative calculation 496
+  496   2.199049e-09   5.005928e-06   7.860670e-05   538       497       1         0         
+# fwd 1035, ||Misfit|| 2.5525529757942766e-09
+# fwd 1036, ||Misfit|| 2.1956402328195767e-09
+# fwd 1037, ||Misfit|| 2.1956402328195767e-09
+# Der 497, ||Misfit|| 4.391280465639127e-09, ||Misfit IC|| 0.00033214079042871415, ||Grad|| 3.136748946931249e-19
+Derivative calculation 497
+  497   2.195640e-09   5.643249e-06   2.108580e-05   540       498       2         0         
+# fwd 1038, ||Misfit|| 2.18272457860306e-09
+# fwd 1039, ||Misfit|| 2.18272457860306e-09
+# Der 498, ||Misfit|| 4.365449157206116e-09, ||Misfit IC|| 0.00033182534473865467, ||Grad|| 1.4158033704225676e-19
+Derivative calculation 498
+  498   2.182725e-09   3.818924e-06   3.017449e-05   541       499       1         0         
+# fwd 1040, ||Misfit|| 2.1689637710762223e-09
+# fwd 1041, ||Misfit|| 2.1689637710762223e-09
+# Der 499, ||Misfit|| 4.337927542152425e-09, ||Misfit IC|| 0.00033145587227938097, ||Grad|| 7.123109027612544e-20
+Derivative calculation 499
+  499   2.168964e-09   2.732446e-06   3.548148e-05   542       500       1         0         
+# fwd 1042, ||Misfit|| 2.173023452898971e-09
+# fwd 1043, ||Misfit|| 2.1618382099082187e-09
+# fwd 1044, ||Misfit|| 2.1618382099082187e-09
+# Der 500, ||Misfit|| 4.3236764198164175e-09, ||Misfit IC|| 0.0003311510951411256, ||Grad|| 6.388117215150843e-19
+Derivative calculation 500
+  500   2.161838e-09   8.036630e-06   2.965160e-05   544       501       2         0         
+Optimization Terminated with Status: Iteration Limit Exceeded
+/home/sia/firedrake/src/firedrake/firedrake/extrusion_utils.py:117: LoopyWarning: 'lang_version' was not passed to make_function(). To avoid this warning, pass lang_version=(2018, 2) in this invocation. (Or say 'from loopy.version import LOOPY_USE_LANGUAGE_VERSION_2018_2' in the global scope of the calling frame.)
+  ast = lp.make_function(domains, instructions, data, name=name, target=lp.CTarget(),
