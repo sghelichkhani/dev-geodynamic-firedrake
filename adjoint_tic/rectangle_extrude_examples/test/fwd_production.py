@@ -19,7 +19,7 @@ y_max = 1.0
 x_max = 1.0
 
 #  how many intervals along x/y directions 
-disc_n = 200
+disc_n = 100
 
 
 # and Interval mesh of unit size 
@@ -49,10 +49,10 @@ target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e6)   # Rayleigh Number
 
 # Temperature related constants:
-delta_t                = Constant(2e-7) # Time-step
+delta_t                = Constant(5e-6) # Time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
@@ -100,10 +100,10 @@ T_old    = Function(Q, name="OldTemperature")
 
 # Having a single hot blob on 1.5, 0.0
 blb_ctr_h = as_vector((0.5, 0.80)) 
-blb_gaus = Constant(0.07)
+blb_gaus = Constant(0.1)
 
 # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
-T_old.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
+T_old.interpolate(0.5 - 0.4*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
 
 # Defining temperature field and initialise it with old temperature
 T_new   = Function(Q, name="Temperature")

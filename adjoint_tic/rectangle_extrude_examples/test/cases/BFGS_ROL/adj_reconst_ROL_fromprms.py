@@ -9,7 +9,10 @@ from firedrake.petsc import PETSc
 from firedrake_adjoint import *
 from pyadjoint import MinimizationProblem, ROLSolver
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
+from pyadjoint.optimization.rol_solver import ROLObjective, ROLVector
+from pyadjoint.optimization.optimization_solver import OptimizationSolver 
 import ROL
+import time; 
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
 #########################################################################################################
@@ -22,7 +25,7 @@ y_max = 1.0
 x_max = 1.0
 
 #  how many intervals along x/y directions 
-disc_n = 200
+disc_n = 100
 
 # and Interval mesh of unit size 
 mesh1d = IntervalMesh(disc_n, length_or_left=0.0, right=x_max) 
@@ -46,19 +49,19 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 50
+max_num_timesteps      = 5 
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e6)   # Rayleigh Number
 
 # Below are callbacks relating to the adjoint solutions (accessed through solve).
 # Not sure what the best place would be to initiate working tape!
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t                = Constant(2e-7) # Time-step
+delta_t                = Constant(5e-6) # Time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
@@ -110,7 +113,8 @@ final_state_file.close()
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
 # Let's start with the final condition
-T_ic.project(final_state)
+#T_ic.project(final_state)
+T_ic.assign(0.5)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
@@ -186,7 +190,7 @@ for timestep in range(0, max_num_timesteps):
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
 
-
+    log(simu_time)
 
 
 ## Initialise functional
@@ -197,7 +201,7 @@ class OptimisationOutputCallbackPost:
     def __init__(self):
         self.iter_idx = 0
         self.opt_file             = File('visual/opt_file.pvd') 
-        self.T_ic_true            = Function(Q, name="InitTemperature_Ref")
+        self.T_ic_true            = Function(Q, name="inittemperature_ref")
         self.grad_copy            = Function(Q, name="Gradient")
         self.T_ic_copy            = Function(Q, name="InitTemperature")
         self.T_tc_copy            = Function(Q, name="FinTemperature")
@@ -207,7 +211,7 @@ class OptimisationOutputCallbackPost:
 
         # Having a single hot blob on 1.5, 0.0
         blb_ctr_h = as_vector((0.5, 0.80)) 
-        blb_gaus = Constant(0.07)
+        blb_gaus = Constant(0.1)
         
         # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
         self.T_ic_true.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2))
@@ -282,16 +286,54 @@ params = {
                         }
         }
 
+class myROLObjective(ROLObjective):
+    def __init__(self, rf, scale=1.0):
+        super().__init__(rf, scale=1.0)
+        self.actual_grad = Function(Q, name='RieszGradient')
+        self.gradFile    = File(filename='./gradients/grads_L2_scaled.pvd')
 
-#with stop_annotating():    
+    def update(self, x, flag, iteration):
+        init_time = time.perf_counter()
+        super().update(x, flag, iteration)
+        log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
+
+    def gradient(self, g, x, tol):
+        init_time = time.perf_counter()
+        super().gradient(g, x, tol)
+        log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
+        g.dat[0].project(1e-4*g.dat[0])
+        self.actual_grad.assign(g.dat[0])
+        self.gradFile.write(self.actual_grad)
+
+class myROLSolver(ROLSolver):
+    def __init__(self, problem, parameters, inner_product="L2"):
+       """
+       Generate a ROL solver that uses myROLObective instead of ROLObjective
+
+       The argument inner_product specifies the inner product to be used for
+       the control space.
+
+       """
+
+       OptimizationSolver.__init__(self, problem, parameters)
+       self.rolobjective = myROLObjective(problem.reduced_functional)
+       x = [p.tape_value() for p in self.problem.reduced_functional.controls]
+       self.rolvector = ROLVector(x, inner_product=inner_product)
+       self.params_dict = parameters
+
+       self.bounds = self._ROLSolver__get_bounds()
+       self.constraints = self._ROLSolver__get_constraints()
+
+
+with stop_annotating():    
     # set up ROL problem
-rol_solver = ROLSolver(minp, params, inner_product="l2")
-sol = rol_solver.solve()
-#
-## Save the optimal temperature_ic field 
-#ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
-#        single_file=True, mode=FILE_CREATE,\
-#                           comm=mesh.comm)
-#ckpt_T_ic.store(sol)
-#ckpt_T_ic.close()
-#
+    rol_solver = myROLSolver(minp, params, inner_product="L2")
+    sol = rol_solver.solve()
+    
+    # Save the optimal temperature_ic field 
+    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+            single_file=True, mode=FILE_CREATE,\
+                               comm=mesh.comm)
+    ckpt_T_ic.store(sol)
+    ckpt_T_ic.close()
+    
