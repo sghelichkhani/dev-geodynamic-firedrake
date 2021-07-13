@@ -10,6 +10,9 @@ from firedrake_adjoint import *
 from pyadjoint import MinimizationProblem, minimize
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
 import ROL
+from pyadjoint.reduced_functional_numpy import ReducedFunctionalNumPy
+from scipy.optimize.lbfgsb import _minimize_lbfgsb as scipy_lbfgsb
+from scipy.optimize.optimize import MemoizeJac
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
 #########################################################################################################
@@ -110,7 +113,8 @@ final_state_file.close()
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
 # Let's start with the final condition
-T_ic.project(final_state)
+#T_ic.project(final_state)
+T_ic.assign(0.5)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
@@ -269,7 +273,24 @@ class myReducedFunctional(ReducedFunctional):
     def derivative(self, options={}):
         if self.riesz:
             options['riesz_representation'] = self.riesz
-        return super().derivative(options=options)
+        my_grad = super().derivative(options=options)
+        return my_grad.project(1e4 * my_grad)
+
+# scipy_minimize --> _minimize_lbfgsb(fun, x0, args, jac, bounds,  callback=callback, **options)
+# These are the default parameters
+# Default Parameters approx_grad=0, bounds=None, m=10, factr=1e7, pgtol=1e-5,
+#                   epsilon=1e-8, iprint=-1, maxfun=15000, maxiter=15000, disp=None,
+#                   callback=None, maxls=20):
+options = { 'disp': None,
+            'iprint': 100,
+            'maxcor': 10, # The maximum number of variable metric corrections (memory)
+            'ftol': 1e7* np.finfo(float).eps,# 1e14 for low accuracy, 1e7 for mid-accuracy, 10 for high accuracy
+            'gtol': 0,#1e-5, # Iteration stops if projection of gradient is smaller than this
+            'eps': 1e-8, # Only used when approx grad is True
+            'maxfun': 15000, # Maximum number of evaluations
+            'maxiter': 2000, # Maximum number of iterations
+            'maxls': 20, # Maximum number of line-searth steps
+       }
 
 # Defining the object for pyadjoint
 reduced_functional = myReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post, riesz='l2')
@@ -282,12 +303,12 @@ T_ub.assign(0.5)
 
 with stop_annotating():
     # Setting up the problem using minimize that uses Scipy 
-    sol = minimize(reduced_functional, method="L-BFGS-B", tol=1e-12, options={'maxiter':500, 'disp':True})
-    
-    # Save the optimal temperature_ic field 
-    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
-            single_file=True, mode=FILE_CREATE,\
-                               comm=mesh.comm)
-    ckpt_T_ic.store(sol)
-    ckpt_T_ic.close()
-
+    sol = minimize(reduced_functional, bounds=(T_lb, T_ub), method="L-BFGS-B", tol=1e-12, options=options)
+    #
+    ## Save the optimal temperature_ic field 
+    #ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+    #        single_file=True, mode=FILE_CREATE,\
+    #                           comm=mesh.comm)
+    #ckpt_T_ic.store(sol)
+    #ckpt_T_ic.close()
+    #
