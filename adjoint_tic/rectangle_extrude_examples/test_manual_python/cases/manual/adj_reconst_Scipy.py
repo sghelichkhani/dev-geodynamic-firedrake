@@ -114,15 +114,13 @@ final_state_file.close()
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
 # Let's start with the final condition
-T_ic.project(final_state)
-#T_ic.assign(0.5)
+T_ic.assign(0.5)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
 
 # Having a single hot blob on 1.5, 0.0
-#T_old.assign(T_ic)
-T_old.assign(0.5)
+T_old.assign(T_ic)
 
 T_new   = Function(Q, name="Temperature")
 T_new.assign(T_old)
@@ -276,7 +274,7 @@ class myReducedFunctional(ReducedFunctional):
         self.value = None
 
     def __call__(self, values):
-        self.value = super().__call__(values)*1e4
+        self.value = super().__call__(values)
         return self.value 
     def derivative(self, options={}):
         if self.riesz:
@@ -292,8 +290,8 @@ T_ub     = Function(Q, name="UB_Temperature")
 T_lb.assign(0.2)
 T_ub.assign(0.5)
 
-class SiaOptSolver:
-    def __init__(self, rf, niter=50):
+class ManualSolver:
+    def __init__(self, rf, niter=10):
         self.niter = niter
         self.misfit = []
         self.misfit.append(float(functional))
@@ -301,21 +299,47 @@ class SiaOptSolver:
         self.ngrad = 0
         self.rf = rf
         self.alpha = 0.8
+        # write out file
+        self.outfi = File('./Manual_Opt/res.pvd')
+        self.gradfield = Function(T_ic.function_space(), name="gradient")
     def __call__(self):
         for i in range(self.niter):
-            ofunc = self.misfit[-1]
+            self._status()
             my_grad = self._adj_calc()
-            T_ic.project(T_ic + alpha*my_grad)
-            
-            print('Here is where the actual optimization happens');
+            self.gradfield.assign(my_grad)
+            # writing out the field
+            self.outfi.write(T_ic, self.gradfield)
+            # rpt_it counts how many times we had to reduce alpha
+            rpt_it = 0
+            rpt = True 
+            while rpt:
+                # update new initial condition
+                T_ic.project(T_ic - self.alpha*my_grad)
+                # compute new functional
+                fwd = self._fwd_calc(T_ic)
+                # Check if the new initial condition is working better
+                if fwd > self.misfit[-1]:
+                    self.alpha *= 0.8
+                    log(f"\tMisfit has grown bigger {fwd} > {self.misfit[-1]}, so changed alpha to ${self.alpha}")
+                    rpt_it += 1
+                else:
+                    rpt = False
+                    self.misfit.append(fwd)
+                if rpt_it > 5:
+                    log("\tStuck in this loop more than 5 iters!")
+                    break
+        return T_ic
     def _fwd_calc(self, vbl):
         self.nfval += 1
         return self.rf(vbl)
     def _adj_calc(self):
-        self.ngral += 1
+        self.ngrad += 1
         return self.rf.derivative()
+    def _status(self):
+        log("\t"+"-"*57)
+        log(f"\t|At iteration {len(self.misfit)-1}, f={self.misfit[-1]} #grad={self.ngrad} #fval={self.nfval}|")
+        log("\t"+"-"*57)
 
-        
-#with stop_annotating():
-#
-#
+with stop_annotating():
+    mySolver = ManualSolver(rf=reduced_functional, niter=50)
+    res = mySolver()
