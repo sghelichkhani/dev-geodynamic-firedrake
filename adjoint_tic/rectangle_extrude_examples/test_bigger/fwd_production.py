@@ -44,7 +44,7 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 120
+max_num_timesteps      = 80 
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
@@ -99,11 +99,11 @@ u, p = split(z)     # can we nicely name mixed function space fields?
 T_old    = Function(Q, name="OldTemperature")
 
 # Having a single hot blob on 1.5, 0.0
-blb_ctr_h = as_vector((0.5, 0.85)) 
-blb_gaus = Constant(0.04)
+blb_ctr_h = as_vector((0.5, 0.75))
+blb_gaus = Constant(0.10)
 
 # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
-T_old.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
+T_old.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2))
 
 # Defining temperature field and initialise it with old temperature
 T_new   = Function(Q, name="Temperature")

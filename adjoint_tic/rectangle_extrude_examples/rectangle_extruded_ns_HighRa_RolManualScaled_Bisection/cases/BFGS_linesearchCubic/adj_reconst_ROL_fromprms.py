@@ -27,7 +27,6 @@ x_max = 1.0
 #  how many intervals along x/y directions 
 disc_n = 200
 
-
 # and Interval mesh of unit size 
 mesh1d = IntervalMesh(disc_n, length_or_left=0.0, right=x_max) 
 # extruding the base mesh "mesh1d" in the third dimension
@@ -67,7 +66,6 @@ kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
 theta_ts               = 0.5
-
 
 #### Print function to ensure log output is only written on processor zero (if running in parallel) ####
 def log(*args):
@@ -262,12 +260,12 @@ params = {
            'Line Search': {
                 'Descent Method': {'Type': 'Quasi-Newton Method'},
                 'Line-Search Method': {
-                                'Type':  'Cubic Interpolation', #'Cubic Interpolation ''Backtracking',#'Bisection',
-                                'Backtracking Rate': 0.8
-                                'Bracketing Tolerance': 1.e-1,
+                                'Type': 'Bisection',
+                                'Backtracking Rat': 0.5,
+                                'Bracketing Tolerance': 1.e-8,
                                 'Bisection': {
-                                    'Tolerance': 1e-1,
-                                    'Iteration Limit': 20,
+                                    'Tolerance': 1e-10,
+                                    'Iteration Limit': 1000,
                                             },
                                         },
                 'Curvature Condition': {
@@ -276,8 +274,8 @@ params = {
                                 'Generalized Wolfe Parameter': 0.6,
                                         },
                 'Function Evaluation Limit': 20,
-                'Sufficient Decrease Tolerance': 1e-3,
-                'Use Previous Step Length as Initial Guess': True,
+                'Sufficient Decrease Tolerance': 1e-4,
+                #'Use Previous Step Length as Initial Guess': True,
                             },
                 },
         'Status Test': {
@@ -294,14 +292,13 @@ class myROLObjective(ROLObjective):
     def update(self, x, flag, iteration):
         init_time = time.perf_counter()
         super().update(x, flag, iteration)
-        self.val *=1e4
         log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
 
     def gradient(self, g, x, tol):
         init_time = time.perf_counter()
         super().gradient(g, x, tol)
         log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
-        #g.dat[0].project(g.dat[0])
+        g.dat[0].project(1e-4*g.dat[0])
         self.actual_grad.assign(g.dat[0])
         self.gradFile.write(self.actual_grad)
 

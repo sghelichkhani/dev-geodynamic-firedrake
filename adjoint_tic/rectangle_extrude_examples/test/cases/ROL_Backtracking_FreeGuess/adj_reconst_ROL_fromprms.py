@@ -262,8 +262,8 @@ params = {
            'Line Search': {
                 'Descent Method': {'Type': 'Quasi-Newton Method'},
                 'Line-Search Method': {
-                                'Type':  'Cubic Interpolation', #'Cubic Interpolation ''Backtracking',#'Bisection',
-                                'Backtracking Rate': 0.8
+                                'Type':  'Backtracking', #'Cubic Interpolation ''Backtracking',#'Bisection',
+                                'Backtracking Rate': 0.5,
                                 'Bracketing Tolerance': 1.e-1,
                                 'Bisection': {
                                     'Tolerance': 1e-1,
@@ -277,7 +277,7 @@ params = {
                                         },
                 'Function Evaluation Limit': 20,
                 'Sufficient Decrease Tolerance': 1e-3,
-                'Use Previous Step Length as Initial Guess': True,
+                'Use Previous Step Length as Initial Guess': False,
                             },
                 },
         'Status Test': {

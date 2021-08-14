@@ -11,7 +11,7 @@ from pyadjoint import MinimizationProblem, ROLSolver
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
 from pyadjoint.optimization.rol_solver import ROLObjective, ROLVector
 from pyadjoint.optimization.optimization_solver import OptimizationSolver 
-import ROL_dev as ROL
+import ROL
 import time; 
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
@@ -26,7 +26,6 @@ x_max = 1.0
 
 #  how many intervals along x/y directions 
 disc_n = 200
-
 
 # and Interval mesh of unit size 
 mesh1d = IntervalMesh(disc_n, length_or_left=0.0, right=x_max) 
@@ -67,7 +66,6 @@ kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
 theta_ts               = 0.5
-
 
 #### Print function to ensure log output is only written on processor zero (if running in parallel) ####
 def log(*args):
@@ -254,31 +252,18 @@ minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 # This is the classic way
 params = {
         'General': {
-              'Print Verbosity': 1,
-              'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': 10},
+                'Print Verbosity':1,
+                'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': 10}, 
                     },
         'Step': {
            'Type': 'Line Search',
            'Line Search': {
                 'Descent Method': {'Type': 'Quasi-Newton Method'},
-                'Line-Search Method': {
-                                'Type':  'Cubic Interpolation', #'Cubic Interpolation ''Backtracking',#'Bisection',
-                                'Backtracking Rate': 0.8
-                                'Bracketing Tolerance': 1.e-1,
-                                'Bisection': {
-                                    'Tolerance': 1e-1,
-                                    'Iteration Limit': 20,
-                                            },
-                                        },
-                'Curvature Condition': {
-                                'Type': 'Strong Wolfe Conditions',
-                                'General Parameter': 0.9,
-                                'Generalized Wolfe Parameter': 0.6,
-                                        },
+                'Line-Search Method': {'Type': 'Cubic Interpolation'},
                 'Function Evaluation Limit': 20,
-                'Sufficient Decrease Tolerance': 1e-3,
-                'Use Previous Step Length as Initial Guess': True,
-                            },
+                'Sufficient Decrease Tolerance': 1e-8,
+                #'Use Previous Step Length as Initial Guess': True,
+                            }
                 },
         'Status Test': {
             'Gradient Tolerance': 1e-12,
@@ -287,21 +272,20 @@ params = {
         }
 class myROLObjective(ROLObjective):
     def __init__(self, rf, scale=1.0):
-        super().__init__(rf, scale=scale)
+        super().__init__(rf, scale=1.0)
         self.actual_grad = Function(Q, name='RieszGradient')
         self.gradFile    = File(filename='./gradients/grads_L2_scaled.pvd')
 
     def update(self, x, flag, iteration):
         init_time = time.perf_counter()
         super().update(x, flag, iteration)
-        self.val *=1e4
         log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
 
     def gradient(self, g, x, tol):
         init_time = time.perf_counter()
         super().gradient(g, x, tol)
         log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
-        #g.dat[0].project(g.dat[0])
+        g.dat[0].project(1e-4*g.dat[0])
         self.actual_grad.assign(g.dat[0])
         self.gradFile.write(self.actual_grad)
 
@@ -325,11 +309,11 @@ class myROLSolver(ROLSolver):
        self.constraints = self._ROLSolver__get_constraints()
 
 
-with stop_annotating():
+with stop_annotating():    
     # set up ROL problem
     rol_solver = myROLSolver(minp, params, inner_product="L2")
     sol = rol_solver.solve()
-
+    
     # Save the optimal temperature_ic field 
     ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
             single_file=True, mode=FILE_CREATE,\

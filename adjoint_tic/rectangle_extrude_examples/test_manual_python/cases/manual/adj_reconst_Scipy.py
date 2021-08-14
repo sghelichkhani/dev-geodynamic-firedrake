@@ -50,7 +50,7 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 50
+max_num_timesteps      = 5 
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
@@ -114,7 +114,8 @@ final_state_file.close()
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
 # Let's start with the final condition
-T_ic.assign(0.5)
+#T_ic.assign(0.5)
+T_ic.assign(final_state)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
@@ -253,6 +254,12 @@ class ForwardCallbackPost:
 local_cb_post = OptimisationOutputCallbackPost()
 eval_cb_post = ForwardCallbackPost()
 
+# Set up bounds, which will later be used to enforce boundary conditions in inversion:
+T_lb     = Function(Q, name="LB_Temperature")
+T_ub     = Function(Q, name="UB_Temperature")
+T_lb.assign(0.2)
+T_ub.assign(0.5)
+
 class myReducedFunctional(ReducedFunctional):
     def __init__(self, functional, controls, scale=1.0, tape=None,
                       eval_cb_pre=lambda *args: None,
@@ -271,10 +278,15 @@ class myReducedFunctional(ReducedFunctional):
                                    derivative_cb_pre=derivative_cb_pre,
                                    derivative_cb_post=derivative_cb_post)
 
+        self.prm_values = Function(T_ic.function_space(), name="prm_values") 
         self.value = None
 
     def __call__(self, values):
-        self.value = super().__call__(values)
+        values.dat.data[:]=0.6
+        values.project(conditional(gt(values, T_ub), T_ub, conditional(lt(values, T_lb), T_lb, values)))
+        log(ealues.dat.data[:])
+        raise ValueError( ) 
+        self.value = super().__call__(self.prm_values)
         return self.value 
     def derivative(self, options={}):
         if self.riesz:
@@ -284,12 +296,6 @@ class myReducedFunctional(ReducedFunctional):
 # Defining the object for pyadjoint
 reduced_functional = myReducedFunctional(functional, control, scale=1.0, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post, riesz='L2')
 
-# Set up bounds, which will later be used to enforce boundary conditions in inversion:
-T_lb     = Function(Q, name="LB_Temperature")
-T_ub     = Function(Q, name="UB_Temperature")
-T_lb.assign(0.2)
-T_ub.assign(0.5)
-
 class ManualSolver:
     def __init__(self, rf, niter=10):
         self.niter = niter
@@ -298,10 +304,18 @@ class ManualSolver:
         self.nfval = 0
         self.ngrad = 0
         self.rf = rf
-        self.alpha = 0.8
+        self.alpha = 0.5
+
+        # this is our temporary parameter
+        self.T_ic_temp = Function(T_ic.function_space(), name="tempT_ic")
+
         # write out file
         self.outfi = File('./Manual_Opt/res.pvd')
         self.gradfield = Function(T_ic.function_space(), name="gradient")
+
+        # write out file
+        self.outfwdfi = File('./Manual_Opt/fwd.pvd')
+
     def __call__(self):
         for i in range(self.niter):
             self._status()
@@ -314,20 +328,25 @@ class ManualSolver:
             rpt = True 
             while rpt:
                 # update new initial condition
-                T_ic.project(T_ic - self.alpha*my_grad)
+                self.T_ic_temp.assign(T_ic - self.alpha*my_grad)
+                # Making sure we are not trying anything out of bound
+                #self.T_ic_temp.assign(conditional(gt(self.T_ic_temp, 1.0), 1.0, T_ic))
+                #self.T_ic_temp.assign(conditional(lt(self.T_ic_temp, 0.0), 0.0, T_ic))
+                self.outfwdfi.write(self.T_ic_temp)
                 # compute new functional
-                fwd = self._fwd_calc(T_ic)
+                fwd = self._fwd_calc(self.T_ic_temp)
                 # Check if the new initial condition is working better
                 if fwd > self.misfit[-1]:
                     self.alpha *= 0.8
-                    log(f"\tMisfit has grown bigger {fwd} > {self.misfit[-1]}, so changed alpha to ${self.alpha}")
+                    log(f"\t****Misfit has grown bigger {fwd} > {self.misfit[-1]}, so changed alpha to {self.alpha}")
                     rpt_it += 1
                 else:
                     rpt = False
                     self.misfit.append(fwd)
-                if rpt_it > 5:
-                    log("\tStuck in this loop more than 5 iters!")
-                    break
+                    T_ic.assign(self.T_ic_temp)
+                #if rpt_it > 5:
+                #    log("\t****Stuck in this loop more than 5 iters!")
+                #    break
         return T_ic
     def _fwd_calc(self, vbl):
         self.nfval += 1
@@ -336,10 +355,11 @@ class ManualSolver:
         self.ngrad += 1
         return self.rf.derivative()
     def _status(self):
-        log("\t"+"-"*57)
-        log(f"\t|At iteration {len(self.misfit)-1}, f={self.misfit[-1]} #grad={self.ngrad} #fval={self.nfval}|")
-        log("\t"+"-"*57)
+        log("\t"+"-"*67)
+        log(f"\t|At iteration {len(self.misfit)-1}, f={self.misfit[-1]} #grad={self.ngrad} #fval={self.nfval}, alpha={self.alpha}|")
+        log("\t"+"-"*67)
 
 with stop_annotating():
     mySolver = ManualSolver(rf=reduced_functional, niter=50)
     res = mySolver()
+

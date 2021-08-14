@@ -49,7 +49,7 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 5
+max_num_timesteps      = 5 
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
@@ -190,7 +190,7 @@ for timestep in range(0, max_num_timesteps):
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
 
-
+    log(f"simu_time {simu_time}")
 
 
 ## Initialise functional
@@ -253,7 +253,7 @@ local_cb_post = OptimisationOutputCallbackPost()
 eval_cb_post = ForwardCallbackPost()
 
 class myReducedFunctional(ReducedFunctional):
-    def __init__(self, functional, controls, scale=1.0, tape=None,
+    def __init__(self, functional, controls, scale=2.0, tape=None,
                       eval_cb_pre=lambda *args: None,
                       eval_cb_post=lambda *args: None,
                       derivative_cb_pre=lambda *args: None,
@@ -264,17 +264,21 @@ class myReducedFunctional(ReducedFunctional):
         if riesz:
             self.riesz = riesz
             log('Setting riesz_representation:', self.riesz)
-
+        log("Before super", scale)
         super().__init__(functional=functional, controls=controls, scale=scale,
                    tape=tape, eval_cb_pre=eval_cb_pre,
                                    eval_cb_post=eval_cb_post,
                                    derivative_cb_pre=derivative_cb_pre,
                                    derivative_cb_post=derivative_cb_post)
+        log("This is my sclae", self.scale)
+    def __call__(self, values):
+        func_value = super().__call__(values)*1e4
+        log("Actual value of the functional: ", func_value)
+        return func_value
     def derivative(self, options={}):
         if self.riesz:
             options['riesz_representation'] = self.riesz
-        my_grad = super().derivative(options=options)
-        return my_grad.project(1e4 * my_grad)
+        return super().derivative(options=options)
 
 # scipy_minimize --> _minimize_lbfgsb(fun, x0, args, jac, bounds,  callback=callback, **options)
 # These are the default parameters
@@ -288,12 +292,12 @@ options = { 'disp': None,
             'gtol': 0,#1e-5, # Iteration stops if projection of gradient is smaller than this
             'eps': 1e-8, # Only used when approx grad is True
             'maxfun': 15000, # Maximum number of evaluations
-            'maxiter': 2000, # Maximum number of iterations
+            'maxiter': 500, # Maximum number of iterations
             'maxls': 20, # Maximum number of line-searth steps
-       }
+        }
 
 # Defining the object for pyadjoint
-reduced_functional = myReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post, riesz='l2')
+reduced_functional = myReducedFunctional(functional, control, scale=1e4, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post, riesz='L2')
 
 # Set up bounds, which will later be used to enforce boundary conditions in inversion:
 T_lb     = Function(Q, name="LB_Temperature")
@@ -304,11 +308,11 @@ T_ub.assign(0.5)
 with stop_annotating():
     # Setting up the problem using minimize that uses Scipy 
     sol = minimize(reduced_functional, bounds=(T_lb, T_ub), method="L-BFGS-B", tol=1e-12, options=options)
-    #
-    ## Save the optimal temperature_ic field 
-    #ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
-    #        single_file=True, mode=FILE_CREATE,\
-    #                           comm=mesh.comm)
-    #ckpt_T_ic.store(sol)
-    #ckpt_T_ic.close()
-    #
+
+    # Save the optimal temperature_ic field 
+    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+            single_file=True, mode=FILE_CREATE,\
+                               comm=mesh.comm)
+    ckpt_T_ic.store(sol)
+    ckpt_T_ic.close()
+

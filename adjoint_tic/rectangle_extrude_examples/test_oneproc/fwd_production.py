@@ -19,7 +19,7 @@ y_max = 1.0
 x_max = 1.0
 
 #  how many intervals along x/y directions 
-disc_n = 200
+disc_n = 100
 
 
 # and Interval mesh of unit size 
@@ -49,10 +49,10 @@ target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e6)   # Rayleigh Number
 
 # Temperature related constants:
-delta_t                = Constant(1e-7) # Time-step
+delta_t                = Constant(5e-6) # Time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:

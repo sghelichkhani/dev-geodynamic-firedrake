@@ -157,12 +157,12 @@ z_tri = TrialFunction(Z)
 F_stokes_lin = replace(F_stokes, {z: z_tri})
 a, L = lhs(F_stokes_lin), rhs(F_stokes_lin)
 stokes_problem = LinearVariationalProblem(a, L, z, constant_jacobian=True, bcs=[bcu_topbase, bcu_rightleft])
-stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace, transpose_nullspace=p_nullspace)
+stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters)
 
 q_tri = TrialFunction(Q)
 F_energy_lin = replace(F_energy, {T_new:q_tri})
 a_energy, L_energy = lhs(F_energy_lin), rhs(F_energy_lin)
-energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new, constant_jacobian=False)
+energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new)
 energy_solver  = LinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
 
 # Now perform the time loop:
