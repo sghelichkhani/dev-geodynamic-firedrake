@@ -44,7 +44,7 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 120
+max_num_timesteps      = 60
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 

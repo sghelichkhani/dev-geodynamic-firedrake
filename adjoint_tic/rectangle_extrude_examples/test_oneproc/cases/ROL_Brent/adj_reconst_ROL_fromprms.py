@@ -25,7 +25,7 @@ y_max = 1.0
 x_max = 1.0
 
 #  how many intervals along x/y directions 
-disc_n = 200
+disc_n = 100
 
 
 # and Interval mesh of unit size 
@@ -50,19 +50,19 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 120
+max_num_timesteps      = 5
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e6)   # Rayleigh Number
 
 # Below are callbacks relating to the adjoint solutions (accessed through solve).
 # Not sure what the best place would be to initiate working tape!
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t                = Constant(1e-7) # Time-step
+delta_t                = Constant(5e-6) # Time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
@@ -82,6 +82,16 @@ solver_parameters = {
     'pc_factor_mat_solver_type': 'mumps',
     'mat_type': 'aij'
 }
+
+# Projection solver parameters for nullspaces:
+project_solver_parameters = {
+    "snes_type": "ksponly",
+    "ksp_type": "gmres",
+    "pc_type": "sor",
+    "mat_type": "aij",
+    "ksp_rtol": 1e-12,
+}
+
 
 #########################################################################################################
 ################################## Geometry and Spatial Discretization: #################################
@@ -192,6 +202,7 @@ for timestep in range(0, max_num_timesteps):
     # Updating Temperature
     log("Timestep Number: ", timestep, " Timestep: ", float(delta_t))
 
+
 ## Initialise functional
 functional = assemble(0.5*(T_new - final_state)**2 * dx)
 
@@ -262,7 +273,7 @@ params = {
            'Line Search': {
                 'Descent Method': {'Type': 'Quasi-Newton Method'},
                 'Line-Search Method': {
-                                'Type':  'Backtracking', #'Cubic Interpolation ''Backtracking',#'Bisection',
+                                'Type':  "Brent's", #'Cubic Interpolation ''Backtracking',#'Bisection',
                                 'Backtracking Rate': 0.5,
                                 'Bracketing Tolerance': 1.e-1,
                                 'Bisection': {
@@ -270,6 +281,11 @@ params = {
                                     'Iteration Limit': 20,
                                             },
                                         },
+                                "Brent's": {
+                                    'Tolerance': 1e0,
+                                    'Iteration Limit': 3,
+                                    'Run Test Upon Initialization': False,
+                                            },
                 'Curvature Condition': {
                                 'Type': 'Strong Wolfe Conditions',
                                 'General Parameter': 0.9,
@@ -277,33 +293,57 @@ params = {
                                         },
                 'Function Evaluation Limit': 20,
                 'Sufficient Decrease Tolerance': 1e-3,
-                'Use Previous Step Length as Initial Guess': False,
+                'Use Previous Step Length as Initial Guess': True,
                             },
                 },
         'Status Test': {
-            'Gradient Tolerance': 1e-12,
-            'Iteration Limit': 500,
+            'Gradient Tolerance': 0,
+            'Iteration Limit': 4,
                         }
         }
 class myROLObjective(ROLObjective):
     def __init__(self, rf, scale=1.0):
         super().__init__(rf, scale=scale)
+        # storage fx and gx for knowning when the requested fx and gx is repetitive
+        self.fx = [Function(i.function_space()) for i in reduced_functional.controls]
+        self.gx = [Function(i.function_space()) for i in reduced_functional.controls]
+        # For storing actual gradient
         self.actual_grad = Function(Q, name='RieszGradient')
         self.gradFile    = File(filename='./gradients/grads_L2_scaled.pvd')
+    def value(self, x, tol):
+        return self.val 
+
+    def gradient(self, g, x, tol):
+        log("value:", np.sum([float(assemble((self.gx[i] - x.dat[i])**2*dx)) for i, _ in enumerate(x.dat)]))
+        if np.sum([float(assemble((self.gx[i] - x.dat[i])**2*dx)) for i, _ in enumerate(x.dat)]) <= numpy.finfo(float).eps:
+            log(5*"*repeating gval request*")
+            # FIXME: g.dat should be reassigned for a general case 
+            g.dat[0].assign(self.actual_grad)
+        else:
+            # Store the parameters
+            [self.gx[i].assign(x.dat[i]) for i, _ in enumerate(x.dat)]
+            init_time = time.perf_counter()
+            super().gradient(g, x, tol)
+            log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
+            
+            # Storing the gradient
+            self.actual_grad.assign(g.dat[0])
+            self.gradFile.write(self.actual_grad)
 
     def update(self, x, flag, iteration):
         init_time = time.perf_counter()
-        super().update(x, flag, iteration)
-        self.val *=1e4
-        log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
+        if np.sum([float(assemble((self.fx[i] - x.dat[i])**2*dx)) for i, _ in enumerate(x.dat)]) <= numpy.finfo(float).eps:
+            log(5*"*repeating fval request*")
+            return self.val
+        else: 
+            # Keep a copy of x
+            [self.fx[i].assign(x.dat[i]) for i, _ in enumerate(x.dat)]
+            # update self.val
+            super().update(x, flag, iteration)
+            # scale self.val to be sure
+            self.val *=1e4
+            log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
 
-    def gradient(self, g, x, tol):
-        init_time = time.perf_counter()
-        super().gradient(g, x, tol)
-        log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
-        #g.dat[0].project(g.dat[0])
-        self.actual_grad.assign(g.dat[0])
-        self.gradFile.write(self.actual_grad)
 
 class myROLSolver(ROLSolver):
     def __init__(self, problem, parameters, inner_product="L2"):

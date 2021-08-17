@@ -9,10 +9,8 @@ from firedrake.petsc import PETSc
 from firedrake_adjoint import *
 from pyadjoint import MinimizationProblem, minimize
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
-import ROL
-from pyadjoint.reduced_functional_numpy import ReducedFunctionalNumPy
-from scipy.optimize.lbfgsb import _minimize_lbfgsb as scipy_lbfgsb
-from scipy.optimize.optimize import MemoizeJac
+#import ROL
+import time
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
 #########################################################################################################
@@ -272,12 +270,17 @@ class myReducedFunctional(ReducedFunctional):
                                    derivative_cb_post=derivative_cb_post)
 
     def __call__(self, values):
+        init_time = time.perf_counter()
         func_value = super().__call__(values)*1e4
+        log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
         return func_value
     def derivative(self, options={}):
         if self.riesz:
             options['riesz_representation'] = self.riesz
-        return super().derivative(options=options)
+        init_time = time.perf_counter()
+        myout =  super().derivative(options=options)
+        log(f"Elapsed time for grad eval {time.perf_counter() - init_time} sec")
+        return myout
 
 # scipy_minimize --> _minimize_lbfgsb(fun, x0, args, jac, bounds,  callback=callback, **options)
 # These are the default parameters
@@ -291,7 +294,7 @@ options = { 'disp': None,
             'gtol': 0,#1e-5, # Iteration stops if projection of gradient is smaller than this
             'eps': 1e-8, # Only used when approx grad is True
             'maxfun': 15000, # Maximum number of evaluations
-            'maxiter': 10, # Maximum number of iterations
+            'maxiter': 2, # Maximum number of iterations
             'maxls': 20, # Maximum number of line-searth steps
         }
 
