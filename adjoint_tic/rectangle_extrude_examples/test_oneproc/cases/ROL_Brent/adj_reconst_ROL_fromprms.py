@@ -293,7 +293,7 @@ params = {
                                         },
                 'Function Evaluation Limit': 20,
                 'Sufficient Decrease Tolerance': 1e-3,
-                'Use Previous Step Length as Initial Guess': True,
+                'Use Previous Step Length as Initial Guess': False,
                             },
                 },
         'Status Test': {
@@ -314,9 +314,8 @@ class myROLObjective(ROLObjective):
         return self.val 
 
     def gradient(self, g, x, tol):
-        log("value:", np.sum([float(assemble((self.gx[i] - x.dat[i])**2*dx)) for i, _ in enumerate(x.dat)]))
         if np.sum([float(assemble((self.gx[i] - x.dat[i])**2*dx)) for i, _ in enumerate(x.dat)]) <= numpy.finfo(float).eps:
-            log(5*"*repeating gval request*")
+            log("Aborting gradient evaluation")
             # FIXME: g.dat should be reassigned for a general case 
             g.dat[0].assign(self.actual_grad)
         else:
@@ -325,24 +324,29 @@ class myROLObjective(ROLObjective):
             init_time = time.perf_counter()
             super().gradient(g, x, tol)
             log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
+
+            # scaling down
+            #g.dat[0].project(1e-4*g.dat[0])
             
             # Storing the gradient
             self.actual_grad.assign(g.dat[0])
             self.gradFile.write(self.actual_grad)
 
     def update(self, x, flag, iteration):
-        init_time = time.perf_counter()
         if np.sum([float(assemble((self.fx[i] - x.dat[i])**2*dx)) for i, _ in enumerate(x.dat)]) <= numpy.finfo(float).eps:
-            log(5*"*repeating fval request*")
+            log("Aborting functional evaluation")
             return self.val
         else: 
             # Keep a copy of x
             [self.fx[i].assign(x.dat[i]) for i, _ in enumerate(x.dat)]
+
             # update self.val
+            init_time = time.perf_counter()
             super().update(x, flag, iteration)
-            # scale self.val to be sure
-            self.val *=1e4
             log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
+
+            ## scale self.val to be sure
+            #self.val *=1e4
 
 
 class myROLSolver(ROLSolver):
