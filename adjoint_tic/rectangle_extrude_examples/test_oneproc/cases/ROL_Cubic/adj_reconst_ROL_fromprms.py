@@ -315,6 +315,7 @@ class myROLObjective(ROLObjective):
 
     def gradient(self, g, x, tol):
         if np.sum([float(assemble((self.gx[i] - x.dat[i])**2*dx)) for i, _ in enumerate(x.dat)]) <= numpy.finfo(float).eps:
+            log("Aborting gradient evaluation")
             # FIXME: g.dat should be reassigned for a general case 
             g.dat[0].assign(self.actual_grad)
         else:
@@ -333,7 +334,7 @@ class myROLObjective(ROLObjective):
 
     def update(self, x, flag, iteration):
         if np.sum([float(assemble((self.fx[i] - x.dat[i])**2*dx)) for i, _ in enumerate(x.dat)]) <= numpy.finfo(float).eps:
-            log(50*"!!*!!")
+            log("Aborting functional evaluation")
             return self.val
         else: 
             # Keep a copy of x
