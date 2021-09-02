@@ -99,8 +99,8 @@ u, p = split(z)     # can we nicely name mixed function space fields?
 T_old    = Function(Q, name="OldTemperature")
 
 # Having a single hot blob on 1.5, 0.0
-blb_ctr_h = as_vector((0.5, 0.85)) 
-blb_gaus = Constant(0.04)
+blb_ctr_h = as_vector((0.55, 0.80)) 
+blb_gaus = Constant(0.08)
 
 # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
 T_old.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));

@@ -204,8 +204,8 @@ class OptimisationOutputCallbackPost:
         self.T_tc_copy            = Function(Q, name="FinTemperature")
 
         # Having a single hot blob on 1.5, 0.0
-        blb_ctr_h = as_vector((0.5, 0.85)) 
-        blb_gaus = Constant(0.04)
+        blb_ctr_h = as_vector((0.55, 0.85)) 
+        blb_gaus = Constant(0.08)
         
         # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
         self.T_ic_true.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2))
@@ -331,6 +331,8 @@ class myROLObjective(ROLObjective):
             init_time = time.perf_counter()
             super().gradient(g, x, tol)
             log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
+
+            g.dat[0].project(g.dat[0]*1e-4)
 
             # cache g.dat 
             self.grads.insert(0, [Function(g.function_space()).assign(g) for g in g.dat])

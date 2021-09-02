@@ -204,8 +204,8 @@ class OptimisationOutputCallbackPost:
         self.T_tc_copy            = Function(Q, name="FinTemperature")
 
         # Having a single hot blob on 1.5, 0.0
-        blb_ctr_h = as_vector((0.5, 0.85)) 
-        blb_gaus = Constant(0.04)
+        blb_ctr_h = as_vector((0.55, 0.85)) 
+        blb_gaus = Constant(0.08)
         
         # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
         self.T_ic_true.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2))
@@ -250,43 +250,36 @@ T_ub.assign(0.5)
 minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 
 # This is the classic way
-params = {
-        'General': {
-              'Print Verbosity': 1,
-              'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': STORAGE_BFGS},
-                    },
+params = {                                   
+        'General': {                         
+              'Print Verbosity': 1,          
+              'Secant': {'Type': 'Limited-Memory BFGS',
+                         'Maximum Storage': 50, 
+                         'Use as Hessian': True,
+                         "Barzilai-Borwein": 1,
+                        },  
+                    },  
         'Step': {
-           'Type': 'Line Search',
-           'Line Search': {
-                'Descent Method': {'Type': 'Quasi-Newton Method'},
-                'Function Evaluation Limit': 20,
-                'Sufficient Decrease Tolerance': SUFFICIENTDECREASETOLERANCE,
-                'Use Previous Step Length as Initial Guess': USEPREVIOSBOOL,
-                'Line-Search Method': {
-                                'Type':  LINESEARCHMETHOD,#"Brent's", #'Cubic Interpolation ''Backtracking',#'Bisection',
-                                'Backtracking Rate': 0.5,
-                                'Bracketing Tolerance': 0.1,
-                                'Bisection': {
-                                    'Tolerance': 0.1,
-                                    'Iteration Limit': 20,
-                                            },
-                                        },
-                                "Brent's": {
-                                    'Tolerance': 0.1,
-                                    'Iteration Limit': 5,
-                                    'Run Test Upon Initialization': False,
-                                            },
-                'Curvature Condition': {
-                                'Type': 'Goldstein Conditions',
-                                'General Parameter': 0.9,
-                                'Generalized Wolfe Parameter': 0.6,
-                                        },
-                            },
-                },
+           'Type': 'Trust Region',  #'Line Search',
+           'Trust Region': {
+                "Subproblem Solver":                    "Truncated CG",
+                "Subproblem Model":                     "Kelley-Sachs",
+                "Initial Radius":                       10.0,
+                "Maximum Radius":                       5.e3,
+                "Step Acceptance Threshold":            0.05,
+                "Radius Shrinking Threshold":           0.05,
+                "Radius Growing Threshold":             0.9,
+                "Radius Shrinking Rate (Negative rho)": 0.0625,
+                "Radius Shrinking Rate (Positive rho)": 0.25,
+                "Radius Growing Rate":                  2.5,
+                "Sufficient Decrease Parameter":        1.e-2,
+                "Safeguard Size":                       1.e8,
+                        },  
+                },  
         'Status Test': {
             'Gradient Tolerance': 0,
-            'Iteration Limit': 200,
-                        }
+            'Iteration Limit': 500, 
+                        }   
         }
 
 # overwritting ROLObjective to have a cache
@@ -331,9 +324,8 @@ class myROLObjective(ROLObjective):
             init_time = time.perf_counter()
             super().gradient(g, x, tol)
             log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
-                
-            # scale
-            #g.dat[0].project(1e-4*g.dat[0])
+
+            g.dat[0].project(g.dat[0]*1e-4)
 
             # cache g.dat 
             self.grads.insert(0, [Function(g.function_space()).assign(g) for g in g.dat])
