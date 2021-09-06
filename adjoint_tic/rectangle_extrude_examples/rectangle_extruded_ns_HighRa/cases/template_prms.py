@@ -303,7 +303,7 @@ class myROLObjective(ROLObjective):
         self.gx = []
 
         # cache for result of functional and gradient calculations 
-        self.fvals       = []
+        self.fvals = []
         self.grads = []
 
         # Sia: to see the actual gradient that is being ued (not l2)
@@ -329,7 +329,9 @@ class myROLObjective(ROLObjective):
 
             # gradient calculation
             init_time = time.perf_counter()
-            super().gradient(g, x, tol)
+            #super().gradient(g, x, tol)
+            g.dat = [self.rf.derivative(\
+                            options={'riesz_representation':x.inner_product})]
             log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
 
             # cache g.dat 
