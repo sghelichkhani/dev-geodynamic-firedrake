@@ -199,7 +199,6 @@ functional = assemble(0.5*(T_new - final_state)**2 * dx)
 class OptimisationOutputCallbackPost:
     def __init__(self):
         self.iter_idx = 0
-        self.opt_file             = File('visual/opt_file.pvd') 
         self.T_ic_true            = Function(Q, name="InitTemperature_Ref")
         self.T_ic_copy            = Function(Q, name="InitTemperature")
         self.T_tc_copy            = Function(Q, name="FinTemperature")
@@ -219,7 +218,6 @@ class OptimisationOutputCallbackPost:
         self.T_tc_copy.assign(T_new.block_variable.checkpoint)
         
         #  Write out the fields
-        self.opt_file.write(self.T_ic_copy, self.T_tc_copy)
         func_val = assemble((self.T_tc_copy-final_state)**2 * dx) 
         init_func_val = assemble((self.T_ic_true-self.T_ic_copy)**2 * dx) 
         #reg_val  = assemble(inner(grad(self.T_ic_copy-T_mean), grad(self.T_ic_copy - T_mean)) * dx) 
@@ -255,17 +253,17 @@ minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 params = {
         'General': {
               'Print Verbosity': 1,
-              'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': 10},
+              'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': STORAGE_BFGS},
                     },
         'Step': {
            'Type': 'Line Search',
            'Line Search': {
                 'Descent Method': {'Type': 'Quasi-Newton Method'},
                 'Function Evaluation Limit': 20,
-                'Sufficient Decrease Tolerance': 0.1,
-                'Use Previous Step Length as Initial Guess': False,
+                'Sufficient Decrease Tolerance': SUFFICIENTDECREASETOLERANCE,
+                'Use Previous Step Length as Initial Guess': USEPREVIOSBOOL,
                 'Line-Search Method': {
-                                "Type":  "Brent's",
+                                'Type':  LINESEARCHMETHOD,#"Brent's", #'Cubic Interpolation ''Backtracking',#'Bisection',
                                 'Backtracking Rate': 0.5,
                                 'Bracketing Tolerance': 0.1,
                                 'Bisection': {
@@ -279,7 +277,7 @@ params = {
                                     'Run Test Upon Initialization': False,
                                             },
                 'Curvature Condition': {
-                                'Type': 'Strong Wolfe Conditions',
+                                'Type': 'Goldstein Conditions',
                                 'General Parameter': 0.9,
                                 'Generalized Wolfe Parameter': 0.6,
                                         },
@@ -309,7 +307,6 @@ class myROLObjective(ROLObjective):
         self.grads = []
 
         # Sia: to see the actual gradient that is being ued (not l2)
-        self.gradFile    = File(filename='./gradients/gradient.pvd')
         self.g_pvd_field = Function(Q, name="gradient")
 
     # functional value is accessed here 
@@ -334,12 +331,13 @@ class myROLObjective(ROLObjective):
             init_time = time.perf_counter()
             super().gradient(g, x, tol)
             log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
+                
+            # scale
+            #g.dat[0].project(1e-4*g.dat[0])
 
             # cache g.dat 
             self.grads.insert(0, [Function(g.function_space()).assign(g) for g in g.dat])
             
-            ## Write out recently computed gradient
-            self.gradFile.write(self.g_pvd_field.assign(g.dat[0]))
 
         # if x is found in cache
         else:

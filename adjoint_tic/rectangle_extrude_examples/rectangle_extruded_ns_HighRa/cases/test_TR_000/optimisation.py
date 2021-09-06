@@ -249,45 +249,38 @@ T_ub.assign(0.5)
 ### Optimise using ROL - note when doing Taylor test this can be turned off:
 minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 
-# This is the classic way
-params = {
-        'General': {
-              'Print Verbosity': 1,
-              'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': STORAGE_BFGS},
-                    },
+# This is the classic way                    
+params = {                                   
+        'General': {                         
+              'Print Verbosity': 1,          
+              'Secant': {'Type': 'Limited-Memory BFGS',
+                         'Maximum Storage': 5, 
+                         'Use as Hessian': True,
+                         "Barzilai-Borwein": 1,
+                        },  
+                    },  
         'Step': {
-           'Type': 'Line Search',
-           'Line Search': {
-                'Descent Method': {'Type': 'Quasi-Newton Method'},
-                'Function Evaluation Limit': 20,
-                'Sufficient Decrease Tolerance': SUFFICIENTDECREASETOLERANCE,
-                'Use Previous Step Length as Initial Guess': USEPREVIOSBOOL,
-                'Line-Search Method': {
-                                'Type':  LINESEARCHMETHOD,#"Brent's", #'Cubic Interpolation ''Backtracking',#'Bisection',
-                                'Backtracking Rate': 0.5,
-                                'Bracketing Tolerance': 0.1,
-                                'Bisection': {
-                                    'Tolerance': 0.1,
-                                    'Iteration Limit': 20,
-                                            },
-                                        },
-                                "Brent's": {
-                                    'Tolerance': 0.1,
-                                    'Iteration Limit': 5,
-                                    'Run Test Upon Initialization': False,
-                                            },
-                'Curvature Condition': {
-                                'Type': 'Goldstein Conditions',
-                                'General Parameter': 0.9,
-                                'Generalized Wolfe Parameter': 0.6,
-                                        },
-                            },
-                },
+           'Type': 'Trust Region',  #'Line Search',
+           'Trust Region': {
+                "Subproblem Solver":                    "Truncated CG",
+                "Subproblem Model":                     "Kelley-Sachs",
+                "Initial Radius":                       10.0,
+                "Maximum Radius":                       5.e3,
+                "Step Acceptance Threshold":            0.05,
+                "Radius Shrinking Threshold":           0.05,
+                "Radius Growing Threshold":             0.9,
+                "Radius Shrinking Rate (Negative rho)": 0.0625,
+                "Radius Shrinking Rate (Positive rho)": 0.25,
+                "Radius Growing Rate":                  2.5,
+                "Sufficient Decrease Parameter":        1.e-2,
+                "Safeguard Size":                       1.e8,
+                        },  
+                },  
         'Status Test': {
             'Gradient Tolerance': 0,
-            'Iteration Limit': 200,
-                        }
-        }
+            'Iteration Limit': 500, 
+                        }   
+        }   
 
 # overwritting ROLObjective to have a cache
 class myROLObjective(ROLObjective):
@@ -303,7 +296,7 @@ class myROLObjective(ROLObjective):
         self.gx = []
 
         # cache for result of functional and gradient calculations 
-        self.fvals = []
+        self.fvals       = []
         self.grads = []
 
         # Sia: to see the actual gradient that is being ued (not l2)
@@ -329,9 +322,7 @@ class myROLObjective(ROLObjective):
 
             # gradient calculation
             init_time = time.perf_counter()
-            #super().gradient(g, x, tol)
-            g.dat = [self.rf.derivative(\
-                            options={'riesz_representation':x.inner_product})]
+            super().gradient(g, x, tol)
             log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
                 
             # scale
