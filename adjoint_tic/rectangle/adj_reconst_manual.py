@@ -1,5 +1,5 @@
 """
-    Adjoint Reconstruction - Using the classic way inputing parameters, instead of definiting methods for ROL.Algirithm() 
+    Adjoint Reconstruction 
 """
 
 from firedrake import *
@@ -16,9 +16,6 @@ import ROL
 
 #logging.set_log_level(1)
 #logging.set_level(1)
-
-simu_str = 'wreg_BFGS'
-
 
 # Geometric Constants:
 y_max = 1.0
@@ -126,18 +123,14 @@ final_state_file = DumbCheckpoint("./final_state", mode=FILE_READ)
 final_state_file.load(final_state, 'Temperature')
 final_state_file.close()
 
-
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
-geotherm_checkpoint = DumbCheckpoint("steady_state", single_file=True, mode=FILE_READ)
-geotherm_checkpoint.load(T_ic, 'Temperature')
-geotherm_checkpoint.close()
 # Let's start with the final condition
 #T_ic.project(final_state)
+T_ic.assign(0.5)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
-
 # Having a single hot blob on 1.5, 0.0
 T_old.assign(T_ic)
 
@@ -146,7 +139,6 @@ T_new.assign(T_old)
 
 # Temporal discretisation - Using a theta scheme:
 T_theta = theta_ts * T_new + (1-theta_ts) * T_old
-
 
 # ********************** Setup Equations ************************ 
 # viscosiy 
@@ -190,16 +182,16 @@ simu_time = 0.0000
 control = Control(T_ic)
 
 
-# Setting up the file containing all the info
+## Setting up the file containing all the info
 boundary_velocity_fi = DumbCheckpoint("velocity", mode=FILE_READ)
 
-# Documenting the first forward run
-fwd_run_fi = File('./Optimisation/first_fwd_run.pvd')
+## Documenting the first forward run
+fwd_run_fi = File('./adjoint_tic/first_fwd_run.pvd')
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
 
-    # updating boundary condition
+    ## updating boundary condition
     boundary_velocity_fi.set_timestep(t=simu_time, idx=timestep)
     boundary_velocity_fi.load(u_top, 'Velocity')
 
@@ -230,52 +222,8 @@ boundary_velocity_fi.close()
 # Initialise functional
 functional = assemble(0.5*(T_new - final_state)**2 * dx)
 
-# Below are callbacks allowing us to access various field information (accessed through reducedfunctional).
-class OptimisationOutputCallbackPost:
-    def __init__(self):
-        self.iter_idx = 0
-        self.opt_file             = File('Optimisation/opt_file.pvd') 
-        self.grad_copy            = Function(Q, name="Gradient")
-        self.T_ic_copy            = Function(Q, name="InitTemperature")
-        self.T_tc_copy            = Function(Q, name="FinTemperature")
-        self.z_copy               = Function(Z, name="Stokes")
-        self.u_copy               = Function(V, name="Velocity")
-        self.p_copy               = Function(W, name="Pressure")
-
-    def __call__(self, cb_functional, dj, controls):
-        # output current gradient:
-        self.grad_copy.assign(dj)
-        # output current control (temperature initial condition)
-        self.T_ic_copy.assign(controls)
-        # output current final state temperature
-        self.T_tc_copy.assign(T_new.block_variable.checkpoint)
-        # output current final state velocity and pressure
-        self.z_copy.assign(z.block_variable.checkpoint)
-        self.u_copy.assign(self.z_copy.split()[0])
-        self.p_copy.assign(self.z_copy.split()[1])
-        
-        #  Write out the fields
-        self.opt_file.write(self.T_ic_copy, self.T_tc_copy, self.u_copy, self.p_copy, self.grad_copy)
-        func_val = assemble((self.T_tc_copy-final_state)**2 * dx) 
-        grad_val = sqrt(assemble((self.grad_copy)**2 * dx))
-
-        log(str('Iteration= %i, functional=' %(self.iter_idx)), func_val, ', grad(dj)=', grad_val)
-        log('Derivative calculation', self.iter_idx)
-        self.iter_idx += 1
-
-class ForwardCallbackPost:
-   def __init__(self):
-      self.fwd_idx = 0 
-   def __call__(self, controls):
-      self.fwd_idx +=1 
-      log("Starting fwd calculation:", self.fwd_idx)
-
-# Initiate classes for the callbacks
-local_cb_post = OptimisationOutputCallbackPost()
-eval_cb_pre = ForwardCallbackPost()
-
 # Defining the object for pyadjoint
-reduced_functional = ReducedFunctional(functional, control, eval_cb_pre=eval_cb_pre, derivative_cb_post=local_cb_post)
+reduced_functional = ReducedFunctional(functional, control)
 
 # Set up bounds, which will later be used to enforce boundary conditions in inversion:
 T_lb     = Function(Q, name="LB_Temperature")
@@ -283,41 +231,39 @@ T_ub     = Function(Q, name="UB_Temperature")
 T_lb.assign(0.0)
 T_ub.assign(1.0)
 
-### Optimise using ROL - note when doing Taylor test this can be turned off:
-minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
+#### Optimise using ROL - note when doing Taylor test this can be turned off:
+#minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 
-# This is the classic way
-params = {
-        'General': {
-                'Print Verbosity':1,
-                'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': 5}, 
-                    },
-        'Step': {
-           'Type': 'Line Search',
-           'Line Search': {
-                'Descent Method': {'Type': 'Quasi-Newton Method'},
-                'Line-Search Method': {'Type': 'Cubic Interpolation'}, 
-                #'Function Evaluation Limit': 5,
-                #'Sufficient Decrease Tolerance': 1e-2,
-                #'Use Previous Step Length as Initial Guess': True,
-                            }
-                },
-        'Status Test': {
-            'Gradient Tolerance': 1e-12,
-            'Iteration Limit': 50,
-                        }
-        }
+T_temp = Function(Q, name='temp_T_ic')
 
 
-with stop_annotating():    
-    # set up ROL problem
-    rol_solver = ROLSolver(minp, params, inner_product="L2")
-    sol = rol_solver.solve()
+optimout = File('./manual_optim.pvd')
+optimout.write(T_ic)
+k = 0
+beta = 0.5
+my_func = functional;
+with stop_annotating():
+    for i in range(10):
+        #my_grad_L2 = reduced_functional.derivative({'riesz_representation':'L2'})
+        #my_grad_H1 = reduced_functional.derivative({'riesz_representation':'H1'})
+        no_reduction = True 
+        log("Iter {} having {:.8f}".format(i, my_func))
+        derivatives = compute_gradient(functional, 
+                                       control,
+                                       options={'riesz_representation':'L2'},
+                                       tape=tape)
+        while no_reduction:
+            T_temp.project(T_ic - beta*derivatives)
+            functional_temp = reduced_functional(T_temp)
+            if functional_temp < my_func:
+                my_func = functional_temp
+                T_ic.project(T_temp)
+                no_reduction=False
+            else:
+                log("beta {} too big, {} vs. {}".format(beta, functional_temp, my_func))
+                beta += -0.1
+        control.update(T_ic)
+        optimout.write(T_ic)
+        k += 1
 
-    # Save the optimal temperature_ic field 
-    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
-            single_file=True, mode=FILE_CREATE,\
-                               comm=mesh.comm)
-    ckpt_T_ic.store(sol)
-    ckpt_T_ic.close()
 

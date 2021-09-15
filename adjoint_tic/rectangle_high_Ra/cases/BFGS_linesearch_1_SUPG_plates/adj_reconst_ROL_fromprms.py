@@ -17,15 +17,12 @@ import ROL
 #logging.set_log_level(1)
 #logging.set_level(1)
 
-simu_str = 'wreg_BFGS'
-
-
 # Geometric Constants:
 y_max = 1.0
 x_max = 1.0
 
 #   how many intervals along x/y directions 
-disc_n = 100
+disc_n = 200
 
 # Top and bottom ids, for extruded mesh
 top_id, bottom_id = 4, 3 
@@ -42,12 +39,12 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 40
+max_num_timesteps      = 800
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e6)   # Rayleigh Number
 
 # Below are callbacks relating to the adjoint solutions (accessed through solve).
 # Not sure what the best place would be to initiate working tape!
@@ -73,13 +70,42 @@ stokes_solver_parameters = {
     'pc_factor_mat_solver_type': 'mumps',
     'mat_type': 'aij'
 }
+stokes_solver_iterative_parameters = {
+    "mat_type": "matfree",
+    "snes_type": "ksponly",
+    "ksp_type": "preonly",
+    "pc_type": "fieldsplit",
+    "pc_fieldsplit_type": "schur",
+    "pc_fieldsplit_schur_type": "full",
+    "fieldsplit_0": {
+        "ksp_type": "cg",
+        "pc_type": "python",
+        "pc_python_type": "firedrake.AssembledPC",
+        "assembled_pc_type": "gamg",
+        "assembled_pc_gamg_threshold_scale": 1.0,
+        "assembled_pc_gamg_threshold": 0.01,
+        "assembled_pc_gamg_coarse_eq_limit": 800,
+        "ksp_rtol": 1e-4,    
+        #"ksp_converged_reason": None,
+    },  
+    "fieldsplit_1": {
+        "ksp_type": "fgmres",
+        #"ksp_converged_reason": None,
+        "pc_type": "python",
+        "pc_python_type": "firedrake.MassInvPC",
+        "Mp_ksp_type": "cg",
+        "Mp_pc_type": "sor",
+        "ksp_rtol": 1e-3,
+    }   
+}
+
 
 # Temperature Equation Solver Parameters:
 temperature_solver_parameters = {
         'snes_type': 'ksponly',
         'ksp_converged_reason': None,
         'ksp_monitor': None,
-        'ksp_rtol': 1e-2,
+        'ksp_rtol': 1e-4,
         'ksp_type': 'gmres',
         'pc_type': 'sor',
         'mat_type': 'aij'
@@ -113,7 +139,7 @@ def compute_timestep(u):
     ts_min = ts_func.dat.data.min()
     ts_min = mesh.comm.allreduce(ts_min, MPI.MIN)
     #return min(ts_min*target_cfl_no,max_timestep)
-    return 1e-7 
+    return 5e-6 
 
 
 #########################################################################################################
@@ -122,18 +148,16 @@ def compute_timestep(u):
 
 # Final state, which will be used as reference for minimization, loaded from a file 
 final_state = Function(Q, name='RefTemperature')
-final_state_file = DumbCheckpoint("./final_state", mode=FILE_READ)
+final_state_file = DumbCheckpoint("../../final_state", mode=FILE_READ)
 final_state_file.load(final_state, 'Temperature')
 final_state_file.close()
 
+T_mean = Constant(0.5)
 
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
-geotherm_checkpoint = DumbCheckpoint("steady_state", single_file=True, mode=FILE_READ)
-geotherm_checkpoint.load(T_ic, 'Temperature')
-geotherm_checkpoint.close()
 # Let's start with the final condition
-#T_ic.project(final_state)
+T_ic.project(final_state)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
@@ -146,7 +170,6 @@ T_new.assign(T_old)
 
 # Temporal discretisation - Using a theta scheme:
 T_theta = theta_ts * T_new + (1-theta_ts) * T_old
-
 
 # ********************** Setup Equations ************************ 
 # viscosiy 
@@ -171,8 +194,10 @@ bcu_base        = DirichletBC(Z.sub(0).sub(1), 0.0, (bottom_id)) # bottom bounda
 #bcu_topbase     = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id)) # bottom boundary is always free-slip
 bcu_rightleft   = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id)) # right and left boundaries have only no-outflow condition
 
-# Temperature, advection-diffusion equation
-F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
+### Temperature, advection-diffusion equation
+delta_x  = sqrt(CellVolume(mesh))
+Y_SUPG   = Y + dot(u,grad(Y)) * (delta_x / (2*sqrt(dot(u,u))))
+F_energy = Y_SUPG* ((T_new - T_old) / delta_t) * dx + Y_SUPG*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
 
 # Prescribed temperature for top and bottom
 bct_base = DirichletBC(Q, 1.0, bottom_id)
@@ -186,15 +211,30 @@ p.rename('Pressure')
 # A simulation time to track how far we are
 simu_time = 0.0000
 
+
+# Stokes Solver
+z_tri = TrialFunction(Z)
+F_stokes_lin = replace(F_stokes, {z: z_tri})
+a, L = lhs(F_stokes_lin), rhs(F_stokes_lin)
+stokes_problem = LinearVariationalProblem(a, L, z, constant_jacobian=True, bcs=[bcu_top_Dir, bcu_base, bcu_rightleft])
+stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=stokes_solver_parameters)
+
+q_tri = TrialFunction(Q)
+F_energy_lin = replace(F_energy, {T_new:q_tri})
+a_energy, L_energy = lhs(F_energy_lin), rhs(F_energy_lin)
+energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new, constant_jacobian=False)
+energy_solver  = LinearVariationalSolver(energy_problem, solver_parameters=stokes_solver_parameters)
+
+
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
 
 
 # Setting up the file containing all the info
-boundary_velocity_fi = DumbCheckpoint("velocity", mode=FILE_READ)
+boundary_velocity_fi = DumbCheckpoint("../../velocity", mode=FILE_READ)
 
 # Documenting the first forward run
-fwd_run_fi = File('./Optimisation/first_fwd_run.pvd')
+fwd_run_fi = File('visual/first_fwd_run.pvd')
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
@@ -206,13 +246,13 @@ for timestep in range(0, max_num_timesteps):
 
     # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
     # and the RHS == 0. 
-    solve(F_stokes==0, z, bcs=[bcu_top_Dir, bcu_base, bcu_rightleft], solver_parameters=stokes_solver_parameters)
+    stokes_solver.solve()
 
     # updating time-step based on velocities
     delta_t.assign(compute_timestep(u)) # Compute adaptive time-step
 
     # Temperature system:
-    solve(F_energy==0, T_new, solver_parameters=stokes_solver_parameters)
+    energy_solver.solve()
 
     fwd_run_fi.write(T_new, u, p)
 
@@ -227,14 +267,23 @@ for timestep in range(0, max_num_timesteps):
 
 boundary_velocity_fi.close()
 
-# Initialise functional
-functional = assemble(0.5*(T_new - final_state)**2 * dx)
+## Initialise functional
+#beta_m = 1.0/assemble((final_state - T_mean)**2 * dx)
+#misfit = assemble(float(beta_m) * (T_new - final_state)**2 * dx)
+misfit = assemble((T_new - final_state)**2 * dx)
+#
+#beta_r = 1e-3/ assemble(inner(grad(final_state - T_mean), grad(final_state - T_mean)) * dx)
+#reg    = assemble(float(beta_r) * inner(grad(T_ic - T_mean), grad(T_ic - T_mean)) * dx)
+
+# functional is a combination of the misfit and the regularising term
+#functional = misfit + reg
+functional = misfit 
 
 # Below are callbacks allowing us to access various field information (accessed through reducedfunctional).
 class OptimisationOutputCallbackPost:
     def __init__(self):
         self.iter_idx = 0
-        self.opt_file             = File('Optimisation/opt_file.pvd') 
+        self.opt_file             = File('visual/opt_file.pvd') 
         self.grad_copy            = Function(Q, name="Gradient")
         self.T_ic_copy            = Function(Q, name="InitTemperature")
         self.T_tc_copy            = Function(Q, name="FinTemperature")
@@ -249,6 +298,7 @@ class OptimisationOutputCallbackPost:
         self.T_ic_copy.assign(controls)
         # output current final state temperature
         self.T_tc_copy.assign(T_new.block_variable.checkpoint)
+        #
         # output current final state velocity and pressure
         self.z_copy.assign(z.block_variable.checkpoint)
         self.u_copy.assign(self.z_copy.split()[0])
@@ -257,25 +307,26 @@ class OptimisationOutputCallbackPost:
         #  Write out the fields
         self.opt_file.write(self.T_ic_copy, self.T_tc_copy, self.u_copy, self.p_copy, self.grad_copy)
         func_val = assemble((self.T_tc_copy-final_state)**2 * dx) 
-        grad_val = sqrt(assemble((self.grad_copy)**2 * dx))
+        reg_val  = assemble(inner(grad(self.T_ic_copy-T_mean), grad(self.T_ic_copy - T_mean)) * dx) 
+        grad_val = assemble((self.grad_copy)**2 * dx)
 
-        log(str('Iteration= %i, functional=' %(self.iter_idx)), func_val, ', grad(dj)=', grad_val)
+        log('# Der {}, ||Misfit|| {}, Non-existing ||Regu|| {}, ||Grad|| {}'.format(self.iter_idx, func_val, reg_val, grad_val))
         log('Derivative calculation', self.iter_idx)
         self.iter_idx += 1
 
 class ForwardCallbackPost:
    def __init__(self):
       self.fwd_idx = 0 
-   def __call__(self, controls):
+   def __call__(self, func_value, controls):
       self.fwd_idx +=1 
-      log("Starting fwd calculation:", self.fwd_idx)
+      log('# fwd {}, ||Misfit|| {}'.format(self.fwd_idx, func_value))
 
 # Initiate classes for the callbacks
 local_cb_post = OptimisationOutputCallbackPost()
-eval_cb_pre = ForwardCallbackPost()
+eval_cb_post = ForwardCallbackPost()
 
 # Defining the object for pyadjoint
-reduced_functional = ReducedFunctional(functional, control, eval_cb_pre=eval_cb_pre, derivative_cb_post=local_cb_post)
+reduced_functional = ReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post)
 
 # Set up bounds, which will later be used to enforce boundary conditions in inversion:
 T_lb     = Function(Q, name="LB_Temperature")
@@ -296,10 +347,10 @@ params = {
            'Type': 'Line Search',
            'Line Search': {
                 'Descent Method': {'Type': 'Quasi-Newton Method'},
-                'Line-Search Method': {'Type': 'Cubic Interpolation'}, 
-                #'Function Evaluation Limit': 5,
-                #'Sufficient Decrease Tolerance': 1e-2,
-                #'Use Previous Step Length as Initial Guess': True,
+                'Line-Search Method': {'Type': 'Cubic Interpolation'},
+                'Function Evaluation Limit': 20,
+                'Sufficient Decrease Tolerance': 1e-8,
+                'Use Previous Step Length as Initial Guess': True,
                             }
                 },
         'Status Test': {
