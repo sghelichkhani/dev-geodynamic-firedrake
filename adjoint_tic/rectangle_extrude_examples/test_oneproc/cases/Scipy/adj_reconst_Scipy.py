@@ -1,14 +1,16 @@
 """
-    Adjoint Reconstruction - Using the classic way inputing parameters, instead of definiting methods for ROL.Algirithm() 
+    Adjoint Reconstruction - Using the classic way inputing parameters of ROL, instead of definiting methods for ROL.Algirithm() 
 """
+
 from firedrake import *
 from mpi4py import MPI
 import math, numpy
 from firedrake.petsc import PETSc
 from firedrake_adjoint import *
-from pyadjoint import MinimizationProblem, ROLSolver
+from pyadjoint import MinimizationProblem, minimize
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
-import ROL
+#import ROL
+import time
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
 #########################################################################################################
@@ -21,7 +23,8 @@ y_max = 1.0
 x_max = 1.0
 
 #  how many intervals along x/y directions 
-disc_n = 200
+disc_n = 100
+
 
 # and Interval mesh of unit size 
 mesh1d = IntervalMesh(disc_n, length_or_left=0.0, right=x_max) 
@@ -45,23 +48,24 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 120
+max_num_timesteps      = 4
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e6)   # Rayleigh Number
 
 # Below are callbacks relating to the adjoint solutions (accessed through solve).
 # Not sure what the best place would be to initiate working tape!
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t                = Constant(1e-7) # Time-step
+delta_t                = Constant(5e-6) # Time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
 theta_ts               = 0.5
+
 
 #### Print function to ensure log output is only written on processor zero (if running in parallel) ####
 def log(*args):
@@ -108,7 +112,8 @@ final_state_file.close()
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
 # Let's start with the final condition
-T_ic.project(final_state)
+#T_ic.project(final_state)
+T_ic.assign(0.5)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
@@ -134,7 +139,7 @@ F_stokes  = inner(grad(N), tau(u)) * dx - div(N)*p * dx
 F_stokes += - (dot(N,yhat)*Ra*T_theta) * dx 
 F_stokes += - div(u)* M * dx
 
-# Setting free-slip BC for top and bottom
+# Setting No-slip BC for top and bottom
 bcu_topbase     = DirichletBC(Z.sub(0), 0.0, (top_id, bottom_id))
 bcu_rightleft   = DirichletBC(Z.sub(0), 0.0, (left_id, right_id))
 
@@ -153,11 +158,18 @@ p.rename('Pressure')
 # A simulation time to track how far we are
 simu_time = 0.0
 
-# Setup problem and solver objects so we can reuse (cache) solver setup                                                                                                                                                                                                                   
-stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=[bcu_topbase, bcu_rightleft])
-stokes_solver  = NonlinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace)
-energy_problem = NonlinearVariationalProblem(F_energy, T_new)
-energy_solver  = NonlinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
+# Stokes Solver
+z_tri = TrialFunction(Z)
+F_stokes_lin = replace(F_stokes, {z: z_tri})
+a, L = lhs(F_stokes_lin), rhs(F_stokes_lin)
+stokes_problem = LinearVariationalProblem(a, L, z, constant_jacobian=True, bcs=[bcu_topbase, bcu_rightleft])
+stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace, transpose_nullspace=p_nullspace)
+
+q_tri = TrialFunction(Q)
+F_energy_lin = replace(F_energy, {T_new:q_tri})
+a_energy, L_energy = lhs(F_energy_lin), rhs(F_energy_lin)
+energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new, constant_jacobian=False)
+energy_solver  = LinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
 
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
@@ -177,8 +189,8 @@ for timestep in range(0, max_num_timesteps):
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
 
-    # Updating Temperature
-    log("Timestep Number: ", timestep, " Timestep: ", float(delta_t))
+    log(f"simu_time {simu_time}")
+
 
 ## Initialise functional
 functional = assemble(0.5*(T_new - final_state)**2 * dx)
@@ -239,8 +251,55 @@ class ForwardCallbackPost:
 local_cb_post = OptimisationOutputCallbackPost()
 eval_cb_post = ForwardCallbackPost()
 
+class myReducedFunctional(ReducedFunctional):
+    def __init__(self, functional, controls, scale=2.0, tape=None,
+                      eval_cb_pre=lambda *args: None,
+                      eval_cb_post=lambda *args: None,
+                      derivative_cb_pre=lambda *args: None,
+                      derivative_cb_post=lambda *args: None,
+                      hessian_cb_pre=lambda *args: None,
+                      hessian_cb_post=lambda *args: None, riesz=None):
+        self.riesz = None
+        if riesz:
+            self.riesz = riesz
+            log('\t\tSetting riesz_representation:', self.riesz)
+        super().__init__(functional=functional, controls=controls, scale=scale,
+                   tape=tape, eval_cb_pre=eval_cb_pre,
+                                   eval_cb_post=eval_cb_post,
+                                   derivative_cb_pre=derivative_cb_pre,
+                                   derivative_cb_post=derivative_cb_post)
+
+    def __call__(self, values):
+        init_time = time.perf_counter()
+        func_value = super().__call__(values)*1e4
+        log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
+        return func_value
+    def derivative(self, options={}):
+        if self.riesz:
+            options['riesz_representation'] = self.riesz
+        init_time = time.perf_counter()
+        myout =  super().derivative(options=options)
+        log(f"Elapsed time for grad eval {time.perf_counter() - init_time} sec")
+        return myout
+
+# scipy_minimize --> _minimize_lbfgsb(fun, x0, args, jac, bounds,  callback=callback, **options)
+# These are the default parameters
+# Default Parameters approx_grad=0, bounds=None, m=10, factr=1e7, pgtol=1e-5,
+#                   epsilon=1e-8, iprint=-1, maxfun=15000, maxiter=15000, disp=None,
+#                   callback=None, maxls=20):
+options = { 'disp': None,
+            'iprint': 99,
+            'maxcor': 10, # The maximum number of variable metric corrections (memory)
+            'ftol': 1e7* np.finfo(float).eps,# 1e14 for low accuracy, 1e7 for mid-accuracy, 10 for high accuracy
+            'gtol': 0,#1e-5, # Iteration stops if projection of gradient is smaller than this
+            'eps': 1e-8, # Only used when approx grad is True
+            'maxfun': 15000, # Maximum number of evaluations
+            'maxiter': 2, # Maximum number of iterations
+            'maxls': 20, # Maximum number of line-searth steps
+        }
+
 # Defining the object for pyadjoint
-reduced_functional = ReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post)
+reduced_functional = myReducedFunctional(functional, control, scale=1.0, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post, riesz='L2')
 
 # Set up bounds, which will later be used to enforce boundary conditions in inversion:
 T_lb     = Function(Q, name="LB_Temperature")
@@ -248,25 +307,9 @@ T_ub     = Function(Q, name="UB_Temperature")
 T_lb.assign(0.2)
 T_ub.assign(0.5)
 
-### Optimise using ROL - note when doing Taylor test this can be turned off:
-minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
-
-# This is the classic way
-params = {
-        'General': {
-                'Print Verbosity':1,
-                    },
-        'Status Test': {
-            'Gradient Tolerance': 0,
-            'Iteration Limit': 500,
-                        }
-        }
-
-
 with stop_annotating():
-    # set up ROL problem
-    rol_solver = ROLSolver(minp, params, inner_product="l2")
-    sol = rol_solver.solve()
+    # Setting up the problem using minimize that uses Scipy 
+    sol = minimize(reduced_functional, bounds=(T_lb, T_ub), method="L-BFGS-B", tol=1e-12, options=options)
 
     # Save the optimal temperature_ic field 
     ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\

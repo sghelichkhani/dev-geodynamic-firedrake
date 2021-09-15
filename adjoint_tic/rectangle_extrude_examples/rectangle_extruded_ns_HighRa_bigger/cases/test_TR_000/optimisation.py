@@ -1,6 +1,7 @@
 """
     Adjoint Reconstruction - Using the classic way inputing parameters, instead of definiting methods for ROL.Algirithm() 
 """
+
 from firedrake import *
 from mpi4py import MPI
 import math, numpy
@@ -8,7 +9,10 @@ from firedrake.petsc import PETSc
 from firedrake_adjoint import *
 from pyadjoint import MinimizationProblem, ROLSolver
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
-import ROL
+from pyadjoint.optimization.rol_solver import ROLObjective, ROLVector
+from pyadjoint.optimization.optimization_solver import OptimizationSolver 
+import ROL as ROL
+import time; 
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
 #########################################################################################################
@@ -22,6 +26,7 @@ x_max = 1.0
 
 #  how many intervals along x/y directions 
 disc_n = 200
+
 
 # and Interval mesh of unit size 
 mesh1d = IntervalMesh(disc_n, length_or_left=0.0, right=x_max) 
@@ -62,6 +67,7 @@ kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
 theta_ts               = 0.5
+
 
 #### Print function to ensure log output is only written on processor zero (if running in parallel) ####
 def log(*args):
@@ -134,7 +140,7 @@ F_stokes  = inner(grad(N), tau(u)) * dx - div(N)*p * dx
 F_stokes += - (dot(N,yhat)*Ra*T_theta) * dx 
 F_stokes += - div(u)* M * dx
 
-# Setting free-slip BC for top and bottom
+# Setting No-slip BC for top and bottom
 bcu_topbase     = DirichletBC(Z.sub(0), 0.0, (top_id, bottom_id))
 bcu_rightleft   = DirichletBC(Z.sub(0), 0.0, (left_id, right_id))
 
@@ -153,11 +159,17 @@ p.rename('Pressure')
 # A simulation time to track how far we are
 simu_time = 0.0
 
-# Setup problem and solver objects so we can reuse (cache) solver setup                                                                                                                                                                                                                   
-stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=[bcu_topbase, bcu_rightleft])
-stokes_solver  = NonlinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace)
-energy_problem = NonlinearVariationalProblem(F_energy, T_new)
-energy_solver  = NonlinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
+z_tri = TrialFunction(Z)
+F_stokes_lin = replace(F_stokes, {z: z_tri})
+a, L = lhs(F_stokes_lin), rhs(F_stokes_lin)
+stokes_problem = LinearVariationalProblem(a, L, z, constant_jacobian=True, bcs=[bcu_topbase, bcu_rightleft])
+stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace, transpose_nullspace=p_nullspace)
+
+q_tri = TrialFunction(Q)
+F_energy_lin = replace(F_energy, {T_new:q_tri})
+a_energy, L_energy = lhs(F_energy_lin), rhs(F_energy_lin)
+energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new, constant_jacobian=False)
+energy_solver  = LinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
 
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
@@ -187,45 +199,31 @@ functional = assemble(0.5*(T_new - final_state)**2 * dx)
 class OptimisationOutputCallbackPost:
     def __init__(self):
         self.iter_idx = 0
-        self.opt_file             = File('visual/opt_file.pvd') 
         self.T_ic_true            = Function(Q, name="InitTemperature_Ref")
-        self.grad_copy            = Function(Q, name="Gradient")
         self.T_ic_copy            = Function(Q, name="InitTemperature")
         self.T_tc_copy            = Function(Q, name="FinTemperature")
-        self.z_copy               = Function(Z, name="Stokes")
-        self.u_copy               = Function(V, name="Velocity")
-        self.p_copy               = Function(W, name="Pressure")
 
         # Having a single hot blob on 1.5, 0.0
-        blb_ctr_h = as_vector((0.5, 0.85)) 
-        blb_gaus = Constant(0.04)
+        blb_ctr_h = as_vector((0.55, 0.85)) 
+        blb_gaus = Constant(0.08)
         
         # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
         self.T_ic_true.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2))
 
 
     def __call__(self, cb_functional, dj, controls):
-        # output current gradient:
-        self.grad_copy.assign(dj)
         # output current control (temperature initial condition)
         self.T_ic_copy.assign(controls)
         # output current final state temperature
         self.T_tc_copy.assign(T_new.block_variable.checkpoint)
-        #
-        # output current final state velocity and pressure
-        self.z_copy.assign(z.block_variable.checkpoint)
-        self.u_copy.assign(self.z_copy.split()[0])
-        self.p_copy.assign(self.z_copy.split()[1])
         
         #  Write out the fields
-        self.opt_file.write(self.T_ic_copy, self.T_tc_copy, self.u_copy, self.p_copy, self.grad_copy)
         func_val = assemble((self.T_tc_copy-final_state)**2 * dx) 
         init_func_val = assemble((self.T_ic_true-self.T_ic_copy)**2 * dx) 
         #reg_val  = assemble(inner(grad(self.T_ic_copy-T_mean), grad(self.T_ic_copy - T_mean)) * dx) 
-        grad_val = assemble((self.grad_copy)**2 * dx)
+        #grad_val = assemble((self.grad_copy)**2 * dx)
 
-        log('# Der {}, ||Misfit|| {}, ||Misfit IC|| {}, ||Grad|| {}'.format(self.iter_idx, func_val, init_func_val, grad_val))
-        log('Derivative calculation', self.iter_idx)
+        log(f'# Der {self.iter_idx}, ||Misfit|| {func_val}, ||Misfit IC|| {init_func_val}')
         self.iter_idx += 1
 
 class ForwardCallbackPost:
@@ -233,7 +231,7 @@ class ForwardCallbackPost:
       self.fwd_idx = 0 
    def __call__(self, func_value, controls):
       self.fwd_idx +=1 
-      log('# fwd {}, ||Misfit|| {}'.format(self.fwd_idx, func_value))
+      log(f'# fwd {self.fwd_idx}, ||Misfit|| {func_value}')
 
 # Initiate classes for the callbacks
 local_cb_post = OptimisationOutputCallbackPost()
@@ -252,20 +250,168 @@ T_ub.assign(0.5)
 minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 
 # This is the classic way
-params = {
-        'General': {
-                'Print Verbosity':1,
-                    },
+params = {                                   
+        'General': {                         
+              'Print Verbosity': 1,          
+              'Secant': {'Type': 'Limited-Memory BFGS',
+                         'Maximum Storage': 5, 
+                         'Use as Hessian': True,
+                         "Barzilai-Borwein": 1,
+                        },  
+                    },  
+        'Step': {
+           'Type': 'Trust Region',  #'Line Search',
+           'Trust Region': {
+                "Subproblem Solver":                    "Truncated CG",
+                "Subproblem Model":                     "Kelley-Sachs",
+                "Initial Radius":                       10.0,
+                "Maximum Radius":                       5.e3,
+                "Step Acceptance Threshold":            0.05,
+                "Radius Shrinking Threshold":           0.05,
+                "Radius Growing Threshold":             0.9,
+                "Radius Shrinking Rate (Negative rho)": 0.0625,
+                "Radius Shrinking Rate (Positive rho)": 0.25,
+                "Radius Growing Rate":                  2.5,
+                "Sufficient Decrease Parameter":        1.e-2,
+                "Safeguard Size":                       1.e8,
+                        },  
+                },  
         'Status Test': {
             'Gradient Tolerance': 0,
-            'Iteration Limit': 500,
-                        }
+            'Iteration Limit': 500, 
+                        }   
         }
+
+# overwritting ROLObjective to have a cache
+class myROLObjective(ROLObjective):
+    def __init__(self, rf, scale=1.0, f_cachesize=4, g_cachesize=2):
+        super().__init__(rf, scale=scale)
+        
+        # cache size for functionals and gradients
+        self.f_cachesize = f_cachesize
+        self.g_cachesize = g_cachesize
+
+        # cache for x, given for functional and gradient calculations 
+        self.fx = []
+        self.gx = []
+
+        # cache for result of functional and gradient calculations 
+        self.fvals       = []
+        self.grads = []
+
+        # Sia: to see the actual gradient that is being ued (not l2)
+        self.g_pvd_field = Function(Q, name="gradient")
+
+    # functional value is accessed here 
+    def value(self, x, tol):
+        return self.val 
+
+    # updating the gradient g.dat
+    def gradient(self, g, x, tol):
+
+        # check if x is already stored in cache
+        idx = self.cachescan(self.gx, x)
+
+        if idx==None:
+            # in case the last forward run used a different x, rerun again
+            if self.cachescan(self.fx, x) != 0:
+                self.rf(x.dat)
+
+            # cache x.dat 
+            self.gx.insert(0, [Function(f.function_space()).assign(f) for f in x.dat])
+
+            # gradient calculation
+            init_time = time.perf_counter()
+            super().gradient(g, x, tol)
+            log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
+
+            g.dat[0].project(g.dat[0]*1e-4)
+
+            # cache g.dat 
+            self.grads.insert(0, [Function(g.function_space()).assign(g) for g in g.dat])
+            
+
+        # if x is found in cache
+        else:
+            # idx is the index of gradient field in cache 
+            [g.dat[i].assign(cg) for i, cg in enumerate(self.grads[idx])]
+
+        # size control for cache
+        while len(self.gx) >self.g_cachesize:
+            self.gx.pop()
+            self.grads.pop()
+
+    # updating self.val which is passed to ROL by self.value 
+    def update(self, x, flag, iteration):
+
+        # check if x is already stored in cache 
+        idx = self.cachescan(self.fx, x)
+
+        if idx==None: 
+            # cache x.dat 
+            self.fx.insert(0, [Function(f.function_space()).assign(f) for f in x.dat])
+
+            # update self.val
+            init_time = time.perf_counter()
+            super().update(x, flag, iteration)
+            log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
+            
+            # Storing fval 
+            self.fvals.insert(0, self.val)
+        else:
+            # update control to the cache value 
+            for i, value in enumerate(self.fx[idx]):
+                self.rf.controls[i].update(value)
+            # Update value 
+            self.val = self.fvals[idx]
+
+        # size control for cache
+        while len(self.gx) > self.f_cachesize:
+            self.fx.pop()
+            self.fvals.pop()
+
+
+    # scanning cache in case we already have the fields 
+    def cachescan(self, cache, iterx):
+
+        # if cache is empty 
+        if len(cache)==0:
+            return None 
+
+        # idx is the index of the field in cache 
+        idx = None
+
+        # check if we already have x
+        for j, xc in enumerate(cache):
+            if np.sum([float(assemble((xc[i] - iterx.dat[i])**2*dx)) for i, _ in enumerate(iterx.dat)]) <= numpy.finfo(float).eps:
+                idx = j
+                break
+        return idx 
+
+
+class myROLSolver(ROLSolver):
+    def __init__(self, problem, parameters, inner_product="L2"):
+       """
+       Generate a ROL solver that uses myROLObective instead of ROLObjective
+
+       The argument inner_product specifies the inner product to be used for
+       the control space.
+
+       """
+
+       OptimizationSolver.__init__(self, problem, parameters)
+       self.rolobjective = myROLObjective(problem.reduced_functional)
+       x = [p.tape_value() for p in self.problem.reduced_functional.controls]
+       self.rolvector = ROLVector(x, inner_product=inner_product)
+       self.params_dict = parameters
+
+       self.bounds = self._ROLSolver__get_bounds()
+       self.constraints = self._ROLSolver__get_constraints()
 
 
 with stop_annotating():
     # set up ROL problem
-    rol_solver = ROLSolver(minp, params, inner_product="l2")
+    rol_solver = myROLSolver(minp, params, inner_product="L2")
     sol = rol_solver.solve()
 
     # Save the optimal temperature_ic field 
@@ -274,4 +420,3 @@ with stop_annotating():
                                comm=mesh.comm)
     ckpt_T_ic.store(sol)
     ckpt_T_ic.close()
-

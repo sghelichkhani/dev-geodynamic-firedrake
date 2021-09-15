@@ -19,7 +19,7 @@ y_max = 1.0
 x_max = 1.0
 
 #  how many intervals along x/y directions 
-disc_n = 200
+disc_n = 100
 
 
 # and Interval mesh of unit size 
@@ -44,15 +44,15 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 120
+max_num_timesteps      = 50
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e6)   # Rayleigh Number
 
 # Temperature related constants:
-delta_t                = Constant(1e-7) # Time-step
+delta_t                = Constant(5e-6) # Time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
@@ -80,7 +80,7 @@ solver_parameters = {
 # Set up function spaces - currently using the P2P1 element pair :
 V    = VectorFunctionSpace(mesh, "CG", 2) # Velocity function space (vector)
 W    = FunctionSpace(mesh, "CG", 1) # Pressure function space (scalar)
-Q    = FunctionSpace(mesh, "CG", 2) # Temperature function space (scalar)
+Q    = FunctionSpace(mesh, "CG", 1) # Temperature function space (scalar)
 
 # Set up mixed function space and associated test functions:
 Z       = MixedFunctionSpace([V, W])
@@ -100,10 +100,10 @@ T_old    = Function(Q, name="OldTemperature")
 
 # Having a single hot blob on 1.5, 0.0
 blb_ctr_h = as_vector((0.5, 0.85)) 
-blb_gaus = Constant(0.04)
+blb_gaus = Constant(0.1)
 
 # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
-T_old.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
+T_old.interpolate(0.5 - 0.4*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
 
 # Defining temperature field and initialise it with old temperature
 T_new   = Function(Q, name="Temperature")
@@ -124,7 +124,7 @@ F_stokes  = inner(grad(N), tau(u)) * dx - div(N)*p * dx
 F_stokes += - (dot(N,yhat)*Ra*T_theta) * dx 
 F_stokes += - div(u)* M * dx
 
-# Setting free-slip BC for top and bottom
+# Setting no-slip BC for top and bottom
 bcu_topbase     = DirichletBC(Z.sub(0), 0.0, (top_id, bottom_id))
 bcu_rightleft   = DirichletBC(Z.sub(0), 0.0, (left_id, right_id))
 
@@ -134,6 +134,7 @@ p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0), VectorSpaceBasis(constant=True
 
 ### Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
+
 
 # Write output files in VTK format:
 u_file = File('FWDREFmodel/velocity.pvd')
@@ -156,12 +157,12 @@ z_tri = TrialFunction(Z)
 F_stokes_lin = replace(F_stokes, {z: z_tri})
 a, L = lhs(F_stokes_lin), rhs(F_stokes_lin)
 stokes_problem = LinearVariationalProblem(a, L, z, constant_jacobian=True, bcs=[bcu_topbase, bcu_rightleft])
-stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters)
+stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace, transpose_nullspace=p_nullspace)
 
 q_tri = TrialFunction(Q)
 F_energy_lin = replace(F_energy, {T_new:q_tri})
 a_energy, L_energy = lhs(F_energy_lin), rhs(F_energy_lin)
-energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new)
+energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new, constant_jacobian=False)
 energy_solver  = LinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
 
 # Now perform the time loop:

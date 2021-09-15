@@ -145,6 +145,10 @@ p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0), VectorSpaceBasis(constant=True
 ### Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
 
+# Boundary condition all
+bcq_all   = DirichletBC(Q, 0.5, (top_id, bottom_id, left_id, right_id))
+
+
 # For some reason this only works here!
 u, p    = z.split() # Do this first to extract individual velocity, pressure and lagrange multplier fields:
 u.rename('Velocity') 
@@ -153,11 +157,19 @@ p.rename('Pressure')
 # A simulation time to track how far we are
 simu_time = 0.0
 
-# Setup problem and solver objects so we can reuse (cache) solver setup                                                                                                                                                                                                                   
-stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=[bcu_topbase, bcu_rightleft])
-stokes_solver  = NonlinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace)
-energy_problem = NonlinearVariationalProblem(F_energy, T_new)
-energy_solver  = NonlinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
+# Stokes Solver
+z_tri = TrialFunction(Z)
+F_stokes_lin = replace(F_stokes, {z: z_tri})
+a, L = lhs(F_stokes_lin), rhs(F_stokes_lin)
+stokes_problem = LinearVariationalProblem(a, L, z, constant_jacobian=True, bcs=[bcu_topbase, bcu_rightleft])
+stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters)
+
+q_tri = TrialFunction(Q)
+F_energy_lin = replace(F_energy, {T_new:q_tri})
+a_energy, L_energy = lhs(F_energy_lin), rhs(F_energy_lin)
+energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new, bcs=[bcq_all])
+energy_solver  = LinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
+
 
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
@@ -255,9 +267,20 @@ minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 params = {
         'General': {
                 'Print Verbosity':1,
+                'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': 10}, 
                     },
+        'Step': {
+           'Type': 'Line Search',
+           'Line Search': {
+                'Descent Method': {'Type': 'Quasi-Newton Method'},
+                'Line-Search Method': {'Type': 'Cubic Interpolation'},
+                'Function Evaluation Limit': 20,
+                'Sufficient Decrease Tolerance': 1e-8,
+                #'Use Previous Step Length as Initial Guess': True,
+                            }
+                },
         'Status Test': {
-            'Gradient Tolerance': 0,
+            'Gradient Tolerance': 1e-12,
             'Iteration Limit': 500,
                         }
         }

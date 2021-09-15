@@ -80,7 +80,7 @@ solver_parameters = {
 # Set up function spaces - currently using the P2P1 element pair :
 V    = VectorFunctionSpace(mesh, "CG", 2) # Velocity function space (vector)
 W    = FunctionSpace(mesh, "CG", 1) # Pressure function space (scalar)
-Q    = FunctionSpace(mesh, "CG", 2) # Temperature function space (scalar)
+Q    = FunctionSpace(mesh, "CG", 1) # Temperature function space (scalar)
 
 # Set up mixed function space and associated test functions:
 Z       = MixedFunctionSpace([V, W])
@@ -135,6 +135,7 @@ p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0), VectorSpaceBasis(constant=True
 ### Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
 
+
 # Write output files in VTK format:
 u_file = File('FWDREFmodel/velocity.pvd')
 p_file = File('FWDREFmodel/pressure.pvd')
@@ -156,12 +157,12 @@ z_tri = TrialFunction(Z)
 F_stokes_lin = replace(F_stokes, {z: z_tri})
 a, L = lhs(F_stokes_lin), rhs(F_stokes_lin)
 stokes_problem = LinearVariationalProblem(a, L, z, constant_jacobian=True, bcs=[bcu_topbase, bcu_rightleft])
-stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters)
+stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace, transpose_nullspace=p_nullspace)
 
 q_tri = TrialFunction(Q)
 F_energy_lin = replace(F_energy, {T_new:q_tri})
 a_energy, L_energy = lhs(F_energy_lin), rhs(F_energy_lin)
-energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new)
+energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new, constant_jacobian=False)
 energy_solver  = LinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
 
 # Now perform the time loop:

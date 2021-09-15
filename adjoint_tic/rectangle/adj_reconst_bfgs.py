@@ -33,22 +33,18 @@ mesh = RectangleMesh(nx=disc_n, ny=disc_n, Lx=y_max, Ly=x_max)
 
 # spatial coordinates
 X  = x, y = SpatialCoordinate(mesh)
-h     = sqrt(CellVolume(mesh))
+h	  = sqrt(CellVolume(mesh))
 y_abs     = sqrt(y**2)
 yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-<<<<<<< HEAD
-max_num_timesteps      = 40
-=======
-max_num_timesteps      = 40 
->>>>>>> 8c06900751f1b7656d88a450728c252dd1539c07
+max_num_timesteps      = 1 
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e5)   # Rayleigh Number
 
 # Below are callbacks relating to the adjoint solutions (accessed through solve).
 # Not sure what the best place would be to initiate working tape!
@@ -114,7 +110,7 @@ def compute_timestep(u):
     ts_min = ts_func.dat.data.min()
     ts_min = mesh.comm.allreduce(ts_min, MPI.MIN)
     #return min(ts_min*target_cfl_no,max_timestep)
-    return 1e-7 
+    return 1e-4 
 
 
 #########################################################################################################
@@ -127,14 +123,18 @@ final_state_file = DumbCheckpoint("./final_state", mode=FILE_READ)
 final_state_file.load(final_state, 'Temperature')
 final_state_file.close()
 
+
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
+#geotherm_checkpoint = DumbCheckpoint("steady_state", single_file=True, mode=FILE_READ)
+#geotherm_checkpoint.load(T_ic, 'Temperature')
+#geotherm_checkpoint.close()
 # Let's start with the final condition
-#T_ic.project(final_state)
-T_ic.assign(0.5)
+T_ic.project(final_state)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
+
 # Having a single hot blob on 1.5, 0.0
 T_old.assign(T_ic)
 
@@ -143,6 +143,7 @@ T_new.assign(T_old)
 
 # Temporal discretisation - Using a theta scheme:
 T_theta = theta_ts * T_new + (1-theta_ts) * T_old
+
 
 # ********************** Setup Equations ************************ 
 # viscosiy 
@@ -164,7 +165,6 @@ u_top = Function(V, name='PlateVelocity')
 bcu_top_Dir     = DirichletBC(Z.sub(0), u_top, (top_id)) # This will be used when we impose plate velocities
 #bcu_top_Free    = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id)) # this is used for free-slip adjoint
 bcu_base        = DirichletBC(Z.sub(0).sub(1), 0.0, (bottom_id)) # bottom boundary is always free-slip
-#bcu_topbase     = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id)) # bottom boundary is always free-slip
 bcu_rightleft   = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id)) # right and left boundaries have only no-outflow condition
 
 # Temperature, advection-diffusion equation
@@ -186,19 +186,19 @@ simu_time = 0.0000
 control = Control(T_ic)
 
 
-## Setting up the file containing all the info
+# Setting up the file containing all the info
 boundary_velocity_fi = DumbCheckpoint("velocity", mode=FILE_READ)
 
-## Documenting the first forward run
+
+# Documenting the first forward run
 fwd_run_fi = File('./adjoint_tic/first_fwd_run.pvd')
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
 
-    ## updating boundary condition
+    # updating boundary condition
     boundary_velocity_fi.set_timestep(t=simu_time, idx=timestep)
     boundary_velocity_fi.load(u_top, 'Velocity')
-
 
     # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
     # and the RHS == 0. 
@@ -208,7 +208,7 @@ for timestep in range(0, max_num_timesteps):
     delta_t.assign(compute_timestep(u)) # Compute adaptive time-step
 
     # Temperature system:
-    solve(F_energy==0, T_new, solver_parameters=stokes_solver_parameters)
+    solve(F_energy==0, T_new, bcs=[bct_base, bct_top], solver_parameters=stokes_solver_parameters)
 
     fwd_run_fi.write(T_new, u, p)
 
@@ -224,10 +224,20 @@ for timestep in range(0, max_num_timesteps):
 boundary_velocity_fi.close()
 
 # Initialise functional
-functional = assemble(0.5*(T_new - final_state)**2 * dx)
-
+beta = 1e-4
+# setting up the functional
+misfit     = assemble(0.5*(T_new - final_state)**2 * dx)
+reg_term   = assemble(0.5*beta*dot(grad(T_ic), grad(T_ic)) * dx)
+functional = misfit #+ reg_term
 # Defining the object for pyadjoint
 reduced_functional = ReducedFunctional(functional, control)
+
+#my_der_l2 =reduced_functional.derivative({'riesz_representation':'l2'});my_der_l2.rename('derl2') 
+#my_der_L2 =reduced_functional.derivative({'riesz_representation':'L2'});my_der_L2.rename('derL2') 
+#my_der_H1 =reduced_functional.derivative({'riesz_representation':'H1'});my_der_H1.rename('derH1') 
+#derivatives_fi = File('derivatives.pvd')
+#derivatives_fi.write(my_der_l2, my_der_L2, my_der_H1)
+#import sys;sys.exit()
 
 # Set up bounds, which will later be used to enforce boundary conditions in inversion:
 T_lb     = Function(Q, name="LB_Temperature")
@@ -235,39 +245,149 @@ T_ub     = Function(Q, name="UB_Temperature")
 T_lb.assign(0.0)
 T_ub.assign(1.0)
 
-#### Optimise using ROL - note when doing Taylor test this can be turned off:
-#minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
+### Optimise using ROL - note when doing Taylor test this can be turned off:
+minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 
-T_temp = Function(Q, name='temp_T_ic')
+class InitHessian(ROL.InitBFGS):
+    def __init__(self, M, direct=True):
+        ROL.InitBFGS.__init__(self, M)
+
+        self.solver_params = {
+            "ksp_type": "gmres",
+            "pc_type": "lu",
+            "pc_factor_mat_solver_type": "mumps",
+            "mat_type": "aij",
+        }
+        # K matrix
+        self.M = dot(grad(Y), grad(TrialFunction(Q))) * dx
+
+        # regular linear solver
+        self.solver = LinearSolver(assemble(self.M), solver_parameters=self.solver_params)
+        
+
+    @no_annotations
+    def applyH0(self, Hv, v):
+        self.solver.solve(Hv.dat[0], v.dat[0])
+        l = Hv.norm() / v.norm()
+        Hv.scale(1 / l)
+        self.scaleH0(Hv)
+
+    @no_annotations
+    def applyB0(self, Bv, v):
+        Bv.dat[0] = assemble(dot(grad(Y), grad(v.dat[0])) * dx)
+        l = Bv.norm() / v.norm()
+        Bv.scale(1 / l)
+        self.scaleB0(Bv)
+        log('B_0 applied {} times'.format(self.freq))
 
 
-optimout = File('./manual_optim.pvd')
-optimout.write(T_ic)
-k = 0
-beta = 0.5
-my_func = functional;
+class StatusReport(ROL.StatusTest):
+    def __init__(self, params, vector):
+        ROL.StatusTest.__init__(self, params)
+        self.vector = vector
+        self.T_copy              = Function(Q, name="Temperature")
+        self.opt_t_final_file    = File('TEST_2_imposition/opt_temperature_final.pvd')
+        self.opt_t_init_file     = File('TEST_2_imposition/opt_temperature_initial.pvd')
+
+    @no_annotations
+    def check(self, status):
+        log("final state: {}".format(assemble(0.5*(T_new.block_variable.checkpoint - final_state)**2 * dx)))
+        log("regularisation: {}".format(assemble(0.5*beta*dot(grad(self.vector.dat[0]), grad(self.vector.dat[0])) * dx)))
+
+        # Writing out final condition
+        self.T_copy.assign(T_new.block_variable.checkpoint)
+        self.opt_t_final_file.write(self.T_copy)
+
+        ## Writing out initial condition
+        self.T_copy.assign(self.vector.dat[0])
+        self.opt_t_init_file.write(self.T_copy)
+        return ROL.StatusTest.check(self, status)
+
+# This is the classic way
+#params = {
+#        'General': {
+#            'Secant': {
+#                'Type': 'Limited-Memory BFGS',
+#                'Maximum Storage': 50,
+#                'Line Search': {'Line-Search Method': {'Type': 'Cubic Interpolation'},},
+#                'Print Verbosity':1},
+#        'Step':     {
+#            'Type': 'Line Search',
+#            'Line Search': {
+#                'Descent Method': {'Type': 'Steepest Descent'},
+#                'Line-Search Method': {'Type': 'Cubic Interpolation'}, 
+#                            },
+#        'Status Test': {
+#            'Gradient Tolerance': 1e-12,
+#            'Iteration Limit': 50,
+#                        }
+#                }
+#        }
+#}
+#
+#with stop_annotating():    
+#    # set up ROL problem
+#    rol_solver = ROLSolver(minp, params)
+#    sol = rol_solver.solve()
+
+
+
+# Orginial parameters by Steph
+params = {
+        'General':  {
+            'Secant':   {
+                'Type': 'Limited-Memory BFGS',
+                'Maximum Storage': 50
+            },
+            'Print Verbosity': 1
+        },
+        'Step': {
+            'Type': 'Line Search',
+            'Line Search':{
+                    'Line Search Method': 'Cubic Interpolation',
+                    'Function Evaluation Limit': 5,
+                    'Sufficient Decrease Tolerance': 1e-1,
+                    'Use Previous Step Length as Initial Guess': True,
+                    }
+                },
+        'Status Test': {
+            'Gradient Tolerance': 1e-12,
+            'Iteration Limit': 100,
+        }
+    }
+
+
+params = ROL.ParameterList(params, "Parameters")
+rol_solver = ROLSolver(minp, params)
+#
+#init_hessian=0
+#if init_hessian == 1:
+#    log('Using user-defined initial hessian')
+#    rol_secant = InitHessian(5) # maximum storage
+#else:
+#    log('Using unit matrix for initial hessian')
+rol_secant = ROL.InitBFGS(5) # maximum storage
+#rol_step = ROL.TrustRegionStep(rol_secant, params)
+#rol_step = ROL.LineSearchStep(params, rol_secant)
+rol_step = ROL.LineSearchStep(params, rol_secant)
+##rol_status = ROL.StatusTest(params)
+rol_status = StatusReport(params, rol_solver.rolvector)
+rol_algorithm = ROL.Algorithm(rol_step, rol_status)
+#log("functional before going for minimisation: {}".format(assemble(0.5*(T_new - final_state)**2 * dx)))
+
 with stop_annotating():
-    for i in range(10):
-        #my_grad_L2 = reduced_functional.derivative({'riesz_representation':'L2'})
-        #my_grad_H1 = reduced_functional.derivative({'riesz_representation':'H1'})
-        no_reduction = True 
-        log("Iter {} having {:.8f}".format(i, my_func))
-        derivatives = compute_gradient(functional, 
-                                       control,
-                                       options={'riesz_representation':'L2'},
-                                       tape=tape)
-        while no_reduction:
-            T_temp.project(T_ic - beta*derivatives)
-            functional_temp = reduced_functional(T_temp)
-            if functional_temp < my_func:
-                my_func = functional_temp
-                T_ic.project(T_temp)
-                no_reduction=False
-            else:
-                log("beta {} too big, {} vs. {}".format(beta, functional_temp, my_func))
-                beta += -0.1
-        control.update(T_ic)
-        optimout.write(T_ic)
-        k += 1
+    rol_algorithm.run(
+        rol_solver.rolvector,
+        rol_solver.rolobjective,
+        rol_solver.bounds # only if we have a bounded problem
+            )
 
+optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
+
+# Save the optimal temperature_ic field 
+ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+        single_file=True, mode=FILE_CREATE,\
+                           comm=mesh.comm)
+ckpt_T_ic.store(optimal_ic)
+ckpt_T_ic.close()
 

@@ -6,7 +6,7 @@ from mpi4py import MPI
 import math, numpy
 from firedrake.petsc import PETSc
 from firedrake_adjoint import *
-from pyadjoint import MinimizationProblem, ROLSolver
+from pyadjoint import MinimizationProblem, minimize 
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
 import ROL
 #########################################################################################################
@@ -62,6 +62,7 @@ kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
 theta_ts               = 0.5
+
 
 #### Print function to ensure log output is only written on processor zero (if running in parallel) ####
 def log(*args):
@@ -153,11 +154,19 @@ p.rename('Pressure')
 # A simulation time to track how far we are
 simu_time = 0.0
 
-# Setup problem and solver objects so we can reuse (cache) solver setup                                                                                                                                                                                                                   
-stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=[bcu_topbase, bcu_rightleft])
-stokes_solver  = NonlinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace)
-energy_problem = NonlinearVariationalProblem(F_energy, T_new)
-energy_solver  = NonlinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
+# Stokes Solver
+z_tri = TrialFunction(Z)
+F_stokes_lin = replace(F_stokes, {z: z_tri})
+a, L = lhs(F_stokes_lin), rhs(F_stokes_lin)
+stokes_problem = LinearVariationalProblem(a, L, z, constant_jacobian=True, bcs=[bcu_topbase, bcu_rightleft])
+stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solver_parameters, nullspace=p_nullspace, transpose_nullspace=p_nullspace)
+
+q_tri = TrialFunction(Q)
+F_energy_lin = replace(F_energy, {T_new:q_tri})
+a_energy, L_energy = lhs(F_energy_lin), rhs(F_energy_lin)
+energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new, constant_jacobian=False)
+energy_solver  = LinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
+
 
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
@@ -239,8 +248,31 @@ class ForwardCallbackPost:
 local_cb_post = OptimisationOutputCallbackPost()
 eval_cb_post = ForwardCallbackPost()
 
+class myReducedFunctional(ReducedFunctional):
+    def __init__(self, functional, controls, scale=1.0, tape=None,
+                      eval_cb_pre=lambda *args: None,
+                      eval_cb_post=lambda *args: None,
+                      derivative_cb_pre=lambda *args: None,
+                      derivative_cb_post=lambda *args: None,
+                      hessian_cb_pre=lambda *args: None,
+                      hessian_cb_post=lambda *args: None, riesz=None):
+        self.riesz = None
+        if riesz:
+            self.riesz = riesz
+            log('Setting riesz_representation:', self.riesz)
+
+        super().__init__(functional=functional, controls=controls, scale=scale,
+                   tape=tape, eval_cb_pre=eval_cb_pre,
+                                   eval_cb_post=eval_cb_post,
+                                   derivative_cb_pre=derivative_cb_pre,
+                                   derivative_cb_post=derivative_cb_post)
+    def derivative(self, options={}):
+        if self.riesz:
+            options['riesz_representation'] = self.riesz
+        return super().derivative(options=options)
+
 # Defining the object for pyadjoint
-reduced_functional = ReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post)
+reduced_functional = myReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post, riesz='l2')
 
 # Set up bounds, which will later be used to enforce boundary conditions in inversion:
 T_lb     = Function(Q, name="LB_Temperature")
@@ -248,30 +280,12 @@ T_ub     = Function(Q, name="UB_Temperature")
 T_lb.assign(0.2)
 T_ub.assign(0.5)
 
-### Optimise using ROL - note when doing Taylor test this can be turned off:
-minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
+sol = minimize(reduced_functional, method="L-BFGS-B", bounds = (T_lb, T_ub), tol=1e-12, options={'maxiter':500, 'disp':True})
 
-# This is the classic way
-params = {
-        'General': {
-                'Print Verbosity':1,
-                    },
-        'Status Test': {
-            'Gradient Tolerance': 0,
-            'Iteration Limit': 500,
-                        }
-        }
-
-
-with stop_annotating():
-    # set up ROL problem
-    rol_solver = ROLSolver(minp, params, inner_product="l2")
-    sol = rol_solver.solve()
-
-    # Save the optimal temperature_ic field 
-    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
-            single_file=True, mode=FILE_CREATE,\
-                               comm=mesh.comm)
-    ckpt_T_ic.store(sol)
-    ckpt_T_ic.close()
+# Save the optimal temperature_ic field 
+ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+        single_file=True, mode=FILE_CREATE,\
+                           comm=mesh.comm)
+ckpt_T_ic.store(sol)
+ckpt_T_ic.close()
 

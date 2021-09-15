@@ -2,6 +2,7 @@
     Generation of forward problem - for an adjoint simulation
     The test problem is no heat-flow at boundaries, with free-slip on all surfaces
 """
+
 from firedrake import *
 from mpi4py import MPI
 import math, numpy
@@ -19,7 +20,7 @@ y_max = 1.0
 x_max = 1.0
 
 #  how many intervals along x/y directions 
-disc_n = 200
+disc_n = 100
 
 
 # and Interval mesh of unit size 
@@ -32,8 +33,8 @@ mesh = ExtrudedMesh(mesh=mesh1d, layers=disc_n, layer_height=y_max/disc_n, extru
 top_id, bottom_id = 'top', 'bottom'
 left_id, right_id = 1, 2
 
-# spatial coordinates
-X  = x, y = SpatialCoordinate(mesh)
+# setting up spatial coordinates
+X  =  x, y = SpatialCoordinate(mesh)
 
 # a measure of cell size
 h	  = sqrt(CellVolume(mesh))
@@ -44,7 +45,7 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 120
+max_num_timesteps      = 100
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
@@ -52,7 +53,7 @@ max_timestep           = 1.00
 Ra                     = Constant(1e8)   # Rayleigh Number
 
 # Temperature related constants:
-delta_t                = Constant(1e-7) # Time-step
+delta_t                = Constant(1e-8) # Initial time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
@@ -80,7 +81,7 @@ solver_parameters = {
 # Set up function spaces - currently using the P2P1 element pair :
 V    = VectorFunctionSpace(mesh, "CG", 2) # Velocity function space (vector)
 W    = FunctionSpace(mesh, "CG", 1) # Pressure function space (scalar)
-Q    = FunctionSpace(mesh, "CG", 2) # Temperature function space (scalar)
+Q    = FunctionSpace(mesh, "CG", 1) # Temperature function space (scalar)
 
 # Set up mixed function space and associated test functions:
 Z       = MixedFunctionSpace([V, W])
@@ -91,6 +92,16 @@ Y       = TestFunction(Q)
 z    = Function(Z)  # a field over the mixed function space Z.
 u, p = split(z)     # can we nicely name mixed function space fields?
 
+# Timestepping - CFL related stuff:
+ts_func = Function(Q) # Note that time stepping should be dictated by Temperature related mesh.
+
+def compute_timestep(u):
+    # A function to compute the timestep, based upon the CFL criterion
+    ts_func.interpolate( h / sqrt(dot(u,u)))
+    ts_min = ts_func.dat.data.min()
+    ts_min = mesh.comm.allreduce(ts_min, MPI.MIN)
+    return min(ts_min*target_cfl_no,max_timestep)
+
 #########################################################################################################
 ############################ T advection diffusion equation Prerequisites: ##############################
 #########################################################################################################
@@ -100,7 +111,7 @@ T_old    = Function(Q, name="OldTemperature")
 
 # Having a single hot blob on 1.5, 0.0
 blb_ctr_h = as_vector((0.5, 0.85)) 
-blb_gaus = Constant(0.04)
+blb_gaus = Constant(0.10)
 
 # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
 T_old.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
@@ -112,8 +123,10 @@ T_new.assign(T_old)
 # Temporal discretisation - Using a theta scheme:
 T_theta = theta_ts * T_new + (1-theta_ts) * T_old
 
-# ********************** Setup Equations ************************ 
-# viscosiy 
+#********************** Set-up Equations ******************** 
+
+### Initially deal with Stokes equations ###
+# Equation in weak (ufl) form 
 mu        = Constant(1.0) # Constant viscosity
 
 # deviatoric stresses
@@ -128,12 +141,12 @@ F_stokes += - div(u)* M * dx
 bcu_topbase     = DirichletBC(Z.sub(0), 0.0, (top_id, bottom_id))
 bcu_rightleft   = DirichletBC(Z.sub(0), 0.0, (left_id, right_id))
 
-# Pressure nullspace                                                                                                                                                                                                                                                                      
-p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0), VectorSpaceBasis(constant=True)])
-
-
 ### Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
+
+## Prescribed temperature for top and bottom
+#bct_base = DirichletBC(Q, 1.0, bottom_id)
+#bct_top  = DirichletBC(Q, 0.0, top_id)
 
 # Write output files in VTK format:
 u_file = File('FWDREFmodel/velocity.pvd')
@@ -161,14 +174,24 @@ stokes_solver  = LinearVariationalSolver(stokes_problem, solver_parameters=solve
 q_tri = TrialFunction(Q)
 F_energy_lin = replace(F_energy, {T_new:q_tri})
 a_energy, L_energy = lhs(F_energy_lin), rhs(F_energy_lin)
-energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new)
+energy_problem = LinearVariationalProblem(a_energy, L_energy, T_new, constant_jacobian=True)
 energy_solver  = LinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
     # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
     # and the RHS == 0. 
-    stokes_solver.solve()
+    stokes_solver.solve() 
+
+    ## updating time-step based on velocities
+    #delta_t.assign(compute_timestep(u)) # Compute adaptive time-step
+
+    # Write output:
+    if timestep % 10 == 0:
+        log("Output:", simu_time, timestep)
+        u_file.write(u)
+        p_file.write(p)
+        t_file.write(T_new)
 
     # Temperature system:
     energy_solver.solve()
@@ -176,12 +199,6 @@ for timestep in range(0, max_num_timesteps):
     # updating time
     simu_time += float(delta_t)
 
-    # Write output:
-    if timestep % 5 == 0:
-        log("Output:", simu_time, timestep)
-        u_file.write(u)
-        p_file.write(p)
-        t_file.write(T_new)
 
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)

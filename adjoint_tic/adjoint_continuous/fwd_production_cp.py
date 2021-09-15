@@ -1,15 +1,13 @@
 """
-    Adjoint Reconstruction 
+    Generation of forward problem - for an adjoint simulation
+    The test problem is no heat-flow at boundaries, with free-slip on all surfaces
 """
 
 from firedrake import *
 from mpi4py import MPI
 import math, numpy
 from firedrake.petsc import PETSc
-from firedrake_adjoint import *
-from pyadjoint import MinimizationProblem, ROLSolver
-from pyadjoint.tape import no_annotations, Tape, set_working_tape
-import ROL
+import firedrake.variational_solver as vs
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
 #########################################################################################################
@@ -21,38 +19,35 @@ import ROL
 y_max = 1.0
 x_max = 1.0
 
-#   how many intervals along x/y directions 
+#  how many intervals along x/y directions 
 disc_n = 100
 
 # Top and bottom ids, for extruded mesh
+#top_id, bottom_id = 'top', 'bottom'
 top_id, bottom_id = 4, 3 
-left_id, right_id = 1, 2
+left_id, right_id = 1, 2 
 
-# The mesh
+# Rectangle Mesh
 mesh = RectangleMesh(nx=disc_n, ny=disc_n, Lx=y_max, Ly=x_max)
 
-# spatial coordinates
-X  = x, y = SpatialCoordinate(mesh)
-h     = sqrt(CellVolume(mesh))
+# setting up spatial coordinates
+X  =  x, y = SpatialCoordinate(mesh)
+
+# a measure of cell size
+h	  = sqrt(CellVolume(mesh))
+
+# setting up vertical direction
 y_abs     = sqrt(y**2)
 yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-<<<<<<< HEAD
-max_num_timesteps      = 40
-=======
-max_num_timesteps      = 40 
->>>>>>> 8c06900751f1b7656d88a450728c252dd1539c07
+max_num_timesteps      = 50
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
 Ra                     = Constant(1e8)   # Rayleigh Number
-
-# Below are callbacks relating to the adjoint solutions (accessed through solve).
-# Not sure what the best place would be to initiate working tape!
-tape = get_working_tape()
 
 # Temperature related constants:
 delta_t                = Constant(1e-6) # Initial time-step
@@ -60,6 +55,7 @@ kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
 theta_ts               = 0.5
+
 
 #### Print function to ensure log output is only written on processor zero (if running in parallel) ####
 def log(*args):
@@ -85,7 +81,6 @@ temperature_solver_parameters = {
         'pc_type': 'sor',
         'mat_type': 'aij'
 }
-
 
 #########################################################################################################
 ################################## Geometry and Spatial Discretization: #################################
@@ -114,160 +109,119 @@ def compute_timestep(u):
     ts_min = ts_func.dat.data.min()
     ts_min = mesh.comm.allreduce(ts_min, MPI.MIN)
     #return min(ts_min*target_cfl_no,max_timestep)
-    return 1e-7 
-
-
+                        
 #########################################################################################################
 ############################ T advection diffusion equation Prerequisites: ##############################
 #########################################################################################################
 
-# Final state, which will be used as reference for minimization, loaded from a file 
-final_state = Function(Q, name='RefTemperature')
-final_state_file = DumbCheckpoint("./final_state", mode=FILE_READ)
-final_state_file.load(final_state, 'Temperature')
-final_state_file.close()
-
-# Initial condition
-T_ic   = Function(Q, name="T_IC")
-# Let's start with the final condition
-#T_ic.project(final_state)
-T_ic.assign(0.5)
-
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
-# Having a single hot blob on 1.5, 0.0
-T_old.assign(T_ic)
 
+# Having a single hot blob on 1.5, 0.0
+blb_ctr_h = as_vector((0.5, 0.85)) 
+blb_gaus = Constant(0.07)
+
+# A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
+T_old.interpolate(0.5 - 0.5*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2));
+
+# Defining temperature field and initialise it with old temperature
 T_new   = Function(Q, name="Temperature")
 T_new.assign(T_old)
 
 # Temporal discretisation - Using a theta scheme:
 T_theta = theta_ts * T_new + (1-theta_ts) * T_old
 
-# ********************** Setup Equations ************************ 
-# viscosiy 
+#********************** Set-up Equations ******************** 
+
+### Initially deal with Stokes equations ###
+# Equation in weak (ufl) form 
 mu        = Constant(1.0) # Constant viscosity
 
 # deviatoric stresses
 def tau(u): return  mu * (grad(u)+transpose(grad(u)))
 
-# traction field 
-def trac(u,p): return dot(tau(u),n) - p*n
-
-# Finalise equations
+# Stokes in weak form 
 F_stokes  = inner(grad(N), tau(u)) * dx - div(N)*p * dx 
 F_stokes += - (dot(N,yhat)*Ra*T_theta) * dx 
 F_stokes += - div(u)* M * dx
 
 # Setting free-slip BC for top and bottom
-u_top = Function(V, name='PlateVelocity')
-bcu_top_Dir     = DirichletBC(Z.sub(0), u_top, (top_id)) # This will be used when we impose plate velocities
-#bcu_top_Free    = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id)) # this is used for free-slip adjoint
-bcu_base        = DirichletBC(Z.sub(0).sub(1), 0.0, (bottom_id)) # bottom boundary is always free-slip
-#bcu_topbase     = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id)) # bottom boundary is always free-slip
-bcu_rightleft   = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id)) # right and left boundaries have only no-outflow condition
+bcu_topbase     = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
+bcu_rightleft   = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
 
-# Temperature, advection-diffusion equation
+### Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
 
-# Prescribed temperature for top and bottom
-bct_base = DirichletBC(Q, 1.0, bottom_id)
-bct_top  = DirichletBC(Q, 0.0, top_id)
+## Prescribed temperature for top and bottom
+#bct_base = DirichletBC(Q, 1.0, bottom_id)
+#bct_top  = DirichletBC(Q, 0.0, top_id)
 
-# For some reason this only works here!
-u, p    = z.split() # Do this first to extract individual velocity, pressure and lagrange multplier fields:
+# Write output files in VTK format:
+u_file = File('FWDREFmodel/velocity.pvd')
+p_file = File('FWDREFmodel/pressure.pvd')
+t_file = File('FWDREFmodel/temperature.pvd')
+
+# For some reason this only works here!!!
+u, p    = z.split() 
 u.rename('Velocity') 
 p.rename('Pressure')
 
+# Printing out the degrees of freedom 
+log('global number of nodes P1 coeffs/nodes:', W.dim())
+
 # A simulation time to track how far we are
-simu_time = 0.0000
-
-# Setting adjoint and forward callbacks, and control parameter
-control = Control(T_ic)
+simu_time = 0.0
 
 
-## Setting up the file containing all the info
-boundary_velocity_fi = DumbCheckpoint("velocity", mode=FILE_READ)
+# Setting up the forward solver/problems
+# Stokes
+stokes_prob     = vs.NonlinearVariationalProblem(F_stokes, z, bcs=[bcu_topbase, bcu_rightleft])
+stokes_solver   = vs.NonlinearVariationalSolver(stokes_prob,
+                                              solver_parameters=stokes_solver_parameters)
 
-## Documenting the first forward run
-fwd_run_fi = File('./adjoint_tic/first_fwd_run.pvd')
+# Energy 
+energy_prob     = vs.NonlinearVariationalProblem(F_energy, T_new)
+energy_solver   = vs.NonlinearVariationalSolver(energy_prob, solver_parameters=stokes_solver_parameters)
+
+checkpoint_u = DumbCheckpoint("velocity", single_file=True, mode=FILE_CREATE, comm=mesh.comm)
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
-
-    ## updating boundary condition
-    boundary_velocity_fi.set_timestep(t=simu_time, idx=timestep)
-    boundary_velocity_fi.load(u_top, 'Velocity')
-
-
     # Solve system - configured for solving non-linear systems, where everything is on the LHS (as above)
     # and the RHS == 0. 
-    solve(F_stokes==0, z, bcs=[bcu_top_Dir, bcu_base, bcu_rightleft], solver_parameters=stokes_solver_parameters)
+    stokes_solver.solve() 
+
+    # output velocity that will be used for the adjoint as boundary condition
+    checkpoint_u.set_timestep(simu_time, idx=timestep)
+    checkpoint_u.store(u)
 
     # updating time-step based on velocities
     delta_t.assign(compute_timestep(u)) # Compute adaptive time-step
 
     # Temperature system:
-    solve(F_energy==0, T_new, solver_parameters=stokes_solver_parameters)
-
-    fwd_run_fi.write(T_new, u, p)
+    energy_solver.solve() 
 
     # updating time
     simu_time += float(delta_t)
+
+    # Write output:
+    log("Output:", simu_time, timestep)
+    u_file.write(u)
+    p_file.write(p)
+    t_file.write(T_new)
 
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
 
     # Updating Temperature
-    log("Timestep Number: ", timestep, " Timestep: ", str('%10.4e' %simu_time))
-
-boundary_velocity_fi.close()
-
-# Initialise functional
-functional = assemble(0.5*(T_new - final_state)**2 * dx)
-
-# Defining the object for pyadjoint
-reduced_functional = ReducedFunctional(functional, control)
-
-# Set up bounds, which will later be used to enforce boundary conditions in inversion:
-T_lb     = Function(Q, name="LB_Temperature")
-T_ub     = Function(Q, name="UB_Temperature")
-T_lb.assign(0.0)
-T_ub.assign(1.0)
-
-#### Optimise using ROL - note when doing Taylor test this can be turned off:
-#minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
-
-T_temp = Function(Q, name='temp_T_ic')
+    log("Timestep Number: ", timestep, " Timestep: ", float(delta_t))
 
 
-optimout = File('./manual_optim.pvd')
-optimout.write(T_ic)
-k = 0
-beta = 0.5
-my_func = functional;
-with stop_annotating():
-    for i in range(10):
-        #my_grad_L2 = reduced_functional.derivative({'riesz_representation':'L2'})
-        #my_grad_H1 = reduced_functional.derivative({'riesz_representation':'H1'})
-        no_reduction = True 
-        log("Iter {} having {:.8f}".format(i, my_func))
-        derivatives = compute_gradient(functional, 
-                                       control,
-                                       options={'riesz_representation':'L2'},
-                                       tape=tape)
-        while no_reduction:
-            T_temp.project(T_ic - beta*derivatives)
-            functional_temp = reduced_functional(T_temp)
-            if functional_temp < my_func:
-                my_func = functional_temp
-                T_ic.project(T_temp)
-                no_reduction=False
-            else:
-                log("beta {} too big, {} vs. {}".format(beta, functional_temp, my_func))
-                beta += -0.1
-        control.update(T_ic)
-        optimout.write(T_ic)
-        k += 1
+# Closing the hdf file that stores the velocities
+checkpoint_u.close()
 
+# Generating the reference temperature field for the adjoint
+checkpoint_data = DumbCheckpoint("final_state", single_file=True, mode=FILE_CREATE, comm=mesh.comm)
+checkpoint_data.store(T_new)
+checkpoint_data.close()
 

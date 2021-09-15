@@ -80,7 +80,7 @@ solver_parameters = {
 # Set up function spaces - currently using the P2P1 element pair :
 V    = VectorFunctionSpace(mesh, "CG", 2) # Velocity function space (vector)
 W    = FunctionSpace(mesh, "CG", 1) # Pressure function space (scalar)
-Q    = FunctionSpace(mesh, "CG", 2) # Temperature function space (scalar)
+Q    = FunctionSpace(mesh, "CG", 1) # Temperature function space (scalar)
 
 # Set up mixed function space and associated test functions:
 Z       = MixedFunctionSpace([V, W])
@@ -134,6 +134,7 @@ p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0), VectorSpaceBasis(constant=True
 
 ### Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
+
 
 # Write output files in VTK format:
 u_file = File('FWDREFmodel/velocity.pvd')

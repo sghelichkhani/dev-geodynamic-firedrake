@@ -63,6 +63,7 @@ kappa                  = Constant(1.0)  # Thermal diffusivity
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
 theta_ts               = 0.5
 
+
 #### Print function to ensure log output is only written on processor zero (if running in parallel) ####
 def log(*args):
     if mesh.comm.rank == 0:
@@ -240,7 +241,7 @@ local_cb_post = OptimisationOutputCallbackPost()
 eval_cb_post = ForwardCallbackPost()
 
 # Defining the object for pyadjoint
-reduced_functional = ReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post)
+reduced_functional = ReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post, scale=1e6)
 
 # Set up bounds, which will later be used to enforce boundary conditions in inversion:
 T_lb     = Function(Q, name="LB_Temperature")
@@ -255,23 +256,34 @@ minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 params = {
         'General': {
                 'Print Verbosity':1,
+                'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': 10}, 
                     },
+        'Step': {
+           'Type': 'Line Search',
+           'Line Search': {
+                'Descent Method': {'Type': 'Quasi-Newton Method'},
+                'Line-Search Method': {'Type': 'Cubic Interpolation'},
+                'Function Evaluation Limit': 20,
+                #'Sufficient Decrease Tolerance': 1e-8,
+                #"Initial Step Size": 0.7, 
+                'Use Previous Step Length as Initial Guess': True,
+                            }
+                },
         'Status Test': {
-            'Gradient Tolerance': 0,
+            'Gradient Tolerance': 1e-12,
             'Iteration Limit': 500,
                         }
         }
 
 
-with stop_annotating():
-    # set up ROL problem
-    rol_solver = ROLSolver(minp, params, inner_product="l2")
-    sol = rol_solver.solve()
+# set up ROL problem
+rol_solver = ROLSolver(minp, params, inner_product="L2")
+sol = rol_solver.solve()
 
-    # Save the optimal temperature_ic field 
-    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
-            single_file=True, mode=FILE_CREATE,\
-                               comm=mesh.comm)
-    ckpt_T_ic.store(sol)
-    ckpt_T_ic.close()
+# Save the optimal temperature_ic field 
+ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+        single_file=True, mode=FILE_CREATE,\
+                           comm=mesh.comm)
+ckpt_T_ic.store(sol)
+ckpt_T_ic.close()
 
