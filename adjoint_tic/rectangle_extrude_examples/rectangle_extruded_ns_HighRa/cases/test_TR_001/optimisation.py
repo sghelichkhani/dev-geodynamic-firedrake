@@ -250,11 +250,12 @@ T_ub.assign(0.5)
 minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 
 # This is the classic way                    
-params = {                                   
-        'General': {                         
-              'Print Verbosity': 1,          
+params = {    
+        'General': {    
+              'Print Verbosity': 1,    
+              'Output Level': 1,
               'Secant': {'Type': 'Limited-Memory BFGS',
-                         'Maximum Storage': 10, 
+                         'Maximum Storage': 50, 
                          'Use as Hessian': True,
                          "Barzilai-Borwein": 1,
                         },  
@@ -263,7 +264,7 @@ params = {
            'Type': 'Trust Region',  #'Line Search',
            'Trust Region': {
                 "Subproblem Solver":                    "Truncated CG",
-                "Subproblem Model":                     "Kelley-Sachs",
+                "Subproblem Model":                     "Lin-More", #"Kelley-Sachs",
                 "Initial Radius":                       10.0,
                 "Maximum Radius":                       5.e3,
                 "Step Acceptance Threshold":            0.05,
@@ -278,141 +279,13 @@ params = {
                 },  
         'Status Test': {
             'Gradient Tolerance': 0,
-            'Iteration Limit': 500, 
+            'Iteration Limit': 500,
                         }   
-        }   
-
-# overwritting ROLObjective to have a cache
-class myROLObjective(ROLObjective):
-    def __init__(self, rf, scale=1.0, f_cachesize=4, g_cachesize=2):
-        super().__init__(rf, scale=scale)
-        
-        # cache size for functionals and gradients
-        self.f_cachesize = f_cachesize
-        self.g_cachesize = g_cachesize
-
-        # cache for x, given for functional and gradient calculations 
-        self.fx = []
-        self.gx = []
-
-        # cache for result of functional and gradient calculations 
-        self.fvals       = []
-        self.grads = []
-
-        # Sia: to see the actual gradient that is being ued (not l2)
-        self.g_pvd_field = Function(Q, name="gradient")
-
-    # functional value is accessed here 
-    def value(self, x, tol):
-        return self.val 
-
-    # updating the gradient g.dat
-    def gradient(self, g, x, tol):
-
-        # check if x is already stored in cache
-        idx = self.cachescan(self.gx, x)
-
-        if idx==None:
-            # in case the last forward run used a different x, rerun again
-            if self.cachescan(self.fx, x) != 0:
-                self.rf(x.dat)
-
-            # cache x.dat 
-            self.gx.insert(0, [Function(f.function_space()).assign(f) for f in x.dat])
-
-            # gradient calculation
-            init_time = time.perf_counter()
-            super().gradient(g, x, tol)
-            log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
-                
-            # scale
-            #g.dat[0].project(1e-4*g.dat[0])
-
-            # cache g.dat 
-            self.grads.insert(0, [Function(g.function_space()).assign(g) for g in g.dat])
-            
-
-        # if x is found in cache
-        else:
-            # idx is the index of gradient field in cache 
-            [g.dat[i].assign(cg) for i, cg in enumerate(self.grads[idx])]
-
-        # size control for cache
-        while len(self.gx) >self.g_cachesize:
-            self.gx.pop()
-            self.grads.pop()
-
-    # updating self.val which is passed to ROL by self.value 
-    def update(self, x, flag, iteration):
-
-        # check if x is already stored in cache 
-        idx = self.cachescan(self.fx, x)
-
-        if idx==None: 
-            # cache x.dat 
-            self.fx.insert(0, [Function(f.function_space()).assign(f) for f in x.dat])
-
-            # update self.val
-            init_time = time.perf_counter()
-            super().update(x, flag, iteration)
-            log(f"Elapsed time for func eval {time.perf_counter() - init_time} sec")
-            
-            # Storing fval 
-            self.fvals.insert(0, self.val)
-        else:
-            # update control to the cache value 
-            for i, value in enumerate(self.fx[idx]):
-                self.rf.controls[i].update(value)
-            # Update value 
-            self.val = self.fvals[idx]
-
-        # size control for cache
-        while len(self.gx) > self.f_cachesize:
-            self.fx.pop()
-            self.fvals.pop()
-
-
-    # scanning cache in case we already have the fields 
-    def cachescan(self, cache, iterx):
-
-        # if cache is empty 
-        if len(cache)==0:
-            return None 
-
-        # idx is the index of the field in cache 
-        idx = None
-
-        # check if we already have x
-        for j, xc in enumerate(cache):
-            if np.sum([float(assemble((xc[i] - iterx.dat[i])**2*dx)) for i, _ in enumerate(iterx.dat)]) <= numpy.finfo(float).eps:
-                idx = j
-                break
-        return idx 
-
-
-class myROLSolver(ROLSolver):
-    def __init__(self, problem, parameters, inner_product="L2"):
-       """
-       Generate a ROL solver that uses myROLObective instead of ROLObjective
-
-       The argument inner_product specifies the inner product to be used for
-       the control space.
-
-       """
-
-       OptimizationSolver.__init__(self, problem, parameters)
-       self.rolobjective = myROLObjective(problem.reduced_functional)
-       x = [p.tape_value() for p in self.problem.reduced_functional.controls]
-       self.rolvector = ROLVector(x, inner_product=inner_product)
-       self.params_dict = parameters
-
-       self.bounds = self._ROLSolver__get_bounds()
-       self.constraints = self._ROLSolver__get_constraints()
-
+        } 
 
 with stop_annotating():
     # set up ROL problem
-    rol_solver = myROLSolver(minp, params, inner_product="L2")
+    rol_solver = ROLSolver(minp, params, inner_product="L2")
     sol = rol_solver.solve()
 
     # Save the optimal temperature_ic field 

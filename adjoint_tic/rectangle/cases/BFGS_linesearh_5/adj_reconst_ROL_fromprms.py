@@ -17,9 +17,6 @@ import ROL
 #logging.set_log_level(1)
 #logging.set_level(1)
 
-simu_str = 'wreg_BFGS'
-
-
 # Geometric Constants:
 y_max = 1.0
 x_max = 1.0
@@ -122,18 +119,16 @@ def compute_timestep(u):
 
 # Final state, which will be used as reference for minimization, loaded from a file 
 final_state = Function(Q, name='RefTemperature')
-final_state_file = DumbCheckpoint("./final_state", mode=FILE_READ)
+final_state_file = DumbCheckpoint("../../final_state", mode=FILE_READ)
 final_state_file.load(final_state, 'Temperature')
 final_state_file.close()
 
+T_mean = Constant(0.5)
 
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
-geotherm_checkpoint = DumbCheckpoint("steady_state", single_file=True, mode=FILE_READ)
-geotherm_checkpoint.load(T_ic, 'Temperature')
-geotherm_checkpoint.close()
 # Let's start with the final condition
-#T_ic.project(final_state)
+T_ic.project(final_state)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
@@ -146,7 +141,6 @@ T_new.assign(T_old)
 
 # Temporal discretisation - Using a theta scheme:
 T_theta = theta_ts * T_new + (1-theta_ts) * T_old
-
 
 # ********************** Setup Equations ************************ 
 # viscosiy 
@@ -191,10 +185,10 @@ control = Control(T_ic)
 
 
 # Setting up the file containing all the info
-boundary_velocity_fi = DumbCheckpoint("velocity", mode=FILE_READ)
+boundary_velocity_fi = DumbCheckpoint("../../velocity", mode=FILE_READ)
 
 # Documenting the first forward run
-fwd_run_fi = File('./Optimisation/first_fwd_run.pvd')
+fwd_run_fi = File('visual/first_fwd_run.pvd')
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
@@ -227,14 +221,25 @@ for timestep in range(0, max_num_timesteps):
 
 boundary_velocity_fi.close()
 
-# Initialise functional
-functional = assemble(0.5*(T_new - final_state)**2 * dx)
+
+
+## Initialise functional
+#beta_m = 1.0/assemble((final_state - T_mean)**2 * dx)
+#misfit = assemble(float(beta_m) * (T_new - final_state)**2 * dx)
+misfit = assemble((T_new - final_state)**2 * dx)
+#
+#beta_r = 1e-3/ assemble(inner(grad(final_state - T_mean), grad(final_state - T_mean)) * dx)
+#reg    = assemble(float(beta_r) * inner(grad(T_ic - T_mean), grad(T_ic - T_mean)) * dx)
+
+# functional is a combination of the misfit and the regularising term
+#functional = misfit + reg
+functional = misfit 
 
 # Below are callbacks allowing us to access various field information (accessed through reducedfunctional).
 class OptimisationOutputCallbackPost:
     def __init__(self):
         self.iter_idx = 0
-        self.opt_file             = File('Optimisation/opt_file.pvd') 
+        self.opt_file             = File('visual/opt_file.pvd') 
         self.grad_copy            = Function(Q, name="Gradient")
         self.T_ic_copy            = Function(Q, name="InitTemperature")
         self.T_tc_copy            = Function(Q, name="FinTemperature")
@@ -249,6 +254,7 @@ class OptimisationOutputCallbackPost:
         self.T_ic_copy.assign(controls)
         # output current final state temperature
         self.T_tc_copy.assign(T_new.block_variable.checkpoint)
+        #
         # output current final state velocity and pressure
         self.z_copy.assign(z.block_variable.checkpoint)
         self.u_copy.assign(self.z_copy.split()[0])
@@ -257,25 +263,26 @@ class OptimisationOutputCallbackPost:
         #  Write out the fields
         self.opt_file.write(self.T_ic_copy, self.T_tc_copy, self.u_copy, self.p_copy, self.grad_copy)
         func_val = assemble((self.T_tc_copy-final_state)**2 * dx) 
-        grad_val = sqrt(assemble((self.grad_copy)**2 * dx))
+        reg_val  = assemble(inner(grad(self.T_ic_copy-T_mean), grad(self.T_ic_copy - T_mean)) * dx) 
+        grad_val = assemble((self.grad_copy)**2 * dx)
 
-        log(str('Iteration= %i, functional=' %(self.iter_idx)), func_val, ', grad(dj)=', grad_val)
+        log('# Der {}, ||Misfit|| {}, Non-existing ||Regu|| {}, ||Grad|| {}'.format(self.iter_idx, func_val, reg_val, grad_val))
         log('Derivative calculation', self.iter_idx)
         self.iter_idx += 1
 
 class ForwardCallbackPost:
    def __init__(self):
       self.fwd_idx = 0 
-   def __call__(self, controls):
+   def __call__(self, func_value, controls):
       self.fwd_idx +=1 
-      log("Starting fwd calculation:", self.fwd_idx)
+      log('# fwd {}, ||Misfit|| {}'.format(self.fwd_idx, func_value))
 
 # Initiate classes for the callbacks
 local_cb_post = OptimisationOutputCallbackPost()
-eval_cb_pre = ForwardCallbackPost()
+eval_cb_post = ForwardCallbackPost()
 
 # Defining the object for pyadjoint
-reduced_functional = ReducedFunctional(functional, control, eval_cb_pre=eval_cb_pre, derivative_cb_post=local_cb_post)
+reduced_functional = ReducedFunctional(functional, control, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post)
 
 # Set up bounds, which will later be used to enforce boundary conditions in inversion:
 T_lb     = Function(Q, name="LB_Temperature")
@@ -296,10 +303,10 @@ params = {
            'Type': 'Line Search',
            'Line Search': {
                 'Descent Method': {'Type': 'Quasi-Newton Method'},
-                'Line-Search Method': {'Type': 'Cubic Interpolation'}, 
-                #'Function Evaluation Limit': 5,
-                #'Sufficient Decrease Tolerance': 1e-2,
-                #'Use Previous Step Length as Initial Guess': True,
+                'Line-Search Method': {'Type': 'Cubic Interpolation'},
+                'Function Evaluation Limit': 20,
+                'Sufficient Decrease Tolerance': 1e-8,
+                'Use Previous Step Length as Initial Guess': True,
                             }
                 },
         'Status Test': {

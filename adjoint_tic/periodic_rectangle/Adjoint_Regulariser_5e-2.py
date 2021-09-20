@@ -1,5 +1,5 @@
 """
-    A finite difference (Taylor's) test for the adjoint
+    Using regularisation as in Li et al.  
 """
 
 from firedrake import *
@@ -102,11 +102,30 @@ final_state_file = DumbCheckpoint("./FinalState", mode=FILE_READ)
 final_state_file.load(final_state, name='Temperature')
 final_state_file.close()
 
+# Mapping y axis onto Q function space
+coords_y_Q = interpolate(y, Q)
+# T_ave contains the average temperature
+T_ave      = Function(Q, name='AverageTemperature')
+
+# read in the average temperature profile and interpolate for any given depth
+def read_T_ave(coords):
+    from scipy.interpolate import interp1d
+    rad, temp = numpy.loadtxt('./radial.out', delimiter=',', unpack=True)
+    return interp1d(rad, temp, kind='linear', fill_value='extrapolate')(coords)
+# read in the average temperature profile 
+T_ave.dat.data[:] = read_T_ave(coords_y_Q.dat.data[:])
+
+
+
+# Initial condition
 T_ic = Function(Q, name="InitialCondition")
 T_checkpoint = DumbCheckpoint(basename='FinalState', mode=FILE_READ)
 T_checkpoint.load(T_ic, name='Temperature')
 T_checkpoint.close()
 #T_ic.assign(0.5)
+
+
+
 
 # Set up temperature field and initialise based upon coordinates:
 T_old   = Function(Q, name="OldTemperature")
@@ -199,17 +218,20 @@ for timestep in range(0,max_timesteps):
 
 checkpoint_boundary.close()
 
-
+# The following are the measures of magnitude for different 
+# terms in the objective functional 
+final_state_mag = assemble((final_state)**2 *dx)
+final_state_grad_mag = assemble(dot(grad(final_state - T_ave),grad(final_state - T_ave)) *dx)
 
 # define the objective functional
-functional = assemble(0.5 * (T_new - final_state)**2 * dx)
-
+functional = assemble(0.5 * (T_new - final_state)**2 * dx) +\
+            5e-2*final_state_mag/final_state_grad_mag*assemble(0.5 * dot(grad(T_ic-T_ave), grad(T_ic-T_ave)) * dx)
 
 # Below are callbacks allowing us to access various field information (accessed through reducedfunctional).
 class OptimisationOutputCallbackPost:
     def __init__(self):
         self.iter_idx = 0
-        self.opt_file             = File('Adjoint_TicFinal/opt_file.pvd')
+        self.opt_file             = File('Adjoint_Regular5e-2/opt_file.pvd')
         self.grad_copy            = Function(Q, name="Gradient")
         self.T_ic_copy            = Function(Q, name="InitTemperature")
         self.T_tc_copy            = Function(Q, name="FinTemperature")
@@ -233,9 +255,10 @@ class OptimisationOutputCallbackPost:
         #  Write out the fields
         self.opt_file.write(self.T_ic_copy, self.T_tc_copy, self.u_copy, self.p_copy, self.grad_copy)
         func_val = assemble((self.T_tc_copy-final_state)**2 * dx)
+        reg_val  = 1e-3*final_state_mag/final_state_grad_mag*assemble(0.5 * dot(grad(self.T_ic_copy-T_ave), grad(self.T_ic_copy-T_ave)) * dx)
         grad_val = assemble((self.grad_copy)**2 * dx)
 
-        log('# Der {}, ||Misfit|| {}, Non-existing ||Regu|| {}, ||Grad|| {}'.format(self.iter_idx, func_val, 0, grad_val))
+        log('# Der {}, ||Misfit|| {}, Non-existing ||Regu|| {}, ||Grad|| {}'.format(self.iter_idx, func_val, reg_val, grad_val))
         log('Derivative calculation', self.iter_idx)
         self.iter_idx += 1
 
@@ -386,10 +409,9 @@ params = {
                 },
         'Status Test': {
             'Gradient Tolerance': 1e-12,
-            'Iteration Limit': 500,
+            'Iteration Limit': 200,
                         }
         }
-
 
 with stop_annotating():
     # set up ROL problem
@@ -402,6 +424,3 @@ with stop_annotating():
                                comm=mesh.comm)
     ckpt_T_ic.store(sol)
     ckpt_T_ic.close()
-
-
-
