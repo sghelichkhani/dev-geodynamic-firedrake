@@ -25,7 +25,7 @@ y_max = 1.0
 x_max = 1.0
 
 #  how many intervals along x/y directions 
-disc_n = 200
+disc_n = 100
 
 
 # and Interval mesh of unit size 
@@ -50,19 +50,19 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 120
+max_num_timesteps      = 5
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e6)   # Rayleigh Number
 
 # Below are callbacks relating to the adjoint solutions (accessed through solve).
 # Not sure what the best place would be to initiate working tape!
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t                = Constant(1e-7) # Time-step
+delta_t                = Constant(5e-6) # Time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
@@ -199,6 +199,7 @@ functional = assemble(0.5*(T_new - final_state)**2 * dx)
 class OptimisationOutputCallbackPost:
     def __init__(self):
         self.iter_idx = 0
+        self.opt_file             = File('visual/opt_file.pvd') 
         self.T_ic_true            = Function(Q, name="InitTemperature_Ref")
         self.T_ic_copy            = Function(Q, name="InitTemperature")
         self.T_tc_copy            = Function(Q, name="FinTemperature")
@@ -218,6 +219,7 @@ class OptimisationOutputCallbackPost:
         self.T_tc_copy.assign(T_new.block_variable.checkpoint)
         
         #  Write out the fields
+        self.opt_file.write(self.T_ic_copy, self.T_tc_copy)
         func_val = assemble((self.T_tc_copy-final_state)**2 * dx) 
         init_func_val = assemble((self.T_ic_true-self.T_ic_copy)**2 * dx) 
         #reg_val  = assemble(inner(grad(self.T_ic_copy-T_mean), grad(self.T_ic_copy - T_mean)) * dx) 
@@ -249,16 +251,16 @@ T_ub.assign(0.5)
 ### Optimise using ROL - note when doing Taylor test this can be turned off:
 minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 
-# This is the classic way                    
-params = {                                   
-        'General': {                         
-              'Print Verbosity': 1,          
+# This is the classic way
+params = {
+        'General': {
+              'Print Verbosity': 1,
               'Secant': {'Type': 'Limited-Memory BFGS',
-                         'Maximum Storage': 100, 
+                         'Maximum Storage': 10,
                          'Use as Hessian': True,
-                         "Barzilai-Borwein": 1,
-                        },  
-                    },  
+                         "Barzilai-Borwein": 1
+                        },
+                    },
         'Step': {
            'Type': 'Trust Region',  #'Line Search',
            'Trust Region': {
@@ -274,13 +276,13 @@ params = {
                 "Radius Growing Rate":                  2.5,
                 "Sufficient Decrease Parameter":        1.e-2,
                 "Safeguard Size":                       1.e8,
-                        },  
-                },  
+                        },
+                },
         'Status Test': {
             'Gradient Tolerance': 0,
-            'Iteration Limit': 500, 
-                        }   
-        }   
+            'Iteration Limit': 10,
+                        }
+        }
 
 # overwritting ROLObjective to have a cache
 class myROLObjective(ROLObjective):
@@ -300,6 +302,7 @@ class myROLObjective(ROLObjective):
         self.grads = []
 
         # Sia: to see the actual gradient that is being ued (not l2)
+        self.gradFile    = File(filename='./gradients/gradient.pvd')
         self.g_pvd_field = Function(Q, name="gradient")
 
     # functional value is accessed here 
@@ -322,15 +325,16 @@ class myROLObjective(ROLObjective):
 
             # gradient calculation
             init_time = time.perf_counter()
-            super().gradient(g, x, tol)
+            #super().gradient(g, x, tol)
+            g.dat = [self.rf.derivative(\
+                            options={'riesz_representation':x.inner_product})]
             log(f"Elapsed time for grad calc {time.perf_counter() - init_time} sec")
-                
-            # scale
-            #g.dat[0].project(1e-4*g.dat[0])
 
             # cache g.dat 
             self.grads.insert(0, [Function(g.function_space()).assign(g) for g in g.dat])
             
+            ## Write out recently computed gradient
+            self.gradFile.write(self.g_pvd_field.assign(g.dat[0]))
 
         # if x is found in cache
         else:
@@ -412,7 +416,7 @@ class myROLSolver(ROLSolver):
 
 with stop_annotating():
     # set up ROL problem
-    rol_solver = myROLSolver(minp, params, inner_product="L2")
+    rol_solver = myROLSolver(minp, params, inner_product="l2")
     sol = rol_solver.solve()
 
     # Save the optimal temperature_ic field 

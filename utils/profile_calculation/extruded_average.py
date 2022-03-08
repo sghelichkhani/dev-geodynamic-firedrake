@@ -1,0 +1,46 @@
+from firedrake import *
+
+x_max = 1.0; y_max = 1.0;
+x_dis = 80; y_dis = 80;
+
+# Building the extruded mesh
+mesh2d = IntervalMesh(ncells=x_dis, length_or_left=0, right=x_max) 
+mesh = ExtrudedMesh(mesh2d, layers=y_dis, layer_height=y_max/y_dis, extrusion_type="uniform")
+mesh.coordinates.dat.data[:] = mesh.coordinates.dat.data[:,::-1]
+# my coordinates
+X = x,y                = SpatialCoordinate(mesh)
+
+# Set up function space 
+V       = FunctionSpace(mesh, "CG", 2) 
+
+# The gaussian structure
+blb_ctr_h = as_vector((0.8, 0.5))
+blb_gaus = Constant(0.05)
+
+# Set up temperature field and initialise based upon coordinates:
+T_field   = Function(V, name="OldTemperature")
+T_field.project((y_max - y) - 0.5*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2))
+
+# Sent by Steph:
+#   mesh = V.mesh()
+#   hcell, vcell = mesh.ufl_cell().sub_cells()
+#   hele, _ = V.ufl_element().sub_elements()
+#   vele = FiniteElement("R", vcell, 0)
+#   ele = TensorProductElement(hele, vele)
+#   V_1layer = FunctionSpace(mesh, ele)
+# Modified to get the horizontal variation fixed
+mesh = V.mesh()
+hcell, vcell = mesh.ufl_cell().sub_cells()
+hele, _ = V.ufl_element().sub_elements()
+vele = FiniteElement("R", vcell, 0)
+ele = TensorProductElement(hele, vele)
+V_1layer = FunctionSpace(mesh, ele)
+
+# func_ave is fixed horizontally
+func_ave = Function(V_1layer)
+func_ave.project(T_field)
+
+# output
+fi = File('Temperature.pvd')
+fi.write(T_field, func_ave)
+

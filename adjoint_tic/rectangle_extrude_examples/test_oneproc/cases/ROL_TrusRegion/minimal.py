@@ -1,18 +1,14 @@
 """
-    Adjoint Reconstruction - Using the classic way inputing parameters of ROL, instead of definiting methods for ROL.Algirithm() 
+    Adjoint Reconstruction - Using the classic way inputing parameters, instead of definiting methods for ROL.Algirithm() 
 """
-
 from firedrake import *
 from mpi4py import MPI
 import math, numpy
 from firedrake.petsc import PETSc
 from firedrake_adjoint import *
-from pyadjoint import MinimizationProblem, minimize
+from pyadjoint import MinimizationProblem, ROLSolver
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
-import ROL
-from pyadjoint.reduced_functional_numpy import ReducedFunctionalNumPy
-from scipy.optimize.lbfgsb import _minimize_lbfgsb as scipy_lbfgsb
-from scipy.optimize.optimize import MemoizeJac
+import ROL as ROL
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
 #########################################################################################################
@@ -26,7 +22,6 @@ x_max = 1.0
 
 #  how many intervals along x/y directions 
 disc_n = 100
-
 
 # and Interval mesh of unit size 
 mesh1d = IntervalMesh(disc_n, length_or_left=0.0, right=x_max) 
@@ -50,24 +45,23 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 2
+max_num_timesteps      = 1
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
 # Stokes related constants:
-Ra                     = Constant(1e8)   # Rayleigh Number
+Ra                     = Constant(1e6)   # Rayleigh Number
 
 # Below are callbacks relating to the adjoint solutions (accessed through solve).
 # Not sure what the best place would be to initiate working tape!
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t                = Constant(1e-7) # Time-step
+delta_t                = Constant(5e-6) # Time-step
 kappa                  = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson scheme where theta_ts = 0.5:
 theta_ts               = 0.5
-
 
 #### Print function to ensure log output is only written on processor zero (if running in parallel) ####
 def log(*args):
@@ -107,16 +101,12 @@ u, p = split(z)     # can we nicely name mixed function space fields?
 
 # Final state, which will be used as reference for minimization, loaded from a file 
 final_state = Function(Q, name='RefTemperature')
-final_state.assign(0.5)
-#final_state_file = DumbCheckpoint("../../final_state", mode=FILE_READ)
-#final_state_file.load(final_state, 'Temperature')
-#final_state_file.close()
+final_state.assign(0.1)
 
 # Initial condition
 T_ic   = Function(Q, name="T_IC")
 # Let's start with the final condition
-#T_ic.project(final_state)
-T_ic.assign(0.5)
+T_ic.assign(0.6)
 
 # Set up temperature field and initialise based upon coordinates:
 T_old    = Function(Q, name="OldTemperature")
@@ -149,7 +139,6 @@ bcu_rightleft   = DirichletBC(Z.sub(0), 0.0, (left_id, right_id))
 # Pressure nullspace                                                                                                                                                                                                                                                                      
 p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0), VectorSpaceBasis(constant=True)])
 
-
 ### Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
 
@@ -161,7 +150,6 @@ p.rename('Pressure')
 # A simulation time to track how far we are
 simu_time = 0.0
 
-# Stokes Solver
 z_tri = TrialFunction(Z)
 F_stokes_lin = replace(F_stokes, {z: z_tri})
 a, L = lhs(F_stokes_lin), rhs(F_stokes_lin)
@@ -192,127 +180,63 @@ for timestep in range(0, max_num_timesteps):
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
 
-    log(f"simu_time {simu_time}")
-
+    # Updating Temperature
+    log("Timestep Number: ", timestep, " Timestep: ", float(delta_t))
 
 ## Initialise functional
 functional = assemble(0.5*(T_new - final_state)**2 * dx)
 
-# Below are callbacks allowing us to access various field information (accessed through reducedfunctional).
-class OptimisationOutputCallbackPost:
-    def __init__(self):
-        self.iter_idx = 0
-        self.opt_file             = File('visual/opt_file.pvd') 
-        self.T_ic_true            = Function(Q, name="InitTemperature_Ref")
-        self.grad_copy            = Function(Q, name="Gradient")
-        self.T_ic_copy            = Function(Q, name="InitTemperature")
-        self.T_tc_copy            = Function(Q, name="FinTemperature")
-        self.z_copy               = Function(Z, name="Stokes")
-        self.u_copy               = Function(V, name="Velocity")
-        self.p_copy               = Function(W, name="Pressure")
-
-        # Having a single hot blob on 1.5, 0.0
-        blb_ctr_h = as_vector((0.5, 0.85)) 
-        blb_gaus = Constant(0.04)
-        
-        # A linear temperature profile from the surface to the CMB, with a gaussian blob somewhere
-        self.T_ic_true.interpolate(0.5 - 0.3*exp(-0.5*((X-blb_ctr_h)/blb_gaus)**2))
-
-
-    def __call__(self, cb_functional, dj, controls):
-        # output current gradient:
-        self.grad_copy.assign(dj)
-        # output current control (temperature initial condition)
-        self.T_ic_copy.assign(controls)
-        # output current final state temperature
-        self.T_tc_copy.assign(T_new.block_variable.checkpoint)
-        #
-        # output current final state velocity and pressure
-        self.z_copy.assign(z.block_variable.checkpoint)
-        self.u_copy.assign(self.z_copy.split()[0])
-        self.p_copy.assign(self.z_copy.split()[1])
-        
-        #  Write out the fields
-        self.opt_file.write(self.T_ic_copy, self.T_tc_copy, self.u_copy, self.p_copy, self.grad_copy)
-        func_val = assemble((self.T_tc_copy-final_state)**2 * dx) 
-        init_func_val = assemble((self.T_ic_true-self.T_ic_copy)**2 * dx) 
-        #reg_val  = assemble(inner(grad(self.T_ic_copy-T_mean), grad(self.T_ic_copy - T_mean)) * dx) 
-        grad_val = assemble((self.grad_copy)**2 * dx)
-
-        log('# Der {}, ||Misfit|| {}, ||Misfit IC|| {}, ||Grad|| {}'.format(self.iter_idx, func_val, init_func_val, grad_val))
-        log('Derivative calculation', self.iter_idx)
-        self.iter_idx += 1
-
-class ForwardCallbackPost:
-   def __init__(self):
-      self.fwd_idx = 0 
-   def __call__(self, func_value, controls):
-      self.fwd_idx +=1 
-      log('# fwd {}, ||Misfit|| {}'.format(self.fwd_idx, func_value))
-
-# Initiate classes for the callbacks
-local_cb_post = OptimisationOutputCallbackPost()
-eval_cb_post = ForwardCallbackPost()
-
-class myReducedFunctional(ReducedFunctional):
-    def __init__(self, functional, controls, scale=2.0, tape=None,
-                      eval_cb_pre=lambda *args: None,
-                      eval_cb_post=lambda *args: None,
-                      derivative_cb_pre=lambda *args: None,
-                      derivative_cb_post=lambda *args: None,
-                      hessian_cb_pre=lambda *args: None,
-                      hessian_cb_post=lambda *args: None, riesz=None):
-        self.riesz = None
-        if riesz:
-            self.riesz = riesz
-            log('\t\tSetting riesz_representation:', self.riesz)
-        super().__init__(functional=functional, controls=controls, scale=scale,
-                   tape=tape, eval_cb_pre=eval_cb_pre,
-                                   eval_cb_post=eval_cb_post,
-                                   derivative_cb_pre=derivative_cb_pre,
-                                   derivative_cb_post=derivative_cb_post)
-
-    def __call__(self, values):
-        func_value = super().__call__(values)
-        return func_value
-    def derivative(self, options={}):
-        if self.riesz:
-            options['riesz_representation'] = self.riesz
-        myder =  super().derivative(options=options)
-        return myder.project(myder*1e-1)
-# scipy_minimize --> _minimize_lbfgsb(fun, x0, args, jac, bounds,  callback=callback, **options)
-# These are the default parameters
-# Default Parameters approx_grad=0, bounds=None, m=10, factr=1e7, pgtol=1e-5,
-#                   epsilon=1e-8, iprint=-1, maxfun=15000, maxiter=15000, disp=None,
-#                   callback=None, maxls=20):
-options = { 'disp': None,
-            'iprint': 100,
-            'maxcor': 10, # The maximum number of variable metric corrections (memory)
-            'ftol': 1e7* np.finfo(float).eps,# 1e14 for low accuracy, 1e7 for mid-accuracy, 10 for high accuracy
-            'gtol': 0,#1e-5, # Iteration stops if projection of gradient is smaller than this
-            'eps': 1e-8, # Only used when approx grad is True
-            'maxfun': 15000, # Maximum number of evaluations
-            'maxiter': 500, # Maximum number of iterations
-            'maxls': 20, # Maximum number of line-searth steps
-        }
 
 # Defining the object for pyadjoint
-reduced_functional = myReducedFunctional(functional, control, scale=1.0, eval_cb_post=eval_cb_post, derivative_cb_post=local_cb_post, riesz='L2')
+reduced_functional = ReducedFunctional(functional, control)
 
-# Set up bounds, which will later be used to enforce boundary conditions in inversion:
-T_lb     = Function(Q, name="LB_Temperature")
-T_ub     = Function(Q, name="UB_Temperature")
-T_lb.assign(0.2)
-T_ub.assign(0.5)
+### Optimise using ROL - note when doing Taylor test this can be turned off:
+minp = MinimizationProblem(reduced_functional)
+
+# This is the classic way
+params = {
+        'General': {
+              'Print Verbosity': 1,
+              'Secant': {'Type': 'Limited-Memory BFGS', 'Maximum Storage': 10},
+                    },
+        'Step': {
+           'Type': 'Line Search',
+           'Line Search': {
+                'Descent Method': {'Type': 'Quasi-Newton Method'},
+                'Line-Search Method': {
+                                'Type':  "Brent's", #'Cubic Interpolation ''Backtracking',#'Bisection',
+                                'Backtracking Rate': 0.5,
+                                'Bracketing Tolerance': 1.e-1,
+                                'Bisection': {
+                                    'Tolerance': 1e-1,
+                                    'Iteration Limit': 20,
+                                            },
+                                        },
+                                "Brent's": {
+                                    'Tolerance': 1e0,
+                                    'Iteration Limit': 3,
+                                    'Run Test Upon Initialization': False,
+                                            },
+                'Curvature Condition': {
+                                'Type': 'Strong Wolfe Conditions',
+                                'General Parameter': 0.9,
+                                'Generalized Wolfe Parameter': 0.6,
+                                        },
+                'Function Evaluation Limit': 20,
+                'Sufficient Decrease Tolerance': 1e-1,
+                'Use Previous Step Length as Initial Guess': False,
+                            },
+                },
+        'Status Test': {
+            'Gradient Tolerance': 0,
+            'Iteration Limit': 1,
+                        }
+        }
+
 
 with stop_annotating():
-    # Setting up the problem using minimize that uses Scipy 
-    sol = minimize(reduced_functional, bounds=(T_lb, T_ub), method="L-BFGS-B", tol=1e-12, options=options)
+    # set up ROL problem
+    rol_solver = ROLSolver(minp, params, inner_product="L2")
+    sol = rol_solver.solve()
 
-    # Save the optimal temperature_ic field 
-    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
-            single_file=True, mode=FILE_CREATE,\
-                               comm=mesh.comm)
-    ckpt_T_ic.store(sol)
-    ckpt_T_ic.close()
 

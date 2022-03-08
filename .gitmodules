@@ -1,3 +1,6 @@
 [submodule "stokes-fire"]
 	path = stokes-fire
 	url = git@github.com:stephankramer/stokes-fire.git
+[submodule "g-adopt"]
+	path = g-adopt
+	url = https://github.com/g-adopt/g-adopt
