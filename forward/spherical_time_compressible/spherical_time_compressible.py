@@ -175,19 +175,21 @@ cpbar = Function(Q, name="IsobaricSpecificHeatCapacity").assign(1.0)
 chibar = Function(Q, name="IsothermalBulkModulus").assign(1.0)
 FullT = Function(Q, name="FullTemperature").assign(Tnew+Tbar)
 
+
 # Stokes equations in UFL form:
-I = Identity(2)
-stress = 2 * mu * sym(grad(u)) - 2./3.*I*mu*div(u)
-F_stokes = inner(grad(v), stress) * dx + dot(v, grad(p)) * dx - (dot(v, k) * (Ra * Ttheta * rhobar * alphabar - (Di/gruneisen) * (cpr/cvr)*rhobar*chibar*p) * dx)
+I = Identity(3)
+def stress(u):
+    return 2 * mu * sym(grad(u)) - 2./3.*I*mu*div(u)
+F_stokes = inner(grad(v), stress(u)) * dx + dot(v, grad(p)) * dx - (dot(v, k) * (Ra * Ttheta * rhobar * alphabar - (Di/gruneisen) * (cpr/cvr)*rhobar*chibar*p) * dx)
 F_stokes += dot(grad(w), rhobar*u) * dx  # Mass conservation
 
 # nitsche free-slip BCs
-F_stokes += -dot(v, n) * dot(dot(n, stress), n) * ds_tb
-F_stokes += -dot(u, n) * dot(dot(n, 2 * mu * sym(grad(v))), n) * ds_tb
+F_stokes += -dot(v, n) * dot(dot(n, stress(u)), n) * ds_tb
+F_stokes += -dot(u, n) * dot(dot(n, stress(v)), n) * ds_tb
 F_stokes += C_ip * mu * (p_ip + 1)**2 * FacetArea(mesh) / CellVolume(mesh) * dot(u, n) * dot(v, n) * ds_tb
 
 # Energy equation in UFL form:
-F_energy = q * rhobar * cpbar * ((Tnew - Told) / delta_t) * dx + q * rhobar * cpbar * dot(u, grad(Ttheta)) * dx + dot(grad(q), tcond * grad(Tbar + Ttheta)) * dx + q * (alphabar * rhobar * Di * u[1] * Ttheta) * dx - q * ((Di/Ra) * inner(stress, grad(u))) * dx
+F_energy = q * rhobar * cpbar * ((Tnew - Told) / delta_t) * dx + q * rhobar * cpbar * dot(u, grad(Ttheta)) * dx + dot(grad(q), tcond * grad(Tbar + Ttheta)) * dx + q * (alphabar * rhobar * Di * u[1] * Ttheta) * dx - q * ((Di/Ra) * inner(stress(u), grad(u))) * dx
 
 # Temperature boundary conditions
 bctb, bctt = DirichletBC(Q, 1.0 - (T0*exp(Di) - T0), bottom_id), DirichletBC(Q, 0.0, top_id)
@@ -200,6 +202,7 @@ V_nullspace = VectorSpaceBasis([x_rotV, y_rotV, z_rotV])
 V_nullspace.orthonormalize()
 p_nullspace = VectorSpaceBasis(constant=True)  # Constant nullspace for pressure
 Z_nullspace = MixedVectorSpaceBasis(Z, [V_nullspace, p_nullspace])  # Setting mixed nullspace
+Z_nullspace_woP = MixedVectorSpaceBasis(Z, [V_nullspace, Z.sub(1)])  # Setting mixed nullspace
 
 # Generating near_nullspaces for GAMG:
 nns_x = Function(V).interpolate(Constant([1., 0., 0.]))
@@ -224,7 +227,7 @@ f = open("params.log", "w")
 
 # Setup problem and solver objects so we can reuse (cache) solver setup
 stokes_problem = NonlinearVariationalProblem(F_stokes, z)  # velocity BC's handled through Nitsche
-stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_solver_parameters, appctx={"mu": mu}, nullspace=Z_nullspace, transpose_nullspace=Z_nullspace, near_nullspace=Z_near_nullspace)
+stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_solver_parameters, appctx={"mu": mu}, nullspace=Z_nullspace_woP, transpose_nullspace=Z_nullspace, near_nullspace=Z_near_nullspace)
 energy_problem = NonlinearVariationalProblem(F_energy, Tnew, bcs=[bctb, bctt])
 energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=energy_solver_parameters)
 
