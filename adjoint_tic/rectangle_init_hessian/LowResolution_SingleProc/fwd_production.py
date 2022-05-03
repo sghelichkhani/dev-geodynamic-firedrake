@@ -44,7 +44,7 @@ yhat  = as_vector((0,y)) / y_abs
 
 # Global Constants:
 steady_state_tolerance = 1e-7
-max_num_timesteps      = 60
+max_num_timesteps      = 61
 target_cfl_no          = 2.5
 max_timestep           = 1.00
 
@@ -136,10 +136,8 @@ p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0), VectorSpaceBasis(constant=True
 F_energy = Y * ((T_new - T_old) / delta_t) * dx + Y*dot(u,grad(T_theta)) * dx + dot(grad(Y),kappa*grad(T_theta)) * dx
 
 
-# Write output files in VTK format:
-u_file = File('FWDREFmodel/velocity.pvd')
-p_file = File('FWDREFmodel/pressure.pvd')
-t_file = File('FWDREFmodel/temperature.pvd')
+# Write output in VTK format:
+state_vtu_file = File('visual_fwd/state.pvd')
 
 # For some reason this only works here!!!
 u, p    = z.split() 
@@ -171,18 +169,20 @@ for timestep in range(0, max_num_timesteps):
     # and the RHS == 0. 
     stokes_solver.solve()
 
+    # Write output:
+    if timestep % 5 == 0 or timestep == max_num_timesteps-1:
+        log("Output:", simu_time, timestep)
+        state_vtu_file.write(u, p, T_new)
+        # Generating the reference temperature field for the adjoint
+        checkpoint_data = DumbCheckpoint(str("State_%3.3i" %timestep), single_file=True, mode=FILE_CREATE, comm=mesh.comm)
+        checkpoint_data.store(T_new)
+        checkpoint_data.close()
+
     # Temperature system:
     energy_solver.solve()
 
     # updating time
     simu_time += float(delta_t)
-
-    # Write output:
-    if timestep % 5 == 0:
-        log("Output:", simu_time, timestep)
-        u_file.write(u)
-        p_file.write(p)
-        t_file.write(T_new)
 
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
@@ -190,12 +190,3 @@ for timestep in range(0, max_num_timesteps):
     # Updating Temperature
     log("Timestep Number: ", timestep, " Timestep: ", float(delta_t))
 
-# Generating the reference temperature field for the adjoint
-checkpoint_data = DumbCheckpoint("final_state", single_file=True, mode=FILE_CREATE, comm=mesh.comm)
-checkpoint_data.store(T_new)
-checkpoint_data.close()
-
-log("Final time:", simu_time)
-u_file.write(u)
-p_file.write(p)
-t_file.write(T_new)
