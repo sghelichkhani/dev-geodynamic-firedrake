@@ -1,0 +1,34 @@
+Traceback (most recent call last):
+  File "adj_reconst_ROL_fromprms.py", line 5, in <module>
+    from firedrake import *
+  File "/home/sia/firedrake/src/firedrake/firedrake/__init__.py", line 79, in <module>
+    from firedrake.plot import *
+  File "/home/sia/firedrake/src/firedrake/firedrake/plot.py", line 5, in <module>
+    import matplotlib.pyplot as plt
+  File "/home/sia/firedrake/lib/python3.8/site-packages/matplotlib/pyplot.py", line 2469, in <module>
+    switch_backend(rcParams["backend"])
+  File "/home/sia/firedrake/lib/python3.8/site-packages/matplotlib/__init__.py", line 619, in __getitem__
+    plt.switch_backend(rcsetup._auto_backend_sentinel)
+  File "/home/sia/firedrake/lib/python3.8/site-packages/matplotlib/pyplot.py", line 236, in switch_backend
+    current_framework = cbook._get_running_interactive_framework()
+  File "/home/sia/firedrake/lib/python3.8/site-packages/matplotlib/cbook/__init__.py", line 82, in _get_running_interactive_framework
+    if not _c_internal_utils.display_is_valid():
+KeyboardInterrupt
+application called MPI_Abort(MPI_COMM_WORLD, 1) - process 10
+Traceback (most recent call last):
+  File "adj_reconst_ROL_fromprms.py", line 5, in <module>
+    from firedrake import *
+  File "/home/sia/firedrake/src/firedrake/firedrake/__init__.py", line 79, in <module>
+    from firedrake.plot import *
+  File "/home/sia/firedrake/src/firedrake/firedrake/plot.py", line 5, in <module>
+    import matplotlib.pyplot as plt
+  File "/home/sia/firedrake/lib/python3.8/site-packages/matplotlib/pyplot.py", line 2469, in <module>
+    switch_backend(rcParams["backend"])
+  File "/home/sia/firedrake/lib/python3.8/site-packages/matplotlib/__init__.py", line 619, in __getitem__
+    plt.switch_backend(rcsetup._auto_backend_sentinel)
+  File "/home/sia/firedrake/lib/python3.8/site-packages/matplotlib/pyplot.py", line 236, in switch_backend
+    current_framework = cbook._get_running_interactive_framework()
+  File "/home/sia/firedrake/lib/python3.8/site-packages/matplotlib/cbook/__init__.py", line 82, in _get_running_interactive_framework
+    if not _c_internal_utils.display_is_valid():
+KeyboardInterrupt
+application called MPI_Abort(MPI_COMM_WORLD, 1) - process 13
