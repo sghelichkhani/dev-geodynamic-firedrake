@@ -1,9 +1,9 @@
 """
-    Adjoint Reconstruction - Using the classic way inputing parameters, instead of definiting methods for ROL.Algirithm() 
+   Use initial hessian to see if the regularisation can be done faster 
 """
 from re import I
 import sys
-sys.path.append('../../')
+sys.path.append('../')
 
 from firedrake import *
 from mpi4py import MPI
@@ -15,8 +15,8 @@ from pyadjoint.tape import no_annotations, Tape, set_working_tape
 import ROL 
 import time
 
-alpha = 0.0001
-simu_name = f"23_imposed_three_reg_grad_{alpha}"
+alpha = 0.005
+simu_name = f"28_init_hessian_reg_grad_{alpha}"
 
 # Quadrature degree:
 dx = dx(degree=6)
@@ -24,7 +24,7 @@ dx = dx(degree=6)
 # logging.set_log_level(1)
 # logging.set_level(1)
 
-with CheckpointFile("../../Final_State.h5", "r") as T_ref_checkpoint:
+with CheckpointFile("../Final_State.h5", "r") as T_ref_checkpoint:
     mesh = T_ref_checkpoint.load_mesh("firedrake_default_extruded")
     final_state = T_ref_checkpoint.load_function(mesh, "Temperature")
     T_average = T_ref_checkpoint.load_function(mesh, "OneDimTemperature")
@@ -42,7 +42,7 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 70
+max_num_timesteps = 2 
 
 # Stokes related constants:
 Ra = Constant(1e6)  # Rayleigh Number
@@ -117,11 +117,10 @@ F_stokes = inner(grad(N), tau(u)) * dx - div(N)*p * dx
 F_stokes += - (dot(N, yhat)*Ra*T_theta) * dx
 F_stokes += - div(u) * M * dx
 
-# Setting boundary conditions 
-u_surface = Function(V, name="BoundaryCondition")
-bcu_toprightleft = DirichletBC(Z.sub(0), u_surface, (top_id, right_id, left_id))
-bcu_base = DirichletBC(Z.sub(0).sub(1), 0.0, (bottom_id))
-all_u_bounds = [bcu_base, bcu_toprightleft]
+# Setting free-slip BC for top and bottom
+bcu_topbase = DirichletBC(Z.sub(0).sub(1), 0.0, (bottom_id, top_id))
+bcu_rightleft = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
+all_u_bounds = [bcu_topbase, bcu_rightleft]
 
 # Setting Dirihlet BC for top and bottom of the temperature field
 bct_top = DirichletBC(Q, 0.0, (top_id))
@@ -131,8 +130,6 @@ bct_base = DirichletBC(Q, 1.0, (bottom_id))
 p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0),
                                      VectorSpaceBasis(constant=True)]
                                     )
-# reference velocity file
-u_ref_file = CheckpointFile("../../Ref_velocities.h5", mode='r')
 
 # Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx\
@@ -156,10 +153,6 @@ control = Control(T_ic)
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
-
-    # update the surface boudnary condition
-    u_surface = u_ref_file.load_function(mesh, name='Velocity', idx=timestep)
-
     # Solve system - configured for solving non-linear systems,
     # where everything is on the LHS (as above)
     # and the RHS == 0.
@@ -198,7 +191,8 @@ class myReducedFunctional(ReducedFunctional):
 
 
 # Defining the object for pyadjoint
-reduced_functional = myReducedFunctional(functional + alpha * regularisation,
+#reduced_functional = myReducedFunctional(functional + alpha * regularisation,
+reduced_functional = myReducedFunctional(functional,
                                          control
                                         )
 
@@ -211,6 +205,37 @@ T_ub.assign(1.0)
 
 # Optimise using ROL - note when doing Taylor test this can be turned off:
 minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
+
+class InitHessian(ROL.InitBFGS):
+    def __init__(self, M, direct=True):
+        ROL.InitBFGS.__init__(self, M)
+
+        self.solver_params = {
+            "ksp_type": "gmres",
+            "pc_type": "lu",
+            "pc_factor_mat_solver_type": "mumps",
+            "mat_type": "aij",
+        }
+        # K matrix
+        self.M = dot(grad(Y), grad(TrialFunction(Q))) * dx
+
+        # regular linear solver
+        self.solver = LinearSolver(assemble(self.M), solver_parameters=self.solver_params)
+        
+
+    @no_annotations
+    def applyH0(self, Hv, v):
+        self.solver.solve(Hv.dat[0], v.dat[0])
+        l = Hv.norm() / v.norm()
+        Hv.scale(1 / l)
+        self.scaleH0(Hv)
+
+    @no_annotations
+    def applyB0(self, Bv, v):
+        Bv.dat[0] = assemble(dot(grad(Y), grad(v.dat[0])) * dx)
+        l = Bv.norm() / v.norm()
+        Bv.scale(1 / l)
+        self.scaleB0(Bv)
 
 
 class myStatusTest(ROL.StatusTest):
@@ -227,7 +252,7 @@ class myStatusTest(ROL.StatusTest):
         self.solution_checkpoint.save_mesh(mesh)
 
         # loading the true answer for comparisons 
-        with CheckpointFile("../../Initial_State.h5", 'r') as true_initial_state_file:
+        with CheckpointFile("../Initial_State.h5", 'r') as true_initial_state_file:
             _ = true_initial_state_file.load_mesh("firedrake_default_extruded")
             self.T_ic_true = true_initial_state_file.load_function(mesh, "Temperature")
             self.T_ic_true.rename("ref_initial_state")
@@ -259,52 +284,29 @@ class myStatusTest(ROL.StatusTest):
 params = {
         'General': {
               'Print Verbosity': 1,
-              'Output Level': 3,
-              'Krylov': {   # These are needed for our
-                            # solution of the hessian I guess
-                    "Iteration Limit": 10,
-                    "Absolute Tolerance": 1e-4,
-                    "Relative Tolerance": 1e-2,
-                    },
+              'Output Level': 1,
               'Secant': {'Type': 'Limited-Memory BFGS',
                          'Maximum Storage': 20,
                          'Use as Hessian': True,
                          "Barzilai-Borwein": 1},
                     },
         'Step': {
-           'Type': 'Trust Region',  # 'Line Search',
-           'Trust Region': {
-                "Lin-More":     {
-                    "Maximum Number of Minor Iterations": 10,
-                    "Sufficient Decrease Parameter":      1e-2,
-                    "Relative Tolerance Exponent":        1.0,
-                    "Cauchy Point": {
-                        "Maximum Number of Reduction Steps": 10,
-                        "Maximum Number of Expansion Steps": 10,
-                        "Initial Step Size":                 1.0,
-                        "Normalize Initial Step Size":       False,
-                        "Reduction Rate":                    0.1,
-                        "Expansion Rate":                    10.0,
-                        "Decrease Tolerance":                1e-8,
-                                    },
-                        "Projected Search": {
-                                "Backtracking Rate": 0.5,
-                                "Maximum Number of Steps": 20,
-                                            },
-                                },
-                #  Subproblem Model could be "Kelley-Sachs",
-                "Subproblem Model":                     "Lin-More",
-                "Initial Radius":                       0.005,
-                "Maximum Radius":                       1e20,
-                "Step Acceptance Threshold":            0.05,
-                "Radius Shrinking Threshold":           0.05,
-                "Radius Growing Threshold":             0.9,
-                "Radius Shrinking Rate (Negative rho)": 0.0625,
-                "Radius Shrinking Rate (Positive rho)": 0.25,
-                "Radius Growing Rate":                  2.5,
-                "Sufficient Decrease Parameter":        1.e-2,
-                "Safeguard Size":                       100,
-                            },
+            'Type': 'Line Search',  # 'Line Search', 'Trust Region'
+            'Line Search': {
+                            'Initial Step Size' : 1.0,
+                            'Line-Search Method': {
+                                                    'Type' : 'Cubic Interpolation',
+                                                  },
+                            'Descent Method':{
+                                              'Type': 'Quasi-Newton Method',
+                                             },
+                            'Sufficient Decrease Tolerance' : 1e-4,
+                            'Curvature Condition':{
+                                                   'Type' : 'Strong Wolfe Conditions',
+                                                   'General Parameter': 0.9,
+                                                   'Generalized Wolfe Parameter' : 0.6,
+                                                  }
+                           }
                 },
         'Status Test': {
             'Gradient Tolerance': 0,
@@ -313,18 +315,24 @@ params = {
         }
 
 
-rol_solver = ROLSolver(minp, params)
-params = ROL.ParameterList(params, "Parameters")
-status_test = myStatusTest(params, rol_solver.rolvector)
-
-secant = ROL.InitBFGS(20)
-rol_algorithm = ROL.LinMoreAlgorithm(params, secant)
-rol_algorithm.setStatusTest(status_test, False)
-
 with stop_annotating():
+    rol_solver = ROLSolver(minp, params)
+    params = ROL.ParameterList(params, "Parameters")
+    rol_secant = InitHessian(5) # maximum storage
+    rol_step = ROL.LineSearchStep(params, rol_secant)
+    rol_status = ROL.StatusTest(params)
+    rol_algorithm = ROL.Algorithm(rol_step, rol_status
+                                 )
     rol_algorithm.run(
         rol_solver.rolvector,
         rol_solver.rolobjective,
-        rol_solver.bounds # only if we have a bounded problem
+        rol_solver.bounds
             )
     optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
+    # Save the optimal temperature_ic field 
+    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+            single_file=True, mode=FILE_CREATE,\
+                               comm=mesh.comm)
+    ckpt_T_ic.store(optimal_ic)
+    ckpt_T_ic.close()
+
