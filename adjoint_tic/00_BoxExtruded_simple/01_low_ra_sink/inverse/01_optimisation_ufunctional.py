@@ -38,7 +38,8 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 70
+max_num_timesteps = 140
+simu_time = 0.0
 
 # Stokes related constants:
 Ra = Constant(1e6)  # Rayleigh Number
@@ -49,19 +50,59 @@ Ra = Constant(1e6)  # Rayleigh Number
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t = Constant(5e-6)  # Time-step
+delta_t = Constant(2e-6)  # Time-step
 kappa = Constant(1.0)  # Thermal diffusivity
 
-# Temporal discretisation - Using a Crank-Nicholson scheme
-# where theta_ts = 0.5.
+# Temporal discretisation - Using a Crank-Nicholson
+# scheme where theta_ts = 0.5.
 theta_ts = 0.5
 
 
-# Print function to ensure log output is only written on processor
-# zero (if running in parallel) ####
+# Print function to ensure log output is only written
+# on processor zero (if running in parallel) ####
 def log(*args):
     if mesh.comm.rank == 0:
         PETSc.Sys.Print(*args)
+
+# Energy Equation Solver Parameters:
+energy_iterative = {
+    "mat_type": "aij",
+    "snes_type": "ksponly",
+    "ksp_type": "gmres",
+    "ksp_rtol": 1e-5,
+    #"ksp_converged_reason": None,
+    "pc_type": "sor",
+}
+
+stokes_iterative = {
+     "mat_type": "matfree",
+     "snes_type": "ksponly",
+     "ksp_type": "preonly",
+     #"ksp_converged_reason": None,
+     "pc_type": "fieldsplit",
+     "pc_fieldsplit_type": "schur",
+     "pc_fieldsplit_schur_type": "full",
+     "fieldsplit_0": {
+         "ksp_type": "cg",
+         "ksp_rtol": 1e-4,
+         #"ksp_converged_reason": None,
+         "pc_type": "python",
+         "pc_python_type": "firedrake.AssembledPC",
+         "assembled_pc_type": "gamg",
+         "assembled_pc_gamg_threshold": 0.01,
+         "assembled_pc_gamg_square_graph": 100,
+     },
+    "fieldsplit_1": {
+        "ksp_type": "fgmres",
+        "ksp_rtol": 1e-3,
+        #"ksp_converged_reason": None,
+        "pc_type": "python",
+        "pc_python_type": "firedrake.MassInvPC",
+        "Mp_ksp_rtol": 1e-5,
+        "Mp_ksp_type": "cg",
+        "Mp_pc_type": "sor",
+    }
+}
 
 
 # Geometry and Spatial Discretization:
@@ -107,7 +148,7 @@ def tau(u):
 
 # Stokes in weak form
 F_stokes = inner(grad(N), tau(u)) * dx - div(N)*p * dx
-F_stokes += - (dot(N, yhat)*Ra*T_theta) * dx
+F_stokes += - (dot(N, yhat) * Ra * T_theta) * dx
 F_stokes += - div(u) * M * dx
 
 # Setting free-slip BC for bottom, and sides
@@ -122,11 +163,15 @@ bct_base = DirichletBC(Q, 1.0, (bottom_id))
 
 # Pressure nullspace
 p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0),
-                                     VectorSpaceBasis(constant=True)]
+                                    VectorSpaceBasis(constant=True)]
                                     )
-
-# reference velocity file
-u_ref_file = CheckpointFile("../../Ref_velocities.h5", mode='r')
+# Generating near_nullspaces for GAMG:
+z_rotV = Function(V).interpolate(as_vector((-X[1], X[0])))
+nns_x = Function(V).interpolate(Constant([1., 0.]))
+nns_y = Function(V).interpolate(Constant([0., 1.]))
+V_near_nullspace = VectorSpaceBasis([nns_x, nns_y, z_rotV])
+V_near_nullspace.orthonormalize()
+Z_near_nullspace = MixedVectorSpaceBasis(Z, [V_near_nullspace, Z.sub(1)])
 
 # Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx\
@@ -134,16 +179,14 @@ F_energy = Y * ((T_new - T_old) / delta_t) * dx\
     + dot(grad(Y),kappa*grad(T_theta)) * dx
 
 # Setup problem and solver objects so we can reuse (cache) solver setup
-stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=all_u_bounds)
-stokes_solver = NonlinearVariationalSolver(stokes_problem,
-                                           nullspace=p_nullspace,
-                                           transpose_nullspace=p_nullspace,
-                                           )
+stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=all_bcu)
+stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_iterative,
+     appctx={"mu": mu}, nullspace=p_nullspace, transpose_nullspace=p_nullspace,
+     near_nullspace=Z_near_nullspace
+)
 
-energy_problem = NonlinearVariationalProblem(F_energy, T_new,
-                                             bcs=[bct_base, bct_top]
-                                             )
-energy_solver = NonlinearVariationalSolver(energy_problem)
+energy_problem = NonlinearVariationalProblem(F_energy, T_new, bcs=[bct_base, bct_top])
+energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=energy_iterative)
 
 # splitting fields just to have access
 u_, p_ = z.split()
@@ -179,11 +222,18 @@ u_ref_file.close()
 temp_functional = assemble(0.5*(T_new - final_state)**2 * dx)/assemble(0.5*(final_state)**2 * dx)
 
 
-class myReducedFunctional(ReducedFunctional):
+class myReducedFunctional(ReducedFunctional, fname=None):
     def __init__(self, functional, controls, **kwargs):
         super().__init__(functional, control, **kwargs)
         self.fwd_cntr = 0
         self.adj_cntr = 0
+       
+        self.fname = None
+
+        if fname:
+            self.fname = fname
+            self.derfile = File(fname)
+            self.derfunction = Function(Q, name="gradient") 
 
     def __call__(self, values):
         pre_time = time.time()
@@ -195,6 +245,11 @@ class myReducedFunctional(ReducedFunctional):
     def derivative(self):
         pre_time = time.time()
         deriv = super().derivative(options={})
+
+        if self.fname:
+            self.derfunction.interpolate(deriv)
+            self.derfile.write(self.derfunction)
+
         self.adj_cntr += 1
         log(f"\tADJ # {self.adj_cntr} call took {time.time() - pre_time}")
         return deriv
