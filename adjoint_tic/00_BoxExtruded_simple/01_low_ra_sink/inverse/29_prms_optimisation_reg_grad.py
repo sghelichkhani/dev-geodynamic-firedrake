@@ -191,7 +191,8 @@ class myReducedFunctional(ReducedFunctional):
 
 
 # Defining the object for pyadjoint
-reduced_functional = myReducedFunctional(functional + alpha * regularisation,
+#reduced_functional = myReducedFunctional(functional + alpha * regularisation,
+reduced_functional = myReducedFunctional(functional,
                                          control
                                         )
 
@@ -284,52 +285,29 @@ class myStatusTest(ROL.StatusTest):
 params = {
         'General': {
               'Print Verbosity': 1,
-              'Output Level': 3,
-              'Krylov': {   # These are needed for our
-                            # solution of the hessian I guess
-                    "Iteration Limit": 10,
-                    "Absolute Tolerance": 1e-4,
-                    "Relative Tolerance": 1e-2,
-                    },
+              'Output Level': 1,
               'Secant': {'Type': 'Limited-Memory BFGS',
                          'Maximum Storage': 20,
                          'Use as Hessian': True,
                          "Barzilai-Borwein": 1},
                     },
         'Step': {
-           'Type': 'Line Search',  # 'Line Search', 'Trust Region'
-           #'Trust Region': {
-           #     "Lin-More":     {
-           #         "Maximum Number of Minor Iterations": 10,
-           #         "Sufficient Decrease Parameter":      1e-2,
-           #         "Relative Tolerance Exponent":        1.0,
-           #         "Cauchy Point": {
-           #             "Maximum Number of Reduction Steps": 10,
-           #             "Maximum Number of Expansion Steps": 10,
-           #             "Initial Step Size":                 1.0,
-           #             "Normalize Initial Step Size":       False,
-           #             "Reduction Rate":                    0.1,
-           #             "Expansion Rate":                    10.0,
-           #             "Decrease Tolerance":                1e-8,
-           #                         },
-           #             "Projected Search": {
-           #                     "Backtracking Rate": 0.5,
-           #                     "Maximum Number of Steps": 20,
-           #                                 },
-           #                     },
-           #     #  Subproblem Model could be "Kelley-Sachs",
-           #     "Subproblem Model":                     "Lin-More",
-           #     "Initial Radius":                       0.005,
-           #     "Maximum Radius":                       1e20,
-           #     "Step Acceptance Threshold":            0.05,
-           #     "Radius Shrinking Threshold":           0.05,
-           #     "Radius Growing Threshold":             0.9,
-           #     "Radius Shrinking Rate (Negative rho)": 0.0625,
-           #     "Radius Shrinking Rate (Positive rho)": 0.25,
-           #     "Radius Growing Rate":                  2.5,
-           #     "Sufficient Decrease Parameter":        1.e-2,
-           #     "Safeguard Size":                       100,
-           #                 },
+            'Type': 'Line Search',  # 'Line Search', 'Trust Region'
+            'Line Search': {
+                            'Initial Step Size' : 1.0,
+                            'Line-Search Method': {
+                                                    'Type' : 'Cubic Interpolation',
+                                                  },
+                            'Descent Method':{
+                                              'Type': 'Quasi-Newton Method',
+                                             },
+                            'Sufficient Decrease Tolerance' : 1e-4,
+                            'Curvature Condition':{
+                                                   'Type' : 'Strong Wolfe Conditions',
+                                                   'General Parameter': 0.9,
+                                                   'Generalized Wolfe Parameter' : 0.6,
+                                                  }
+                           }
                 },
         'Status Test': {
             'Gradient Tolerance': 0,
@@ -338,24 +316,24 @@ params = {
         }
 
 
-# 
-rol_solver = ROLSolver(minp, params)
-params = ROL.ParameterList(params, "Parameters")
-status_test = myStatusTest(params, rol_solver.rolvector)
-
-#secant = InitHessian(20)  # ROL.InitBFGS(20)
-#rol_algorithm = ROL.LinMoreAlgorithm(params, secant)
-#rol_algorithm.setStatusTest(status_test, False)
-#
-#  
-rol_step = ROL.LineSearchStep(params, rol_secant)
-rol_algorithm = ROL.Algorithm(rol_step, status_test)
-
-
 with stop_annotating():
+    rol_solver = ROLSolver(minp, params)
+    params = ROL.ParameterList(params, "Parameters")
+    rol_secant = InitHessian(5) # maximum storage
+    rol_step = ROL.LineSearchStep(params, rol_secant)
+    rol_status = ROL.StatusTest(params)
+    rol_algorithm = ROL.Algorithm(rol_step, rol_status
+                                 )
     rol_algorithm.run(
         rol_solver.rolvector,
         rol_solver.rolobjective,
-        rol_solver.bounds # only if we have a bounded problem
+        rol_solver.bounds
             )
     optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
+    # Save the optimal temperature_ic field 
+    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+            single_file=True, mode=FILE_CREATE,\
+                               comm=mesh.comm)
+    ckpt_T_ic.store(optimal_ic)
+    ckpt_T_ic.close()
+

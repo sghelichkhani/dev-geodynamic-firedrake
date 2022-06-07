@@ -62,6 +62,46 @@ def log(*args):
     if mesh.comm.rank == 0:
         PETSc.Sys.Print(*args)
 
+# Energy Equation Solver Parameters:
+energy_iterative = { 
+    "mat_type": "aij",
+    "snes_type": "ksponly",
+    "ksp_type": "gmres",
+    "ksp_rtol": 1e-5,
+    #"ksp_converged_reason": None,
+    "pc_type": "sor",
+}
+
+stokes_iterative = { 
+     "mat_type": "matfree",
+     "snes_type": "ksponly",
+     "ksp_type": "preonly",
+     #"ksp_converged_reason": None,
+     "pc_type": "fieldsplit",
+     "pc_fieldsplit_type": "schur",
+     "pc_fieldsplit_schur_type": "full",
+     "fieldsplit_0": {
+         "ksp_type": "cg",
+         "ksp_rtol": 1e-4,
+         #"ksp_converged_reason": None,
+         "pc_type": "python",
+         "pc_python_type": "firedrake.AssembledPC",
+         "assembled_pc_type": "gamg",
+         "assembled_pc_gamg_threshold": 0.01,
+         "assembled_pc_gamg_square_graph": 100,
+     },  
+    "fieldsplit_1": {
+        "ksp_type": "fgmres",
+        "ksp_rtol": 1e-3,
+        #"ksp_converged_reason": None,
+        "pc_type": "python",
+        "pc_python_type": "firedrake.MassInvPC",
+        "Mp_ksp_rtol": 1e-5,
+        "Mp_ksp_type": "cg",
+        "Mp_pc_type": "sor",
+    }   
+}
+
 # Geometry and Spatial Discretization:
 # Set up function spaces - currently using the P2P1 element pair :
 V = VectorFunctionSpace(mesh, "CG", 2)  # Velocity function space (vector)
@@ -98,9 +138,14 @@ def compute_timestep(u, current_delta_t):
 T_average = Function(Q, name="OneDimTemperature")
 T_deviatoric = Function(Q, name="TemperatureDev")
 
+# Setting Dirichlet boundary condition here
+# because we need it for a better computation average 
+bct_top = DirichletBC(Q, 0.0, (top_id))
+bct_base = DirichletBC(Q, 1.0, (bottom_id))
+bct_all = [bct_top, bct_base]
 # compute the average temperature
 ver_ave.extrapolate_layer_average(
-    T_average, ver_ave.get_layer_average(T_restart))
+    T_average, ver_ave.get_layer_average(T_restart), DirBCs=bct_all)
 
 # Definiting the old temperature field
 T_old = Function(Q, name="Temperature")
@@ -132,10 +177,6 @@ bcu_topbase = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
 bcu_rightleft = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
 all_bcu = [bcu_topbase, bcu_rightleft]
 
-# Setting Dirihlet BC for top and bottom of the temperature field
-bct_top = DirichletBC(Q, 0.0, (top_id))
-bct_base = DirichletBC(Q, 1.0, (bottom_id))
-
 # Pressure nullspace
 p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0),
                                     VectorSpaceBasis(constant=True)]
@@ -165,18 +206,14 @@ p_.rename('Pressure')
 log('global number of nodes P1 coeffs/nodes:', W.dim())
 
 # Setup problem and solver objects so we can reuse (cache) solver setup
-stokes_problem = NonlinearVariationalProblem(F_stokes, z,
-                                             bcs=all_bcu
-                                             )
-stokes_solver = NonlinearVariationalSolver(stokes_problem,
-                                           nullspace=p_nullspace,
-                                           transpose_nullspace=p_nullspace,
-                                           )
+stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=all_bcu)
+stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_iterative,
+     appctx={"mu": mu}, nullspace=p_nullspace, transpose_nullspace=p_nullspace,
+     near_nullspace=Z_near_nullspace
+)
 
-energy_problem = NonlinearVariationalProblem(F_energy, T_new,
-                                             bcs=[bct_base, bct_top])
-energy_solver = NonlinearVariationalSolver(energy_problem,
-                                           solver_parameters=None)
+energy_problem = NonlinearVariationalProblem(F_energy, T_new, bcs=bct_all)
+energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=energy_iterative)
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
@@ -214,7 +251,7 @@ state_vtu_file.write(u_, p_, T_deviatoric)
 
 # compute the average temperature
 ver_ave.extrapolate_layer_average(
-    T_average, ver_ave.get_layer_average(T_new), DirBCs=[bct_base, bct_top])
+    T_average, ver_ave.get_layer_average(T_new), DirBCs=bct_all)
 
 # Generating the reference temperature field for the adjoint
 checkpoint_data = CheckpointFile("Initial_State.h5", "w")

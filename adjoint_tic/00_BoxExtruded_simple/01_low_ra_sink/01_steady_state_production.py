@@ -6,7 +6,7 @@ from firedrake import *
 from mpi4py import MPI
 import math, numpy
 from firedrake.petsc import PETSc
-
+import numpy as np
 #########################################################################################################
 ################################## Some important constants etc...: #####################################
 #########################################################################################################
@@ -22,12 +22,21 @@ y_max = 1.0
 x_max = 1.0
 
 #  how many intervals along x/y directions 
-disc_n = 100
+disc_n = 150
+
+# gaussian functional
+def gaussian(r, r_0, sigma):
+    return np.exp(-0.5 * (r-r_0)**2/sigma**2)
+
+# 
+my_heights = 1/(1 + np.sum([gaussian(np.linspace(0, 1.0, disc_n), i, 0.1) for i in [0.0, 1.0]], axis=0))
+my_heights /= np.sum(my_heights)/y_max
 
 # and Interval mesh of unit size 
 mesh1d = IntervalMesh(disc_n, length_or_left=0.0, right=x_max) 
+
 # extruding the base mesh "mesh1d" in the third dimension
-mesh = ExtrudedMesh(mesh=mesh1d, layers=disc_n, layer_height=y_max/disc_n, extrusion_type='uniform', kernel=None, gdim=None)
+mesh = ExtrudedMesh(mesh=mesh1d, layers=disc_n, layer_height=my_heights, extrusion_type='uniform', kernel=None, gdim=None)
 
 # Top and bottom ids, for extruded mesh
 top_id, bottom_id = 'top', 'bottom'
@@ -219,16 +228,15 @@ p_.rename('Pressure')
 # Printing out the degrees of freedomG
 log('global number of nodes P1 coeffs/nodes:', W.dim())
 
-
 # Setup problem and solver objects so we can reuse (cache) solver setup
 stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=[bcu_topbase, bcu_rightleft])
-stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=None,
+stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_iterative,
      appctx={"mu": mu}, nullspace=p_nullspace, transpose_nullspace=p_nullspace,
      near_nullspace=Z_near_nullspace
 )
 
 energy_problem = NonlinearVariationalProblem(F_energy, T_new, bcs=[bct_base, bct_top])
-energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=Noneenergy_iterative)
+energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=energy_iterative)
 
 ## Checkpointing 
 #u_checkpoint = CheckpointFile("velocities.h5", 'w')
