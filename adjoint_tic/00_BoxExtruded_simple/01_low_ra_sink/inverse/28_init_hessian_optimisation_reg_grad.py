@@ -221,7 +221,6 @@ class InitHessian(ROL.InitBFGS):
         # regular linear solver
         self.solver = LinearSolver(assemble(self.M), solver_parameters=self.solver_params)
         
-
     @no_annotations
     def applyH0(self, Hv, v):
         self.solver.solve(Hv.dat[0], v.dat[0])
@@ -231,10 +230,12 @@ class InitHessian(ROL.InitBFGS):
 
     @no_annotations
     def applyB0(self, Bv, v):
-        Bv.dat[0] = assemble(dot(grad(Y), grad(v.dat[0])) * dx)
-        l = Bv.norm() / v.norm()
+        Bv.dat[0] = assemble(action(self.M, v.dat[0]))
+        l = Bv.norm() / v.norm() 
         Bv.scale(1 / l)
         self.scaleB0(Bv)
+
+
 
 
 class myStatusTest(ROL.StatusTest):
