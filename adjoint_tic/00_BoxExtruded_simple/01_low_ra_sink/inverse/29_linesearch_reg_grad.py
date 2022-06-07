@@ -3,7 +3,7 @@
 """
 from re import I
 import sys
-sys.path.append('../../')
+sys.path.append('../')
 
 from firedrake import *
 from mpi4py import MPI
@@ -24,7 +24,7 @@ dx = dx(degree=6)
 # logging.set_log_level(1)
 # logging.set_level(1)
 
-with CheckpointFile("../../Final_State.h5", "r") as T_ref_checkpoint:
+with CheckpointFile("../Final_State.h5", "r") as T_ref_checkpoint:
     mesh = T_ref_checkpoint.load_mesh("firedrake_default_extruded")
     final_state = T_ref_checkpoint.load_function(mesh, "Temperature")
     T_average = T_ref_checkpoint.load_function(mesh, "OneDimTemperature")
@@ -42,7 +42,8 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 70
+max_num_timesteps = 140
+simu_time = 0.0
 
 # Stokes related constants:
 Ra = Constant(1e6)  # Rayleigh Number
@@ -53,7 +54,7 @@ Ra = Constant(1e6)  # Rayleigh Number
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t = Constant(5e-6)  # Time-step
+delta_t = Constant(2e-6)  # Time-step
 kappa = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson
@@ -66,6 +67,46 @@ theta_ts = 0.5
 def log(*args):
     if mesh.comm.rank == 0:
         PETSc.Sys.Print(*args)
+
+# Energy Equation Solver Parameters:
+energy_iterative = {
+    "mat_type": "aij",
+    "snes_type": "ksponly",
+    "ksp_type": "gmres",
+    "ksp_rtol": 1e-5,
+    #"ksp_converged_reason": None,
+    "pc_type": "sor",
+}
+
+stokes_iterative = {
+     "mat_type": "matfree",
+     "snes_type": "ksponly",
+     "ksp_type": "preonly",
+     #"ksp_converged_reason": None,
+     "pc_type": "fieldsplit",
+     "pc_fieldsplit_type": "schur",
+     "pc_fieldsplit_schur_type": "full",
+     "fieldsplit_0": {
+         "ksp_type": "cg",
+         "ksp_rtol": 1e-4,
+         #"ksp_converged_reason": None,
+         "pc_type": "python",
+         "pc_python_type": "firedrake.AssembledPC",
+         "assembled_pc_type": "gamg",
+         "assembled_pc_gamg_threshold": 0.01,
+         "assembled_pc_gamg_square_graph": 100,
+     },
+    "fieldsplit_1": {
+        "ksp_type": "fgmres",
+        "ksp_rtol": 1e-3,
+        #"ksp_converged_reason": None,
+        "pc_type": "python",
+        "pc_python_type": "firedrake.MassInvPC",
+        "Mp_ksp_rtol": 1e-5,
+        "Mp_ksp_type": "cg",
+        "Mp_pc_type": "sor",
+    }
+}
 
 
 # Geometry and Spatial Discretization:
@@ -130,6 +171,13 @@ bct_base = DirichletBC(Q, 1.0, (bottom_id))
 p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0),
                                      VectorSpaceBasis(constant=True)]
                                     )
+# Generating near_nullspaces for GAMG:
+z_rotV = Function(V).interpolate(as_vector((-X[1], X[0])))
+nns_x = Function(V).interpolate(Constant([1., 0.]))
+nns_y = Function(V).interpolate(Constant([0., 1.]))
+V_near_nullspace = VectorSpaceBasis([nns_x, nns_y, z_rotV])
+V_near_nullspace.orthonormalize()
+Z_near_nullspace = MixedVectorSpaceBasis(Z, [V_near_nullspace, Z.sub(1)])
 
 # Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx\
@@ -138,15 +186,13 @@ F_energy = Y * ((T_new - T_old) / delta_t) * dx\
 
 # Setup problem and solver objects so we can reuse (cache) solver setup
 stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=all_u_bounds)
-stokes_solver = NonlinearVariationalSolver(stokes_problem,
-                                           nullspace=p_nullspace,
-                                           transpose_nullspace=p_nullspace,
-                                           )
+stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_iterative,
+     appctx={"mu": mu}, nullspace=p_nullspace, transpose_nullspace=p_nullspace,
+     near_nullspace=Z_near_nullspace
+)
 
-energy_problem = NonlinearVariationalProblem(F_energy, T_new,
-                                             bcs=[bct_base, bct_top]
-                                             )
-energy_solver = NonlinearVariationalSolver(energy_problem)
+energy_problem = NonlinearVariationalProblem(F_energy, T_new, bcs=[bct_base, bct_top])
+energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=energy_iterative)
 
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
@@ -169,11 +215,19 @@ functional = assemble(0.5*(T_new - final_state)**2 * dx)/assemble(0.5*(final_sta
 regularisation = assemble(0.5*(dot(grad(T_ic - T_average), grad(T_ic - T_average))) * dx)\
                 /assemble(0.5*(dot(grad(T_average), grad(T_average))) * dx)
 
-class myReducedFunctional(ReducedFunctional):
+
+class myReducedFunctional(ReducedFunctional, fname=None):
     def __init__(self, functional, controls, **kwargs):
         super().__init__(functional, control, **kwargs)
         self.fwd_cntr = 0
         self.adj_cntr = 0
+       
+        self.fname = None
+
+        if fname:
+            self.fname = fname
+            self.derfile = File(fname)
+            self.derfunction = Function(Q, name="gradient") 
 
     def __call__(self, values):
         pre_time = time.time()
@@ -185,6 +239,11 @@ class myReducedFunctional(ReducedFunctional):
     def derivative(self):
         pre_time = time.time()
         deriv = super().derivative(options={})
+
+        if self.fname:
+            self.derfunction.interpolate(deriv)
+            self.derfile.write(self.derfunction)
+
         self.adj_cntr += 1
         log(f"\tADJ # {self.adj_cntr} call took {time.time() - pre_time}")
         return deriv
@@ -205,6 +264,48 @@ T_ub.assign(1.0)
 # Optimise using ROL - note when doing Taylor test this can be turned off:
 minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 
+class InitHessian(ROL.InitBFGS):
+    def __init__(self, M, direct=True):
+        # 
+        super().__init__(M)
+
+        self.solver_params = {
+            "ksp_type": "gmres",
+            "pc_type": "lu",
+            "pc_factor_mat_solver_type": "mumps",
+            "mat_type": "aij",
+        }
+        # K matrix
+        self.M = dot(grad(Y), grad(TrialFunction(Q))) * dx
+
+        # regular linear solver
+        self.solver = LinearSolver(assemble(self.M), solver_parameters=self.solver_params)
+
+
+    @no_annotations
+    def applyH0(self, Hv, v):
+        
+        # use the orginical precodure to get the scaling right
+        super().applyH0(Hv, v)
+        
+        # see how big the scaling was supposed to be
+        birth_norm = Hv.norm()
+
+        # solve for the inverse hessian times gradient
+        # we replace the gradient with it
+        self.solver.solve(Hv.dat[0], v.dat[0])
+      
+        # find the new norma and scale accordingly 
+        modified_norm = Hv.norm()
+        l = birth_norm/modified_norm
+        Hv.scale(l)
+
+    @no_annotations
+    def applyB0(self, Bv, v):
+        Bv.dat[0] = assemble(action(self.M, v.dat[0])* dx)
+        l = Bv.norm() / v.norm()
+        Bv.scale(1 / l)
+        self.scaleB0(Bv)
 
 class myStatusTest(ROL.StatusTest):
     def __init__(self, params, vector):
@@ -252,52 +353,29 @@ class myStatusTest(ROL.StatusTest):
 params = {
         'General': {
               'Print Verbosity': 1,
-              'Output Level': 3,
-              'Krylov': {   # These are needed for our
-                            # solution of the hessian I guess
-                    "Iteration Limit": 10,
-                    "Absolute Tolerance": 1e-4,
-                    "Relative Tolerance": 1e-2,
-                    },
+              'Output Level': 1,
               'Secant': {'Type': 'Limited-Memory BFGS',
                          'Maximum Storage': 20,
                          'Use as Hessian': True,
                          "Barzilai-Borwein": 1},
                     },
         'Step': {
-           'Type': 'Trust Region',  # 'Line Search',
-           'Trust Region': {
-                "Lin-More":     {
-                    "Maximum Number of Minor Iterations": 10,
-                    "Sufficient Decrease Parameter":      1e-2,
-                    "Relative Tolerance Exponent":        1.0,
-                    "Cauchy Point": {
-                        "Maximum Number of Reduction Steps": 10,
-                        "Maximum Number of Expansion Steps": 10,
-                        "Initial Step Size":                 1.0,
-                        "Normalize Initial Step Size":       False,
-                        "Reduction Rate":                    0.1,
-                        "Expansion Rate":                    10.0,
-                        "Decrease Tolerance":                1e-8,
-                                    },
-                        "Projected Search": {
-                                "Backtracking Rate": 0.5,
-                                "Maximum Number of Steps": 20,
-                                            },
-                                },
-                #  Subproblem Model could be "Kelley-Sachs",
-                "Subproblem Model":                     "Lin-More",
-                "Initial Radius":                       0.005,
-                "Maximum Radius":                       1e20,
-                "Step Acceptance Threshold":            0.05,
-                "Radius Shrinking Threshold":           0.05,
-                "Radius Growing Threshold":             0.9,
-                "Radius Shrinking Rate (Negative rho)": 0.0625,
-                "Radius Shrinking Rate (Positive rho)": 0.25,
-                "Radius Growing Rate":                  2.5,
-                "Sufficient Decrease Parameter":        1.e-2,
-                "Safeguard Size":                       100,
-                            },
+            'Type': 'Line Search',  # 'Line Search', 'Trust Region'
+            'Line Search': {
+                            'Initial Step Size' : 1.0,
+                            'Line-Search Method': {
+                                                    'Type' : 'Cubic Interpolation',
+                                                  },
+                            'Descent Method':{
+                                              'Type': 'Quasi-Newton Method',
+                                             },
+                            'Sufficient Decrease Tolerance' : 1e-4,
+                            'Curvature Condition':{
+                                                   'Type' : 'Strong Wolfe Conditions',
+                                                   'General Parameter': 0.9,
+                                                   'Generalized Wolfe Parameter' : 0.6,
+                                                  }
+                           }
                 },
         'Status Test': {
             'Gradient Tolerance': 0,
@@ -306,18 +384,25 @@ params = {
         }
 
 
-rol_solver = ROLSolver(minp, params)
-params = ROL.ParameterList(params, "Parameters")
-status_test = myStatusTest(params, rol_solver.rolvector)
-
-secant = ROL.InitBFGS(20)
-rol_algorithm = ROL.LinMoreAlgorithm(params, secant)
-rol_algorithm.setStatusTest(status_test, False)
-
 with stop_annotating():
+    rol_solver = ROLSolver(minp, params)
+    params = ROL.ParameterList(params, "Parameters")
+    rol_secant = myInitBFGS(5) # maximum storage
+    #rol_secant = InitHessian(5) # maximum storage
+    rol_step = ROL.LineSearchStep(params, rol_secant)
+    rol_status = ROL.StatusTest(params)
+    rol_algorithm = ROL.Algorithm(rol_step, rol_status
+                                 )
     rol_algorithm.run(
         rol_solver.rolvector,
         rol_solver.rolobjective,
-        rol_solver.bounds # only if we have a bounded problem
+        rol_solver.bounds
             )
     optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
+    # Save the optimal temperature_ic field 
+    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+            single_file=True, mode=FILE_CREATE,\
+                               comm=mesh.comm)
+    ckpt_T_ic.store(optimal_ic)
+    ckpt_T_ic.close()
+

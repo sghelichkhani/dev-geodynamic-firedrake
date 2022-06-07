@@ -379,7 +379,7 @@ params = {
                 },
         'Status Test': {
             'Gradient Tolerance': 0,
-            'Iteration Limit': 5,
+            'Iteration Limit': 50,
                         }
         }
 
