@@ -21,7 +21,7 @@ dx = dx(degree=6)
 # logging.set_log_level(1)
 # logging.set_level(1)
 
-with CheckpointFile("../../Final_State.h5", "r") as T_ref_checkpoint:
+with CheckpointFile("../Final_State.h5", "r") as T_ref_checkpoint:
     mesh = T_ref_checkpoint.load_mesh("firedrake_default_extruded")
     final_state = T_ref_checkpoint.load_function(mesh, "Temperature")
     final_state.rename("final_state")
