@@ -23,7 +23,7 @@ with CheckpointFile("Initial_State.h5", "r") as t_ic_checkpoint:
 
 # Construct the LayerAveraging object, this will be used
 # to compute radial averages
-ver_ave = LayerAveraging(mesh, numpy.linspace(0, 1.0, 100),
+ver_ave = LayerAveraging(mesh, numpy.linspace(0, 1.0, 300),
                          cartesian=True, quad_degree=6
                          )
 
@@ -42,14 +42,14 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 70
+max_num_timesteps = 140
 simu_time = 0.0
 
 # Stokes related constants:
 Ra = Constant(1e6)  # Rayleigh Number
 
 # Temperature related constants:
-delta_t = Constant(5e-6)  # Time-step
+delta_t = Constant(2e-6)  # Time-step
 kappa = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson
@@ -62,6 +62,46 @@ theta_ts = 0.5
 def log(*args):
     if mesh.comm.rank == 0:
         PETSc.Sys.Print(*args)
+
+# Energy Equation Solver Parameters:
+energy_iterative = {
+    "mat_type": "aij",
+    "snes_type": "ksponly",
+    "ksp_type": "gmres",
+    "ksp_rtol": 1e-5,
+    #"ksp_converged_reason": None,
+    "pc_type": "sor",
+}
+
+stokes_iterative = {
+     "mat_type": "matfree",
+     "snes_type": "ksponly",
+     "ksp_type": "preonly",
+     #"ksp_converged_reason": None,
+     "pc_type": "fieldsplit",
+     "pc_fieldsplit_type": "schur",
+     "pc_fieldsplit_schur_type": "full",
+     "fieldsplit_0": {
+         "ksp_type": "cg",
+         "ksp_rtol": 1e-4,
+         #"ksp_converged_reason": None,
+         "pc_type": "python",
+         "pc_python_type": "firedrake.AssembledPC",
+         "assembled_pc_type": "gamg",
+         "assembled_pc_gamg_threshold": 0.01,
+         "assembled_pc_gamg_square_graph": 100,
+     },
+    "fieldsplit_1": {
+        "ksp_type": "fgmres",
+        "ksp_rtol": 1e-3,
+        #"ksp_converged_reason": None,
+        "pc_type": "python",
+        "pc_python_type": "firedrake.MassInvPC",
+        "Mp_ksp_rtol": 1e-5,
+        "Mp_ksp_type": "cg",
+        "Mp_pc_type": "sor",
+    }
+}
 
 
 # Geometry and Spatial Discretization:
@@ -117,7 +157,6 @@ mu = Constant(1.0)  # Constant viscosity
 def tau(u):
     return mu * (grad(u) + transpose(grad(u)))
 
-
 # Stokes in weak form
 F_stokes = inner(grad(N), tau(u)) * dx - div(N)*p * dx
 F_stokes += - (dot(N, yhat) * Ra * T_theta) * dx
@@ -136,6 +175,13 @@ bct_base = DirichletBC(Q, 1.0, (bottom_id))
 p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0),
                                     VectorSpaceBasis(constant=True)]
                                     )
+# Generating near_nullspaces for GAMG:
+z_rotV = Function(V).interpolate(as_vector((-X[1], X[0])))
+nns_x = Function(V).interpolate(Constant([1., 0.]))
+nns_y = Function(V).interpolate(Constant([0., 1.]))
+V_near_nullspace = VectorSpaceBasis([nns_x, nns_y, z_rotV])
+V_near_nullspace.orthonormalize()
+Z_near_nullspace = MixedVectorSpaceBasis(Z, [V_near_nullspace, Z.sub(1)])
 
 # Temperature, advection-diffusion equation
 F_energy = Y * ((T_new - T_old) / delta_t) * dx\
@@ -152,19 +198,14 @@ p_.rename('Pressure')
 log('global number of nodes P1 coeffs/nodes:', W.dim())
 
 # Setup problem and solver objects so we can reuse (cache) solver setup
-stokes_problem = NonlinearVariationalProblem(F_stokes, z,
-                                             bcs=all_bcu
-                                             )
-stokes_solver = NonlinearVariationalSolver(stokes_problem,
-                                           solver_parameters=None,
-                                           nullspace=p_nullspace,
-                                           transpose_nullspace=p_nullspace,
-                                           )
+stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=all_bcu)
+stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_iterative,
+     appctx={"mu": mu}, nullspace=p_nullspace, transpose_nullspace=p_nullspace,
+     near_nullspace=Z_near_nullspace
+)
 
-energy_problem = NonlinearVariationalProblem(F_energy, T_new,
-                                             bcs=[bct_base, bct_top])
-energy_solver = NonlinearVariationalSolver(energy_problem,
-                                           solver_parameters=None)
+energy_problem = NonlinearVariationalProblem(F_energy, T_new, bcs=[bct_base, bct_top])
+energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=energy_iterative)
 
 # Checkpointing
 u_tave_checkpoint = CheckpointFile("Ref_velocities.h5", 'w')
@@ -198,7 +239,7 @@ for timestep in range(0, max_num_timesteps):
 
     # Write output:
     if timestep % 10 == 0:
-        log(f"Output: {simu_time:.3e}, {timestep:.3e}")
+        log(f"Output: {simu_time:.3e}, {timestep:.0f}")
         T_deviatoric.interpolate(T_new - T_average)
         state_vtu_file.write(u_, p_, T_deviatoric)
 

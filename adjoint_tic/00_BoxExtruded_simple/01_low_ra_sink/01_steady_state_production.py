@@ -228,7 +228,6 @@ p_.rename('Pressure')
 # Printing out the degrees of freedomG
 log('global number of nodes P1 coeffs/nodes:', W.dim())
 
-
 # Setup problem and solver objects so we can reuse (cache) solver setup
 stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=[bcu_topbase, bcu_rightleft])
 stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_iterative,
