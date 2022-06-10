@@ -28,15 +28,15 @@ disc_n = 150
 def gaussian(r, r_0, sigma):
     return np.exp(-0.5 * (r-r_0)**2/sigma**2)
 
-# 
-my_heights = 1/(1 + np.sum([gaussian(np.linspace(0, 1.0, disc_n), i, 0.1) for i in [0.0, 1.0]], axis=0))
-my_heights /= np.sum(my_heights)/y_max
-
+## 
+#my_heights = 1/(1 + np.sum([gaussian(np.linspace(0, 1.0, disc_n), i, 0.1) for i in [0.0, 1.0]], axis=0))
+#my_heights /= np.sum(my_heights)/y_max
+#
 # and Interval mesh of unit size 
 mesh1d = IntervalMesh(disc_n, length_or_left=0.0, right=x_max) 
 
 # extruding the base mesh "mesh1d" in the third dimension
-mesh = ExtrudedMesh(mesh=mesh1d, layers=disc_n, layer_height=my_heights, extrusion_type='uniform', kernel=None, gdim=None)
+mesh = ExtrudedMesh(mesh=mesh1d, layers=disc_n, layer_height=y_max/disc_n, extrusion_type='uniform', kernel=None, gdim=None)
 
 # Top and bottom ids, for extruded mesh
 top_id, bottom_id = 'top', 'bottom'

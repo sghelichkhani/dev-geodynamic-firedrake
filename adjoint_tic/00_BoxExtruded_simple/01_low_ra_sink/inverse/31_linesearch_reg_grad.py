@@ -16,7 +16,7 @@ import ROL
 import time
 
 alpha = 0.0005
-simu_name = f"11_reg_grad_{alpha}"
+simu_name = f"31_cubic_reg_grad_{alpha}"
 
 # Quadrature degree:
 dx = dx(degree=6)
@@ -216,12 +216,12 @@ regularisation = assemble(0.5*(dot(grad(T_ic - T_average), grad(T_ic - T_average
                 /assemble(0.5*(dot(grad(T_average), grad(T_average))) * dx)
 
 
-class myReducedFunctional(ReducedFunctional, fname=None):
-    def __init__(self, functional, controls, **kwargs):
+class myReducedFunctional(ReducedFunctional):
+    def __init__(self, functional, controls, fname=None, **kwargs):
         super().__init__(functional, control, **kwargs)
         self.fwd_cntr = 0
         self.adj_cntr = 0
-       
+
         self.fname = None
 
         if fname:
@@ -251,7 +251,7 @@ class myReducedFunctional(ReducedFunctional, fname=None):
 
 # Defining the object for pyadjoint
 reduced_functional = myReducedFunctional(functional + alpha * regularisation,
-                                         control
+                                         control, fname=f"visual_{simu_name}/gradient.pvd"
                                         )
 
 # Set up bounds, which will later be used to
@@ -387,7 +387,7 @@ params = {
 with stop_annotating():
     rol_solver = ROLSolver(minp, params)
     params = ROL.ParameterList(params, "Parameters")
-    rol_secant = myInitBFGS(5) # maximum storage
+    rol_secant = ROL.InitBFGS(5) # maximum storage
     #rol_secant = InitHessian(5) # maximum storage
     rol_step = ROL.LineSearchStep(params, rol_secant)
     rol_status = ROL.StatusTest(params)

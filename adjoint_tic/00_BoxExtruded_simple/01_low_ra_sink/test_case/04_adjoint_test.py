@@ -16,6 +16,7 @@ import numpy as np
 # Quadrature degree:
 dx = dx(degree=6)
 
+
 with CheckpointFile("./Final_State.h5", "r") as T_ref_checkpoint:
     mesh = T_ref_checkpoint.load_mesh("firedrake_default_extruded")
     final_state = T_ref_checkpoint.load_function(mesh, "Temperature")
@@ -173,7 +174,7 @@ solve(Y*TrialFunction(Q)*dx == Y*T_ic*dx, T_ic, bcs=[bct_base, bct_top])
 
 # Initialise functional
 functional = assemble(0.5*(T_new - final_state)**2 * dx)
-regularisation = assemble(0.5*(inner(grad(T_ic), grad(T_ic))) * dx)
+regularisation = assemble(0.5*(inner(grad(T_ic-T_average), grad(T_ic-T_average))) * dx)
 
 
 # Defining the object for pyadjoint, we use regulatisation seperately

@@ -92,7 +92,7 @@ class LayerAveraging:
         self._assemble_rhs(T)
         return scipy.linalg.solveh_banded(self.mass, self.rhs, lower=True)
 
-    def extrapolate_layer_average(self, u, avg, DirBCs=None):
+    def extrapolate_layer_average(self, u, avg):
         """Given an array of layer averages (such as returned by get_layer_average(), extrapolate these to Function u"""
         # Make sure the field is empty
         u.assign(0.0)
@@ -115,7 +115,3 @@ class LayerAveraging:
         value.assign(avg[-1])
         u.interpolate(u + value*Phi)
 
-        # todo: Look at why at the boundaries we have inaccurate values
-        if DirBCs:
-            for bc in DirBCs:
-                bc.apply(u)

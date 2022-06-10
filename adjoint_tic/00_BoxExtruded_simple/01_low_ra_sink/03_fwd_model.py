@@ -9,6 +9,12 @@ import math, numpy
 from firedrake.petsc import PETSc
 from lib_averaging import LayerAveraging
 
+# defining a mesh to define average
+x_max = 1.0
+#  how many intervals along x/y directions 
+disc_n = 150
+mesh1d = IntervalMesh(disc_n, length_or_left=0.0, right=x_max) 
+
 # Some important constants etc
 # Quadrature degree:
 dx = dx(degree=6)
@@ -42,14 +48,14 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 140
+max_num_timesteps = 80
 simu_time = 0.0
 
 # Stokes related constants:
 Ra = Constant(1e6)  # Rayleigh Number
 
 # Temperature related constants:
-delta_t = Constant(2e-6)  # Time-step
+delta_t = Constant(4e-6)  # Time-step
 kappa = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson
@@ -109,6 +115,7 @@ stokes_iterative = {
 V = VectorFunctionSpace(mesh, "CG", 2)  # Velocity function space (vector)
 W = FunctionSpace(mesh, "CG", 1)  # Pressure function space (scalar)
 Q = FunctionSpace(mesh, "CG", 2)  # Temperature function space (scalar)
+Qlayer = FunctionSpace(mesh1d, "CG", 2)  # Temperature function space on the 1D mesh 
 
 # Set up mixed function space and associated test functions:
 Z = MixedFunctionSpace([V, W])
@@ -137,8 +144,25 @@ def compute_timestep(u, current_delta_t):
     return tstep
 
 
+# helper function to compute horizontal layer averages
+Tlayer = Function(Qlayer, name='LayerTemp')  # stores values of temp in one layer
+
 # T advection diffusion equation Prerequisites:
 T_average = Function(Q, name="OneDimTemperature")
+
+
+# A layer average to define temperature
+def layer_average(T):
+    vnodes = disc_n*2 + 1  # n/o Q2 nodes in the vertical
+    hnodes = Qlayer.dim()  # n/o Q2 nodes in each horizontal layer
+    assert hnodes*vnodes == Q.dim()
+    for i in range(vnodes):
+        Tlayer.dat.data[:] = T.dat.data_ro[i::vnodes]
+        # NOTE: this integral is performed on mesh2d
+        T_average.dat.data[i::vnodes] = assemble(Tlayer*dx) 
+    return T_average
+
+# Temperature
 T_deviatoric = Function(Q, name="TemperatureDev")
 
 # Defining temperature field and initialise it with old temperature
@@ -213,8 +237,7 @@ u_tave_checkpoint.save_mesh(mesh)
 
 
 # Compute the average radial temperature profile
-ver_ave.extrapolate_layer_average(
-    T_average, ver_ave.get_layer_average(T_new), DirBCs=[bct_base, bct_top])
+layer_average(T_new)
 
 # Write the average temperature out
 # This we can use for regularisation
@@ -233,9 +256,8 @@ for timestep in range(0, max_num_timesteps):
     # writing out the velocity field, which will be used for reconstructions
     u_tave_checkpoint.save_function(u_, idx=timestep)
 
-    # compute the average temperature
-    ver_ave.extrapolate_layer_average(
-        T_average, ver_ave.get_layer_average(T_new), DirBCs=[bct_base, bct_top])
+    # compute average
+    layer_average(T_new)
 
     # Write output:
     if timestep % 10 == 0:
@@ -262,8 +284,7 @@ for timestep in range(0, max_num_timesteps):
 u_tave_checkpoint.close()
 
 # compute the average temperature
-ver_ave.extrapolate_layer_average(
-    T_average, ver_ave.get_layer_average(T_new), DirBCs=[bct_base, bct_top])
+layer_average(T_new)
 
 # Output the last state
 T_deviatoric.interpolate(T_new - T_average)

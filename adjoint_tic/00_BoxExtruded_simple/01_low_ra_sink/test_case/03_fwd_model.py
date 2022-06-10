@@ -23,7 +23,7 @@ with CheckpointFile("Initial_State.h5", "r") as t_ic_checkpoint:
 
 # Construct the LayerAveraging object, this will be used
 # to compute radial averages
-ver_ave = LayerAveraging(mesh, numpy.linspace(0, 1.0, 300),
+ver_ave = LayerAveraging(mesh, numpy.linspace(0, 1.0, 150),
                          cartesian=True, quad_degree=6
                          )
 
@@ -109,6 +109,7 @@ stokes_iterative = {
 V = VectorFunctionSpace(mesh, "CG", 2)  # Velocity function space (vector)
 W = FunctionSpace(mesh, "CG", 1)  # Pressure function space (scalar)
 Q = FunctionSpace(mesh, "CG", 2)  # Temperature function space (scalar)
+Q1 = FunctionSpace(mesh, "CG", 1)  # Temperature function space (scalar)
 
 # Set up mixed function space and associated test functions:
 Z = MixedFunctionSpace([V, W])
@@ -138,7 +139,8 @@ def compute_timestep(u, current_delta_t):
 
 
 # T advection diffusion equation Prerequisites:
-T_average = Function(Q, name="OneDimTemperature")
+T_average_Q1 = Function(Q1, name="OneDimTemperatureQ1")
+T_average_Q2 = Function(Q, name="OneDimTemperature")
 T_deviatoric = Function(Q, name="TemperatureDev")
 
 # Defining temperature field and initialise it with old temperature
@@ -214,11 +216,13 @@ u_tave_checkpoint.save_mesh(mesh)
 
 # Compute the average radial temperature profile
 ver_ave.extrapolate_layer_average(
-    T_average, ver_ave.get_layer_average(T_new), DirBCs=[bct_base, bct_top])
+    T_average_Q1, ver_ave.get_layer_average(T_new))
+
+T_average_Q2.project(T_average_Q1, bcs=[bct_base, bct_top])
 
 # Write the average temperature out
 # This we can use for regularisation
-u_tave_checkpoint.save_function(T_average, idx=0)
+u_tave_checkpoint.save_function(T_average_Q2, idx=0)
 
 # Write functions out in VTK format
 state_vtu_file = File('vis_ref_simulation/state.pvd')
@@ -235,12 +239,14 @@ for timestep in range(0, max_num_timesteps):
 
     # compute the average temperature
     ver_ave.extrapolate_layer_average(
-        T_average, ver_ave.get_layer_average(T_new), DirBCs=[bct_base, bct_top])
+        T_average_Q1, ver_ave.get_layer_average(T_new))
+
+    T_average_Q2.project(T_average_Q1, bcs=[bct_base, bct_top])
 
     # Write output:
     if timestep % 10 == 0:
         log(f"Output: {simu_time:.3e}, {timestep:.0f}")
-        T_deviatoric.interpolate(T_new - T_average)
+        T_deviatoric.interpolate(T_new - T_average_Q2)
         state_vtu_file.write(u_, p_, T_deviatoric)
 
     # Temperature system:
@@ -263,15 +269,15 @@ u_tave_checkpoint.close()
 
 # compute the average temperature
 ver_ave.extrapolate_layer_average(
-    T_average, ver_ave.get_layer_average(T_new), DirBCs=[bct_base, bct_top])
+    T_average_Q1, ver_ave.get_layer_average(T_new))
 
 # Output the last state
-T_deviatoric.interpolate(T_new - T_average)
+T_deviatoric.interpolate(T_new - T_average_Q2)
 state_vtu_file.write(u_, p_, T_deviatoric)
 
 # Generating the reference temperature field for the adjoint
 checkpoint_data = CheckpointFile("Final_State.h5", "w")
 checkpoint_data.save_mesh(mesh)
 checkpoint_data.save_function(T_new)
-checkpoint_data.save_function(T_average)
+checkpoint_data.save_function(T_average_Q2)
 checkpoint_data.close()

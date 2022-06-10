@@ -10,7 +10,7 @@ from mpi4py import MPI
 from firedrake.petsc import PETSc
 from lib_averaging import LayerAveraging
 from firedrake_adjoint import *
-from pyadjoint import MinimizationProblem, ROLSolver
+from pyadjoint import MinimizationProblem, ROLSolver, ROLVector
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
 import ROL 
 import time
@@ -42,7 +42,7 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 140
+max_num_timesteps = 0  
 simu_time = 0.0
 
 # Stokes related constants:
@@ -54,7 +54,7 @@ Ra = Constant(1e6)  # Rayleigh Number
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t = Constant(2e-6)  # Time-step
+delta_t = Constant(4.0e-6)  # Time-step
 kappa = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson
@@ -74,7 +74,7 @@ energy_iterative = {
     "snes_type": "ksponly",
     "ksp_type": "gmres",
     "ksp_rtol": 1e-5,
-    #"ksp_converged_reason": None,
+    "ksp_converged_reason": None,
     "pc_type": "sor",
 }
 
@@ -82,14 +82,14 @@ stokes_iterative = {
      "mat_type": "matfree",
      "snes_type": "ksponly",
      "ksp_type": "preonly",
-     #"ksp_converged_reason": None,
+     "ksp_converged_reason": None,
      "pc_type": "fieldsplit",
      "pc_fieldsplit_type": "schur",
      "pc_fieldsplit_schur_type": "full",
      "fieldsplit_0": {
          "ksp_type": "cg",
          "ksp_rtol": 1e-4,
-         #"ksp_converged_reason": None,
+         "ksp_converged_reason": None,
          "pc_type": "python",
          "pc_python_type": "firedrake.AssembledPC",
          "assembled_pc_type": "gamg",
@@ -99,7 +99,7 @@ stokes_iterative = {
     "fieldsplit_1": {
         "ksp_type": "fgmres",
         "ksp_rtol": 1e-3,
-        #"ksp_converged_reason": None,
+        "ksp_converged_reason": None,
         "pc_type": "python",
         "pc_python_type": "firedrake.MassInvPC",
         "Mp_ksp_rtol": 1e-5,
@@ -210,39 +210,73 @@ for timestep in range(0, max_num_timesteps):
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
 
+
+
+grad_field = Function(Q, name="AnalyticalDer").interpolate(-div(grad(T_ic-T_average)))
+
+#invmass = Function(Q, name="InverseMass")
+#mass_form = Y*TrialFunction(Q)*dx
+#
+#mass_action_form = assemble(action(mass_form, Constant(1)))
+#
+#ls = LinearSolver(assemble(mass_form))
+#ls.solve(invmass, interpolate(Constant(1.0), Q))
+#
+
+myfi = File("mass.pvd")
+#myfi.write(mass_action_form, invmass, grad_field)
+myfi.write(grad_field)
+
 # Initialise functional
-functional = assemble(0.5*(T_new - final_state)**2 * dx)/assemble(0.5*(final_state)**2 * dx)
-regularisation = assemble(0.5*(dot(grad(T_ic - T_average), grad(T_ic - T_average))) * dx)\
-                /assemble(0.5*(dot(grad(T_average), grad(T_average))) * dx)
+functional = assemble(0.5*(T_new - final_state)**2 * dx)#/assemble(0.5*(final_state)**2 * dx)
+regularisation = assemble(0.5*(inner(grad(T_ic), grad(T_ic))) * dx)#\
+             #/assemble(0.5*(dot(grad(T_average), grad(T_average))) * dx)
+#regularisation = assemble(0.5*(T_ic - T_average)**2 * dx)#\
 
 
-class myReducedFunctional(ReducedFunctional, fname=None):
-    def __init__(self, functional, controls, **kwargs):
+class myReducedFunctional(ReducedFunctional):
+    def __init__(self, functional, controls, fname=None, **kwargs):
         super().__init__(functional, control, **kwargs)
-        self.fwd_cntr = 0
-        self.adj_cntr = 0
-       
+        self.fwd_cntr = 0 
+        self.adj_cntr = 0 
+    
         self.fname = None
 
         if fname:
             self.fname = fname
-            self.derfile = File(fname)
-            self.derfunction = Function(Q, name="gradient") 
+            self.derfile = File(fname.replace(".pvd", "_der.pvd"))
+            self.derFunction = Function(Q, name="gradient")
+            self.derRol = ROLVector(self.derFunction, inner_product="L2")
+
+
+            self.valuefile = File(fname.replace(".pvd", "_ctrl.pvd"))
+            self.valuefunction = Function(Q, name="control") 
+
+            self.valueCheckPoint = CheckpointFile(fname.replace(".pvd", ".h5"), 'w')
+            self.valueCheckPoint.save_mesh(mesh)
+
 
     def __call__(self, values):
+        # writing the control value to file
+        if self.fname:
+            self.valuefunction.interpolate(values[0])
+            self.valuefile.write(self.valuefunction)
+            self.valueCheckPoint.save_function(values[0], idx=self.fwd_cntr)
+
         pre_time = time.time()
         val = super().__call__(values)
         self.fwd_cntr += 1
         log(f"\tFWD # {self.fwd_cntr} call took {time.time() - pre_time}")
-        return val
+        return val 
 
     def derivative(self):
         pre_time = time.time()
-        deriv = super().derivative(options={})
+        deriv = super().derivative()
 
         if self.fname:
-            self.derfunction.interpolate(deriv)
-            self.derfile.write(self.derfunction)
+            self.derRol.dat = self.derRol.riesz_map(deriv)
+            self.derFunction.interpolate(self.derRol.dat[0])
+            self.derfile.write(self.derFunction)
 
         self.adj_cntr += 1
         log(f"\tADJ # {self.adj_cntr} call took {time.time() - pre_time}")
@@ -250,10 +284,13 @@ class myReducedFunctional(ReducedFunctional, fname=None):
 
 
 # Defining the object for pyadjoint
-reduced_functional = myReducedFunctional(functional + alpha * regularisation,
-                                         control
+reduced_functional = myReducedFunctional(regularisation, 
+                                         control, fname=f"visual_{simu_name}/objective.pvd"
                                         )
 
+reduced_functional([T_ic])
+reduced_functional.derivative()
+import sys;exit()
 # Set up bounds, which will later be used to
 # enforce boundary conditions in inversion:
 T_lb = Function(Q, name="LB_Temperature")
@@ -355,14 +392,14 @@ params = {
               'Print Verbosity': 1,
               'Output Level': 1,
               'Secant': {'Type': 'Limited-Memory BFGS',
-                         'Maximum Storage': 20,
+                         'Maximum Storage': 5,
                          'Use as Hessian': True,
                          "Barzilai-Borwein": 1},
                     },
         'Step': {
             'Type': 'Line Search',  # 'Line Search', 'Trust Region'
             'Line Search': {
-                            'Initial Step Size' : 1.0,
+                            'Initial Step Size' : 0.5,
                             'Line-Search Method': {
                                                     'Type' : 'Cubic Interpolation',
                                                   },
@@ -384,25 +421,25 @@ params = {
         }
 
 
-with stop_annotating():
-    rol_solver = ROLSolver(minp, params)
-    params = ROL.ParameterList(params, "Parameters")
-    rol_secant = myInitBFGS(5) # maximum storage
-    #rol_secant = InitHessian(5) # maximum storage
-    rol_step = ROL.LineSearchStep(params, rol_secant)
-    rol_status = ROL.StatusTest(params)
-    rol_algorithm = ROL.Algorithm(rol_step, rol_status
-                                 )
-    rol_algorithm.run(
-        rol_solver.rolvector,
-        rol_solver.rolobjective,
-        rol_solver.bounds
-            )
-    optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
-    # Save the optimal temperature_ic field 
-    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
-            single_file=True, mode=FILE_CREATE,\
-                               comm=mesh.comm)
-    ckpt_T_ic.store(optimal_ic)
-    ckpt_T_ic.close()
-
+#with stop_annotating():
+#    rol_solver = ROLSolver(minp, params)
+#    params = ROL.ParameterList(params, "Parameters")
+#    rol_secant = ROL.InitBFGS(5) # maximum storage
+#    #rol_secant = InitHessian(5) # maximum storage
+#    rol_step = ROL.LineSearchStep(params, rol_secant)
+#    rol_status = ROL.StatusTest(params)
+#    rol_algorithm = ROL.Algorithm(rol_step, rol_status
+#                                 )
+#    rol_algorithm.run(
+#        rol_solver.rolvector,
+#        rol_solver.rolobjective,
+#        rol_solver.bounds
+#            )
+#    optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
+#    # Save the optimal temperature_ic field 
+#    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+#            single_file=True, mode=FILE_CREATE,\
+#                               comm=mesh.comm)
+#    ckpt_T_ic.store(optimal_ic)
+#    ckpt_T_ic.close()
+#

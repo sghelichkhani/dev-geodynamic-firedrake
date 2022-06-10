@@ -209,6 +209,8 @@ for timestep in range(0, max_num_timesteps):
 # Initialise functional
 functional = assemble(0.5*(T_new - final_state)**2 * dx)
 
+class myROLObjective()
+
 
 class myReducedFunctional(ReducedFunctional, fname=None):
     def __init__(self, functional, controls, **kwargs):
@@ -220,10 +222,18 @@ class myReducedFunctional(ReducedFunctional, fname=None):
 
         if fname:
             self.fname = fname
-            self.derfile = File(fname)
+            self.derfile = File(fname.replace(".pvd", "_der.pvd"))
             self.derfunction = Function(Q, name="gradient") 
 
+            self.valuefile = File(fname.replace(".pvd", "_ctrl.pvd"))
+            self.valuefunction = Function(Q, name="control") 
+
     def __call__(self, values):
+        # writing the control value to file
+        if self.name:
+            self.valuefunction.interpolate(values.dat[0])
+            self.valuefile.write(self.valuefunction)
+
         pre_time = time.time()
         val = super().__call__(values)
         self.fwd_cntr += 1
@@ -235,7 +245,7 @@ class myReducedFunctional(ReducedFunctional, fname=None):
         deriv = super().derivative(options={})
 
         if self.fname:
-            self.derfunction.interpolate(deriv)
+            self.derfunction.interpolate(deriv.riesz_map)
             self.derfile.write(self.derfunction)
 
         self.adj_cntr += 1
