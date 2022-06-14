@@ -27,11 +27,6 @@ with CheckpointFile("Initial_State.h5", "r") as t_ic_checkpoint:
     mesh = t_ic_checkpoint.load_mesh("firedrake_default_extruded")
     T_old = t_ic_checkpoint.load_function(mesh, "Temperature")
 
-# Construct the LayerAveraging object, this will be used
-# to compute radial averages
-ver_ave = LayerAveraging(mesh, numpy.linspace(0, 1.0, 300),
-                         cartesian=True, quad_degree=6
-                         )
 
 # Top and bottom ids, for extruded mesh
 top_id, bottom_id = 'top', 'bottom'
@@ -48,14 +43,14 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 80
+max_num_timesteps = 150
 simu_time = 0.0
 
 # Stokes related constants:
 Ra = Constant(1e6)  # Rayleigh Number
 
 # Temperature related constants:
-delta_t = Constant(4e-6)  # Time-step
+delta_t = Constant(1e-6)  # Time-step
 kappa = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson
@@ -89,7 +84,7 @@ stokes_iterative = {
      "pc_fieldsplit_schur_type": "full",
      "fieldsplit_0": {
          "ksp_type": "cg",
-         "ksp_rtol": 1e-4,
+         "ksp_rtol": 1e-5,
          #"ksp_converged_reason": None,
          "pc_type": "python",
          "pc_python_type": "firedrake.AssembledPC",
@@ -99,7 +94,7 @@ stokes_iterative = {
      },
     "fieldsplit_1": {
         "ksp_type": "fgmres",
-        "ksp_rtol": 1e-3,
+        "ksp_rtol": 1e-4,
         #"ksp_converged_reason": None,
         "pc_type": "python",
         "pc_python_type": "firedrake.MassInvPC",
@@ -180,6 +175,7 @@ mu = Constant(1.0)  # Constant viscosity
 # deviatoric stresses
 def tau(u):
     return mu * (grad(u) + transpose(grad(u)))
+
 
 # Stokes in weak form
 F_stokes = inner(grad(N), tau(u)) * dx - div(N)*p * dx

@@ -15,7 +15,7 @@ from pyadjoint.tape import no_annotations, Tape, set_working_tape
 import ROL 
 import time
 
-alpha = 0.01
+alpha = 0.005
 simu_name = f"28_cubic_reg_grad_{alpha}"
 
 # Quadrature degree:
@@ -42,7 +42,7 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 0  
+max_num_timesteps = 150
 simu_time = 0.0
 
 # Stokes related constants:
@@ -54,7 +54,7 @@ Ra = Constant(1e6)  # Rayleigh Number
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t = Constant(4.0e-6)  # Time-step
+delta_t = Constant(1e-6)  # Time-step
 kappa = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson
@@ -74,7 +74,7 @@ energy_iterative = {
     "snes_type": "ksponly",
     "ksp_type": "gmres",
     "ksp_rtol": 1e-5,
-    "ksp_converged_reason": None,
+    #"ksp_converged_reason": None,
     "pc_type": "sor",
 }
 
@@ -82,14 +82,14 @@ stokes_iterative = {
      "mat_type": "matfree",
      "snes_type": "ksponly",
      "ksp_type": "preonly",
-     "ksp_converged_reason": None,
+     #"ksp_converged_reason": None,
      "pc_type": "fieldsplit",
      "pc_fieldsplit_type": "schur",
      "pc_fieldsplit_schur_type": "full",
      "fieldsplit_0": {
          "ksp_type": "cg",
-         "ksp_rtol": 1e-4,
-         "ksp_converged_reason": None,
+         "ksp_rtol": 1e-5,
+         #"ksp_converged_reason": None,
          "pc_type": "python",
          "pc_python_type": "firedrake.AssembledPC",
          "assembled_pc_type": "gamg",
@@ -98,8 +98,8 @@ stokes_iterative = {
      },
     "fieldsplit_1": {
         "ksp_type": "fgmres",
-        "ksp_rtol": 1e-3,
-        "ksp_converged_reason": None,
+        "ksp_rtol": 1e-4,
+        #"ksp_converged_reason": None,
         "pc_type": "python",
         "pc_python_type": "firedrake.MassInvPC",
         "Mp_ksp_rtol": 1e-5,
@@ -120,8 +120,8 @@ Z = MixedFunctionSpace([V, W])
 N, M = TestFunctions(Z)
 Y = TestFunction(Q)
 
-# Set up fields on these function spaces - split into each component
-# so that they are easily accessible:
+# Set up fields on these function spaces - split into each 
+# component so that they are easily accessible:
 z = Function(Z)  # a field over the mixed function space Z.
 u, p = split(z)     # can we nicely name mixed function space fields?
 
@@ -155,13 +155,13 @@ def tau(u):
 
 # Stokes in weak form
 F_stokes = inner(grad(N), tau(u)) * dx - div(N)*p * dx
-F_stokes += - (dot(N, yhat)*Ra*T_theta) * dx
+F_stokes += - (dot(N, yhat) * Ra * T_theta) * dx
 F_stokes += - div(u) * M * dx
 
 # Setting free-slip BC for top and bottom
-bcu_topbase = DirichletBC(Z.sub(0).sub(1), 0.0, (bottom_id, top_id))
+bcu_topbase = DirichletBC(Z.sub(0).sub(1), 0.0, (top_id, bottom_id))
 bcu_rightleft = DirichletBC(Z.sub(0).sub(0), 0.0, (left_id, right_id))
-all_u_bounds = [bcu_topbase, bcu_rightleft]
+all_bcu = [bcu_topbase, bcu_rightleft]
 
 # Setting Dirihlet BC for top and bottom of the temperature field
 bct_top = DirichletBC(Q, 0.0, (top_id))
@@ -169,7 +169,7 @@ bct_base = DirichletBC(Q, 1.0, (bottom_id))
 
 # Pressure nullspace
 p_nullspace = MixedVectorSpaceBasis(Z, [Z.sub(0),
-                                     VectorSpaceBasis(constant=True)]
+                                    VectorSpaceBasis(constant=True)]
                                     )
 # Generating near_nullspaces for GAMG:
 z_rotV = Function(V).interpolate(as_vector((-X[1], X[0])))
@@ -185,17 +185,20 @@ F_energy = Y * ((T_new - T_old) / delta_t) * dx\
     + dot(grad(Y),kappa*grad(T_theta)) * dx
 
 # Setup problem and solver objects so we can reuse (cache) solver setup
-stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=all_u_bounds)
-stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_iterative,
-     appctx={"mu": mu}, nullspace=p_nullspace, transpose_nullspace=p_nullspace,
-     near_nullspace=Z_near_nullspace
+stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=all_bcu)
+stokes_solver = NonlinearVariationalSolver(stokes_problem,
+            nullspace=p_nullspace, transpose_nullspace=p_nullspace
 )
 
 energy_problem = NonlinearVariationalProblem(F_energy, T_new, bcs=[bct_base, bct_top])
-energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=energy_iterative)
+energy_solver = NonlinearVariationalSolver(energy_problem)
 
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
+
+# Make sure boundary conditions are applied to the control
+solve(Y*TrialFunction(Q)*dx == Y*T_ic*dx, T_ic, bcs=[bct_base, bct_top])
+
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
@@ -209,37 +212,19 @@ for timestep in range(0, max_num_timesteps):
 
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
-
-
-
-grad_field = Function(Q, name="AnalyticalDer").interpolate(-div(grad(T_ic-T_average)))
-
-#invmass = Function(Q, name="InverseMass")
-#mass_form = Y*TrialFunction(Q)*dx
-#
-#mass_action_form = assemble(action(mass_form, Constant(1)))
-#
-#ls = LinearSolver(assemble(mass_form))
-#ls.solve(invmass, interpolate(Constant(1.0), Q))
-#
-
-myfi = File("mass.pvd")
-#myfi.write(mass_action_form, invmass, grad_field)
-myfi.write(grad_field)
-
+    log(f"Logging to see what is happening {timestep}")
 # Initialise functional
-functional = assemble(0.5*(T_new - final_state)**2 * dx)#/assemble(0.5*(final_state)**2 * dx)
-regularisation = assemble(0.5*(inner(grad(T_ic), grad(T_ic))) * dx)#\
-             #/assemble(0.5*(dot(grad(T_average), grad(T_average))) * dx)
-#regularisation = assemble(0.5*(T_ic - T_average)**2 * dx)#\
+functional = assemble(0.5*(T_new - final_state)**2 * dx)
+regularisation = assemble(0.5*(dot(grad(T_ic - T_average), grad(T_ic - T_average))) * dx)\
+                /assemble(0.5*(dot(grad(T_average), grad(T_average))) * dx)*assemble(0.5*(final_state)**2 * dx)
 
 
 class myReducedFunctional(ReducedFunctional):
     def __init__(self, functional, controls, fname=None, **kwargs):
         super().__init__(functional, control, **kwargs)
-        self.fwd_cntr = 0 
-        self.adj_cntr = 0 
-    
+        self.fwd_cntr = 0
+        self.adj_cntr = 0
+
         self.fname = None
 
         if fname:
@@ -261,7 +246,7 @@ class myReducedFunctional(ReducedFunctional):
         if self.fname:
             self.valuefunction.interpolate(values[0])
             self.valuefile.write(self.valuefunction)
-            self.valueCheckPoint.save_function(values[0], idx=self.fwd_cntr)
+            self.valueCheckPoint.save_function(self.valuefunction, idx=self.fwd_cntr)
 
         pre_time = time.time()
         val = super().__call__(values)
@@ -284,13 +269,10 @@ class myReducedFunctional(ReducedFunctional):
 
 
 # Defining the object for pyadjoint
-reduced_functional = myReducedFunctional(regularisation, 
+reduced_functional = myReducedFunctional(functional + alpha * regularisation,
                                          control, fname=f"visual_{simu_name}/objective.pvd"
                                         )
 
-reduced_functional([T_ic])
-reduced_functional.derivative()
-import sys;exit()
 # Set up bounds, which will later be used to
 # enforce boundary conditions in inversion:
 T_lb = Function(Q, name="LB_Temperature")
@@ -358,7 +340,7 @@ class myStatusTest(ROL.StatusTest):
         self.solution_checkpoint.save_mesh(mesh)
 
         # loading the true answer for comparisons 
-        with CheckpointFile("../../Initial_State.h5", 'r') as true_initial_state_file:
+        with CheckpointFile("../Initial_State.h5", 'r') as true_initial_state_file:
             _ = true_initial_state_file.load_mesh("firedrake_default_extruded")
             self.T_ic_true = true_initial_state_file.load_function(mesh, "Temperature")
             self.T_ic_true.rename("ref_initial_state")
@@ -390,7 +372,13 @@ class myStatusTest(ROL.StatusTest):
 params = {
         'General': {
               'Print Verbosity': 1,
-              'Output Level': 1,
+              'Output Level': 3,
+              'Krylov': {   # These are needed for our
+                            # solution of the hessian I guess
+                    "Iteration Limit": 10,
+                    "Absolute Tolerance": 1e-4,
+                    "Relative Tolerance": 1e-2,
+                    },
               'Secant': {'Type': 'Limited-Memory BFGS',
                          'Maximum Storage': 5,
                          'Use as Hessian': True,
@@ -421,25 +409,25 @@ params = {
         }
 
 
-#with stop_annotating():
-#    rol_solver = ROLSolver(minp, params)
-#    params = ROL.ParameterList(params, "Parameters")
-#    rol_secant = ROL.InitBFGS(5) # maximum storage
-#    #rol_secant = InitHessian(5) # maximum storage
-#    rol_step = ROL.LineSearchStep(params, rol_secant)
-#    rol_status = ROL.StatusTest(params)
-#    rol_algorithm = ROL.Algorithm(rol_step, rol_status
-#                                 )
-#    rol_algorithm.run(
-#        rol_solver.rolvector,
-#        rol_solver.rolobjective,
-#        rol_solver.bounds
-#            )
-#    optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
-#    # Save the optimal temperature_ic field 
-#    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
-#            single_file=True, mode=FILE_CREATE,\
-#                               comm=mesh.comm)
-#    ckpt_T_ic.store(optimal_ic)
-#    ckpt_T_ic.close()
-#
+with stop_annotating():
+    rol_solver = ROLSolver(minp, params)
+    params = ROL.ParameterList(params, "Parameters")
+    rol_secant = ROL.InitBFGS(5) # maximum storage
+    #rol_secant = InitHessian(5) # maximum storage
+    rol_step = ROL.LineSearchStep(params, rol_secant)
+    rol_status = ROL.StatusTest(params)
+    rol_algorithm = ROL.Algorithm(rol_step, rol_status
+                                 )
+    rol_algorithm.run(
+        rol_solver.rolvector,
+        rol_solver.rolobjective,
+        rol_solver.bounds
+            )
+    optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
+    # Save the optimal temperature_ic field 
+    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+            single_file=True, mode=FILE_CREATE,\
+                               comm=mesh.comm)
+    ckpt_T_ic.store(optimal_ic)
+    ckpt_T_ic.close()
+

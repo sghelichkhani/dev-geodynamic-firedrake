@@ -15,8 +15,8 @@ from pyadjoint.tape import no_annotations, Tape, set_working_tape
 import ROL 
 import time
 
-alpha = 0.005
-simu_name = f"08_reg_grad_{alpha}"
+alpha = 0.0005
+simu_name = f"34_cubic_reg_grad_{alpha}"
 
 # Quadrature degree:
 dx = dx(degree=6)
@@ -186,13 +186,12 @@ F_energy = Y * ((T_new - T_old) / delta_t) * dx\
 
 # Setup problem and solver objects so we can reuse (cache) solver setup
 stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=all_bcu)
-stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_iterative,
-     appctx={"mu": mu}, nullspace=p_nullspace, transpose_nullspace=p_nullspace,
-     near_nullspace=Z_near_nullspace
+stokes_solver = NonlinearVariationalSolver(stokes_problem,
+            nullspace=p_nullspace, transpose_nullspace=p_nullspace
 )
 
 energy_problem = NonlinearVariationalProblem(F_energy, T_new, bcs=[bct_base, bct_top])
-energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=energy_iterative)
+energy_solver = NonlinearVariationalSolver(energy_problem)
 
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
@@ -213,11 +212,12 @@ for timestep in range(0, max_num_timesteps):
 
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
-
+    log(f"Logging to see what is happening {timestep}")
 # Initialise functional
-functional = assemble(0.5*(T_new - final_state)**2 * dx)/assemble(0.5*(final_state)**2 * dx)
+functional = assemble(0.5*(T_new - final_state)**2 * dx)
 regularisation = assemble(0.5*(dot(grad(T_ic - T_average), grad(T_ic - T_average))) * dx)\
-                /assemble(0.5*(dot(grad(T_average), grad(T_average))) * dx)
+                /assemble(0.5*(dot(grad(T_average), grad(T_average))) * dx)*assemble(0.5*(final_state)**2 * dx)
+
 
 class myReducedFunctional(ReducedFunctional):
     def __init__(self, functional, controls, fname=None, **kwargs):
@@ -246,7 +246,7 @@ class myReducedFunctional(ReducedFunctional):
         if self.fname:
             self.valuefunction.interpolate(values[0])
             self.valuefile.write(self.valuefunction)
-            self.valueCheckPoint.save_function(values[0], idx=self.fwd_cntr)
+            self.valueCheckPoint.save_function(self.valuefunction, idx=self.fwd_cntr)
 
         pre_time = time.time()
         val = super().__call__(values)
@@ -283,6 +283,48 @@ T_ub.assign(1.0)
 # Optimise using ROL - note when doing Taylor test this can be turned off:
 minp = MinimizationProblem(reduced_functional, bounds=(T_lb, T_ub))
 
+class InitHessian(ROL.InitBFGS):
+    def __init__(self, M, direct=True):
+        # 
+        super().__init__(M)
+
+        self.solver_params = {
+            "ksp_type": "gmres",
+            "pc_type": "lu",
+            "pc_factor_mat_solver_type": "mumps",
+            "mat_type": "aij",
+        }
+        # K matrix
+        self.M = dot(grad(Y), grad(TrialFunction(Q))) * dx
+
+        # regular linear solver
+        self.solver = LinearSolver(assemble(self.M), solver_parameters=self.solver_params)
+
+
+    @no_annotations
+    def applyH0(self, Hv, v):
+        
+        # use the orginical precodure to get the scaling right
+        super().applyH0(Hv, v)
+        
+        # see how big the scaling was supposed to be
+        birth_norm = Hv.norm()
+
+        # solve for the inverse hessian times gradient
+        # we replace the gradient with it
+        self.solver.solve(Hv.dat[0], v.dat[0])
+      
+        # find the new norma and scale accordingly 
+        modified_norm = Hv.norm()
+        l = birth_norm/modified_norm
+        Hv.scale(l)
+
+    @no_annotations
+    def applyB0(self, Bv, v):
+        Bv.dat[0] = assemble(action(self.M, v.dat[0])* dx)
+        l = Bv.norm() / v.norm()
+        Bv.scale(1 / l)
+        self.scaleB0(Bv)
 
 class myStatusTest(ROL.StatusTest):
     def __init__(self, params, vector):
@@ -330,52 +372,29 @@ class myStatusTest(ROL.StatusTest):
 params = {
         'General': {
               'Print Verbosity': 1,
-              'Output Level': 3,
-              'Krylov': {   # These are needed for our
-                            # solution of the hessian I guess
-                    "Iteration Limit": 10,
-                    "Absolute Tolerance": 1e-4,
-                    "Relative Tolerance": 1e-2,
-                    },
+              'Output Level': 1,
               'Secant': {'Type': 'Limited-Memory BFGS',
-                         'Maximum Storage': 20,
+                         'Maximum Storage': 5,
                          'Use as Hessian': True,
                          "Barzilai-Borwein": 1},
                     },
         'Step': {
-           'Type': 'Trust Region',  # 'Line Search',
-           'Trust Region': {
-                "Lin-More":     {
-                    "Maximum Number of Minor Iterations": 10,
-                    "Sufficient Decrease Parameter":      1e-2,
-                    "Relative Tolerance Exponent":        1.0,
-                    "Cauchy Point": {
-                        "Maximum Number of Reduction Steps": 10,
-                        "Maximum Number of Expansion Steps": 10,
-                        "Initial Step Size":                 1.0,
-                        "Normalize Initial Step Size":       False,
-                        "Reduction Rate":                    0.1,
-                        "Expansion Rate":                    10.0,
-                        "Decrease Tolerance":                1e-8,
-                                    },
-                        "Projected Search": {
-                                "Backtracking Rate": 0.5,
-                                "Maximum Number of Steps": 20,
-                                            },
-                                },
-                #  Subproblem Model could be "Kelley-Sachs",
-                "Subproblem Model":                     "Lin-More",
-                "Initial Radius":                       0.005,
-                "Maximum Radius":                       1e20,
-                "Step Acceptance Threshold":            0.05,
-                "Radius Shrinking Threshold":           0.05,
-                "Radius Growing Threshold":             0.9,
-                "Radius Shrinking Rate (Negative rho)": 0.0625,
-                "Radius Shrinking Rate (Positive rho)": 0.25,
-                "Radius Growing Rate":                  2.5,
-                "Sufficient Decrease Parameter":        1.e-2,
-                "Safeguard Size":                       100,
-                            },
+            'Type': 'Line Search',  # 'Line Search', 'Trust Region'
+            'Line Search': {
+                            'Initial Step Size' : 0.5,
+                            'Line-Search Method': {
+                                                    'Type' : 'Cubic Interpolation',
+                                                  },
+                            'Descent Method':{
+                                              'Type': 'Quasi-Newton Method',
+                                             },
+                            'Sufficient Decrease Tolerance' : 1e-4,
+                            'Curvature Condition':{
+                                                   'Type' : 'Strong Wolfe Conditions',
+                                                   'General Parameter': 0.9,
+                                                   'Generalized Wolfe Parameter' : 0.6,
+                                                  }
+                           }
                 },
         'Status Test': {
             'Gradient Tolerance': 0,
@@ -384,18 +403,25 @@ params = {
         }
 
 
-rol_solver = ROLSolver(minp, params)
-params = ROL.ParameterList(params, "Parameters")
-status_test = myStatusTest(params, rol_solver.rolvector)
-
-secant = ROL.InitBFGS(20)
-rol_algorithm = ROL.LinMoreAlgorithm(params, secant)
-rol_algorithm.setStatusTest(status_test, False)
-
 with stop_annotating():
+    rol_solver = ROLSolver(minp, params)
+    params = ROL.ParameterList(params, "Parameters")
+    #rol_secant = ROL.InitBFGS(5) # maximum storage
+    rol_secant = InitHessian(5) # maximum storage
+    rol_step = ROL.LineSearchStep(params, rol_secant)
+    rol_status = ROL.StatusTest(params)
+    rol_algorithm = ROL.Algorithm(rol_step, rol_status
+                                 )
     rol_algorithm.run(
         rol_solver.rolvector,
         rol_solver.rolobjective,
-        rol_solver.bounds # only if we have a bounded problem
+        rol_solver.bounds
             )
     optimal_ic = rol_solver.problem.reduced_functional.controls.delist(rol_solver.rolvector.dat)
+    # Save the optimal temperature_ic field 
+    ckpt_T_ic = DumbCheckpoint("T_ic_optimal",\
+            single_file=True, mode=FILE_CREATE,\
+                               comm=mesh.comm)
+    ckpt_T_ic.store(optimal_ic)
+    ckpt_T_ic.close()
+

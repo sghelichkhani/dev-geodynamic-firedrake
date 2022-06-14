@@ -87,9 +87,6 @@ all_t_bounds = [bct_top, bct_base]
 T_ic = Function(Q, name="T_IC")
 T_ic.interpolate(final_state)
 
-bct_top.apply(T_ic)
-bct_base.apply(T_ic)
-
 # Set up temperature field and initialise it with present day
 T_old = Function(Q, name="OldTemperature")
 T_old.assign(T_ic)
@@ -153,6 +150,10 @@ energy_solver = NonlinearVariationalSolver(energy_problem)
 
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
+
+# Make sure boundary conditions are applied
+solve(Y*TrialFunction(Q)*dx == Y*T_ic*dx, T_ic, bcs=[bct_base, bct_top])
+
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
     # Solve system - configured for solving non-linear systems,
@@ -169,8 +170,6 @@ for timestep in range(0, max_num_timesteps):
 # Compute the analytical expression for the gradient term
 analyticalder = Function(Q, name="AnalyticalDer").interpolate(-div(grad(T_ic-T_average)))
 
-# Make sure boundary conditions are applied
-solve(Y*TrialFunction(Q)*dx == Y*T_ic*dx, T_ic, bcs=[bct_base, bct_top])
 
 # Initialise functional
 functional = assemble(0.5*(T_new - final_state)**2 * dx)

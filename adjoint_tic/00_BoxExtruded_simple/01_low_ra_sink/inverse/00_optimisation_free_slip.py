@@ -3,14 +3,14 @@
 """
 from re import I
 import sys
-sys.path.append('../../')
+sys.path.append('../')
 
 from firedrake import *
 from mpi4py import MPI
 from firedrake.petsc import PETSc
 from lib_averaging import LayerAveraging
 from firedrake_adjoint import *
-from pyadjoint import MinimizationProblem, ROLSolver
+from pyadjoint import MinimizationProblem, ROLSolver, ROLVector
 from pyadjoint.tape import no_annotations, Tape, set_working_tape
 import ROL 
 import time
@@ -38,7 +38,7 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 140
+max_num_timesteps = 150
 simu_time = 0.0
 
 # Stokes related constants:
@@ -50,7 +50,7 @@ Ra = Constant(1e6)  # Rayleigh Number
 tape = get_working_tape()
 
 # Temperature related constants:
-delta_t = Constant(2e-6)  # Time-step
+delta_t = Constant(1e-6)  # Time-step
 kappa = Constant(1.0)  # Thermal diffusivity
 
 # Temporal discretisation - Using a Crank-Nicholson
@@ -84,7 +84,7 @@ stokes_iterative = {
      "pc_fieldsplit_schur_type": "full",
      "fieldsplit_0": {
          "ksp_type": "cg",
-         "ksp_rtol": 1e-4,
+         "ksp_rtol": 1e-5,
          #"ksp_converged_reason": None,
          "pc_type": "python",
          "pc_python_type": "firedrake.AssembledPC",
@@ -94,7 +94,7 @@ stokes_iterative = {
      },
     "fieldsplit_1": {
         "ksp_type": "fgmres",
-        "ksp_rtol": 1e-3,
+        "ksp_rtol": 1e-4,
         #"ksp_converged_reason": None,
         "pc_type": "python",
         "pc_python_type": "firedrake.MassInvPC",
@@ -116,8 +116,8 @@ Z = MixedFunctionSpace([V, W])
 N, M = TestFunctions(Z)
 Y = TestFunction(Q)
 
-# Set up fields on these function spaces - split into each component
-# so that they are easily accessible:
+# Set up fields on these function spaces - split into each 
+# component so that they are easily accessible:
 z = Function(Z)  # a field over the mixed function space Z.
 u, p = split(z)     # can we nicely name mixed function space fields?
 
@@ -182,16 +182,19 @@ F_energy = Y * ((T_new - T_old) / delta_t) * dx\
 
 # Setup problem and solver objects so we can reuse (cache) solver setup
 stokes_problem = NonlinearVariationalProblem(F_stokes, z, bcs=all_bcu)
-stokes_solver = NonlinearVariationalSolver(stokes_problem, solver_parameters=stokes_iterative,
-     appctx={"mu": mu}, nullspace=p_nullspace, transpose_nullspace=p_nullspace,
-     near_nullspace=Z_near_nullspace
+stokes_solver = NonlinearVariationalSolver(stokes_problem,
+            nullspace=p_nullspace, transpose_nullspace=p_nullspace
 )
 
 energy_problem = NonlinearVariationalProblem(F_energy, T_new, bcs=[bct_base, bct_top])
-energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=energy_iterative)
+energy_solver = NonlinearVariationalSolver(energy_problem)
 
 # Setting adjoint and forward callbacks, and control parameter
 control = Control(T_ic)
+
+# Make sure boundary conditions are applied to the control
+solve(Y*TrialFunction(Q)*dx == Y*T_ic*dx, T_ic, bcs=[bct_base, bct_top])
+
 
 # Now perform the time loop:
 for timestep in range(0, max_num_timesteps):
@@ -205,48 +208,53 @@ for timestep in range(0, max_num_timesteps):
 
     # Set T_old = T_new - assign the values of T_new to T_old
     T_old.assign(T_new)
-
+    log(f"Logging to see what is happening {timestep}")
 # Initialise functional
 functional = assemble(0.5*(T_new - final_state)**2 * dx)
 
-class myROLObjective()
-
-
-class myReducedFunctional(ReducedFunctional, fname=None):
-    def __init__(self, functional, controls, **kwargs):
+class myReducedFunctional(ReducedFunctional):
+    def __init__(self, functional, controls, fname=None, **kwargs):
         super().__init__(functional, control, **kwargs)
         self.fwd_cntr = 0
         self.adj_cntr = 0
-       
+
         self.fname = None
 
         if fname:
             self.fname = fname
             self.derfile = File(fname.replace(".pvd", "_der.pvd"))
-            self.derfunction = Function(Q, name="gradient") 
+            self.derFunction = Function(Q, name="gradient")
+            self.derRol = ROLVector(self.derFunction, inner_product="L2")
+
 
             self.valuefile = File(fname.replace(".pvd", "_ctrl.pvd"))
             self.valuefunction = Function(Q, name="control") 
 
+            self.valueCheckPoint = CheckpointFile(fname.replace(".pvd", ".h5"), 'w')
+            self.valueCheckPoint.save_mesh(mesh)
+
+
     def __call__(self, values):
         # writing the control value to file
-        if self.name:
-            self.valuefunction.interpolate(values.dat[0])
+        if self.fname:
+            self.valuefunction.interpolate(values[0])
             self.valuefile.write(self.valuefunction)
+            self.valueCheckPoint.save_function(self.valuefunction, idx=self.fwd_cntr)
 
         pre_time = time.time()
         val = super().__call__(values)
         self.fwd_cntr += 1
         log(f"\tFWD # {self.fwd_cntr} call took {time.time() - pre_time}")
-        return val
+        return val 
 
     def derivative(self):
         pre_time = time.time()
-        deriv = super().derivative(options={})
+        deriv = super().derivative()
 
         if self.fname:
-            self.derfunction.interpolate(deriv.riesz_map)
-            self.derfile.write(self.derfunction)
+            self.derRol.dat = self.derRol.riesz_map(deriv)
+            self.derFunction.interpolate(self.derRol.dat[0])
+            self.derfile.write(self.derFunction)
 
         self.adj_cntr += 1
         log(f"\tADJ # {self.adj_cntr} call took {time.time() - pre_time}")
@@ -254,7 +262,7 @@ class myReducedFunctional(ReducedFunctional, fname=None):
 
 
 # Defining the object for pyadjoint
-reduced_functional = myReducedFunctional(functional, control)
+reduced_functional = myReducedFunctional(functional, control, fname="visual_00_fslip/objective.pvd")
 
 # Set up bounds, which will later be used to
 # enforce boundary conditions in inversion:
@@ -281,7 +289,7 @@ class myStatusTest(ROL.StatusTest):
         self.solution_checkpoint.save_mesh(mesh)
 
         # loading the true answer for comparisons 
-        with CheckpointFile("../../Initial_State.h5", 'r') as true_initial_state_file:
+        with CheckpointFile("../Initial_State.h5", 'r') as true_initial_state_file:
             _ = true_initial_state_file.load_mesh("firedrake_default_extruded")
             self.T_ic_true = true_initial_state_file.load_function(mesh, "Temperature")
             self.T_ic_true.rename("ref_initial_state")
@@ -348,7 +356,7 @@ params = {
                                 },
                 #  Subproblem Model could be "Kelley-Sachs",
                 "Subproblem Model":                     "Lin-More",
-                "Initial Radius":                       0.005,
+                "Initial Radius":                       1.00,
                 "Maximum Radius":                       1e20,
                 "Step Acceptance Threshold":            0.05,
                 "Radius Shrinking Threshold":           0.05,
