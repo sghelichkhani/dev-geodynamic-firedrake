@@ -33,7 +33,7 @@ y_abs = sqrt(y**2)
 yhat = as_vector((0, y)) / y_abs
 
 # Global Constants:
-max_num_timesteps = 160
+max_num_timesteps = 200
 simu_time = 0.0
 
 # Stokes related constants:
@@ -166,10 +166,6 @@ stokes_solver = NonlinearVariationalSolver(stokes_problem,  solver_parameters=so
 energy_problem = NonlinearVariationalProblem(F_energy, T_new, bcs=[bct_base, bct_top])
 energy_solver = NonlinearVariationalSolver(energy_problem, solver_parameters=solver_parameters)
 
-# Checkpointing
-u_tave_checkpoint = CheckpointFile("Ref_velocities.h5", 'w')
-u_tave_checkpoint.save_mesh(mesh)
-
 
 # Write functions out in VTK format
 state_vtu_file = File('visual/state.pvd')
@@ -180,9 +176,6 @@ for timestep in range(0, max_num_timesteps):
     # where everything is on the LHS (as above)
     # and the RHS == 0.
     stokes_solver.solve()
-
-    # writing out the velocity field, which will be used for reconstructions
-    u_tave_checkpoint.save_function(u_, idx=timestep)
 
     # Write output:
     if timestep % 10 == 0:
@@ -207,8 +200,6 @@ for timestep in range(0, max_num_timesteps):
          )
         )
 
-u_tave_checkpoint.close()
-
 
 # Output the last state
 state_vtu_file.write(u_, p_, T_new)
@@ -217,5 +208,4 @@ state_vtu_file.write(u_, p_, T_new)
 checkpoint_data = CheckpointFile("Final_State.h5", "w")
 checkpoint_data.save_mesh(mesh)
 checkpoint_data.save_function(T_new)
-checkpoint_data.save_function(T_average)
 checkpoint_data.close()
